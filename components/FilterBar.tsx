@@ -12,7 +12,7 @@ interface Props {
 const STREAMING_PLATFORMS = [
   'netflix', 'disneyplus', 'max', 'prime',
   'paramountplus', 'appletv', 'plutotv',
-  'directvgo', 'crunchyroll', 'mubi',
+  'universalplus', 'directvgo', 'crunchyroll', 'mubi',
   'mercadoplay', 'curiositystream', 'plex', 'googleplay',
 ];
 

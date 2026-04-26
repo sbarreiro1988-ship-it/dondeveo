@@ -13,6 +13,18 @@ import MovieModal from './MovieModal';
 import { PLATFORMS } from '@/lib/mockData';
 import { getManualOverridesMap } from '@/lib/manualOverrides';
 import type { Movie, FilterState, Platform } from '@/types';
+
+// Detecta títulos en caracteres no-latinos (chino, japonés, coreano, árabe, etc.)
+function hasNonLatinTitle(title: string): boolean {
+  return /[぀-鿿가-퟿؀-ۿݐ-ݿ]/.test(title);
+}
+
+// Enriquece cards con plataforma y filtra contenido sin plataforma con título no-latino
+function enrichAndFilter(movies: Movie[], lookup: Map<number, Platform[]>): Movie[] {
+  return movies
+    .map((m) => { const f = lookup.get(m.id); return f?.length ? { ...m, platforms: f } : m; })
+    .filter((m) => m.platforms.length > 0 || !hasNonLatinTitle(m.title));
+}
 import type { NewsItem } from '@/lib/newsApi';
 
 interface Props {
@@ -289,13 +301,15 @@ export default function HomeClient({
 
               {/* ── Genre Top 10: Acción ── */}
               {top10Accion.length > 0 && (
-                <ContentCarousel title="Top 10 Acción" movies={top10Accion.map((m,i)=>({...m,rank:i+1}))}
+                <ContentCarousel title="Top 10 Acción"
+                  movies={enrichAndFilter(top10Accion, platformLookup).map((m,i)=>({...m,rank:i+1}))}
                   showRanks layout="sidebar"
                   description="Los filmes de acción más populares en streaming ahora."
                   onMovieClick={handleMovieClick} />
               )}
               {top10AccionSeries.length > 0 && (
-                <ContentCarousel title="Series de Acción" movies={top10AccionSeries.map((m,i)=>({...m,rank:i+1}))}
+                <ContentCarousel title="Series de Acción"
+                  movies={enrichAndFilter(top10AccionSeries, platformLookup).map((m,i)=>({...m,rank:i+1}))}
                   showRanks layout="sidebar"
                   description="Las mejores series de acción disponibles en streaming."
                   onMovieClick={handleMovieClick} />
@@ -316,7 +330,8 @@ export default function HomeClient({
 
               {/* ── Genre Top 10: Comedia ── */}
               {top10Comedia.length > 0 && (
-                <ContentCarousel title="Top 10 Comedia" movies={top10Comedia.map((m,i)=>({...m,rank:i+1}))}
+                <ContentCarousel title="Top 10 Comedia"
+                  movies={enrichAndFilter(top10Comedia, platformLookup).map((m,i)=>({...m,rank:i+1}))}
                   showRanks layout="sidebar"
                   description="Las comedias más populares en streaming esta semana."
                   onMovieClick={handleMovieClick} />
@@ -338,13 +353,15 @@ export default function HomeClient({
 
               {/* ── Genre Top 10: Drama ── */}
               {top10Drama.length > 0 && (
-                <ContentCarousel title="Top 10 Drama" movies={top10Drama.map((m,i)=>({...m,rank:i+1}))}
+                <ContentCarousel title="Top 10 Drama"
+                  movies={enrichAndFilter(top10Drama, platformLookup).map((m,i)=>({...m,rank:i+1}))}
                   showRanks layout="sidebar"
                   description="Las películas de drama más aclamadas disponibles ahora."
                   onMovieClick={handleMovieClick} />
               )}
               {top10DramaSeries.length > 0 && (
-                <ContentCarousel title="Series de Drama" movies={top10DramaSeries.map((m,i)=>({...m,rank:i+1}))}
+                <ContentCarousel title="Series de Drama"
+                  movies={enrichAndFilter(top10DramaSeries, platformLookup).map((m,i)=>({...m,rank:i+1}))}
                   showRanks layout="sidebar"
                   description="Las series de drama más populares en streaming."
                   onMovieClick={handleMovieClick} />
@@ -364,7 +381,8 @@ export default function HomeClient({
 
               {/* ── Genre Top 10: Terror ── */}
               {top10Terror.length > 0 && (
-                <ContentCarousel title="Top 10 Terror" movies={top10Terror.map((m,i)=>({...m,rank:i+1}))}
+                <ContentCarousel title="Top 10 Terror"
+                  movies={enrichAndFilter(top10Terror, platformLookup).map((m,i)=>({...m,rank:i+1}))}
                   showRanks layout="sidebar"
                   description="Las películas de terror más populares en streaming ahora."
                   onMovieClick={handleMovieClick} />
@@ -396,7 +414,8 @@ export default function HomeClient({
 
               {/* ── Ciencia Ficción ── */}
               {top10Scifi.length > 0 && (
-                <ContentCarousel title="Top 10 Ciencia Ficción" movies={top10Scifi.map((m,i)=>({...m,rank:i+1}))}
+                <ContentCarousel title="Top 10 Ciencia Ficción"
+                  movies={enrichAndFilter(top10Scifi, platformLookup).map((m,i)=>({...m,rank:i+1}))}
                   showRanks layout="sidebar"
                   description="Las mejores películas de ciencia ficción disponibles en streaming."
                   onMovieClick={handleMovieClick} />
