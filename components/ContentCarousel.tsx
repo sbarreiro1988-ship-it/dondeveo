@@ -52,71 +52,106 @@ export default function ContentCarousel({
 
   if (movies.length === 0) return null;
 
-  // ── Sidebar layout (JustWatch style) ──────────────────────────────────────
+  // ── Sidebar layout: desktop = title left / cards right, mobile = title above ─
   if (layout === 'sidebar') {
     return (
-      <section className="mb-8 flex items-start">
-        {/* Left sidebar */}
-        <div className="flex-shrink-0 w-44 md:w-52 px-4 md:pl-8 md:pr-4 pt-1 flex flex-col gap-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="text-white text-base font-bold leading-snug">{title}</h2>
-            {platformBadge && <StreamingBadge platform={platformBadge} size="sm" />}
-          </div>
-          {description && (
-            <p className="text-dv-muted text-xs leading-relaxed">{description}</p>
-          )}
-          <div className="flex flex-col gap-1 mt-1">
-            {loNuevoHref && (
-              <Link href={loNuevoHref} className="text-dv-accent text-xs hover:underline font-semibold">
-                ✨ Lo nuevo →
-              </Link>
-            )}
-            {verTodosHref ? (
-              <Link href={verTodosHref} className="text-dv-muted text-xs hover:text-white hover:underline">
-                Ver todo el catálogo →
-              </Link>
-            ) : (
-              <span className="text-dv-muted text-xs select-none">Ver todos →</span>
-            )}
+      <section className="mb-8">
+        {/* ── Mobile: título arriba (< md) ── */}
+        <div className="md:hidden px-4 mb-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
+              <h2 className="text-white text-base font-bold leading-snug">{title}</h2>
+              {platformBadge && <StreamingBadge platform={platformBadge} size="sm" />}
+            </div>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {loNuevoHref && (
+                <Link href={loNuevoHref} className="text-dv-accent text-xs font-semibold whitespace-nowrap">
+                  ✨ Lo nuevo
+                </Link>
+              )}
+              {verTodosHref && (
+                <Link href={verTodosHref} className="text-dv-muted text-xs whitespace-nowrap hover:text-white">
+                  Ver todos →
+                </Link>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Scrollable cards */}
-        <div className="relative flex-1 min-w-0 group/carousel">
+        {/* ── Desktop: sidebar izquierda + cards (>= md) ── */}
+        <div className="hidden md:flex items-start">
+          <div className="flex-shrink-0 w-52 pl-8 pr-4 pt-1 flex flex-col gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-white text-base font-bold leading-snug">{title}</h2>
+              {platformBadge && <StreamingBadge platform={platformBadge} size="sm" />}
+            </div>
+            {description && (
+              <p className="text-dv-muted text-xs leading-relaxed">{description}</p>
+            )}
+            <div className="flex flex-col gap-1 mt-1">
+              {loNuevoHref && (
+                <Link href={loNuevoHref} className="text-dv-accent text-xs hover:underline font-semibold">
+                  ✨ Lo nuevo →
+                </Link>
+              )}
+              {verTodosHref ? (
+                <Link href={verTodosHref} className="text-dv-muted text-xs hover:text-white hover:underline">
+                  Ver todo el catálogo →
+                </Link>
+              ) : (
+                <span className="text-dv-muted text-xs select-none">Ver todos →</span>
+              )}
+            </div>
+          </div>
+          {/* Cards desktop */}
+          <div className="relative flex-1 min-w-0 group/carousel">
+            {canLeft && (
+              <>
+                <div className="absolute left-0 top-0 bottom-2 w-12 bg-gradient-to-r from-dv-bg to-transparent z-10 pointer-events-none" />
+                <button onClick={() => scroll('left')} className="absolute left-1 top-[45%] -translate-y-1/2 z-20 bg-black/80 hover:bg-black text-white p-2 rounded-full shadow-lg opacity-0 group-hover/carousel:opacity-100 transition-all">
+                  <ChevronLeft size={18} />
+                </button>
+              </>
+            )}
+            {canRight && (
+              <>
+                <div className="absolute right-0 top-0 bottom-2 w-12 bg-gradient-to-l from-dv-bg to-transparent z-10 pointer-events-none" />
+                <button onClick={() => scroll('right')} className="absolute right-1 top-[45%] -translate-y-1/2 z-20 bg-black/80 hover:bg-black text-white p-2 rounded-full shadow-lg opacity-0 group-hover/carousel:opacity-100 transition-all">
+                  <ChevronRight size={18} />
+                </button>
+              </>
+            )}
+            <div ref={ref} onScroll={onScroll} className="flex gap-3 overflow-x-auto scrollbar-hide pr-4 pb-2">
+              {movies.map((movie, i) => (
+                <MovieCard key={movie.id} movie={cinemaOnly ? { ...movie, platforms: [] } : movie}
+                  showRank={showRanks ? (movie.rank ?? i + 1) : undefined} onClick={onMovieClick} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Mobile: cards (< md) ── */}
+        <div className="md:hidden relative group/carousel">
           {canLeft && (
             <>
-              <div className="absolute left-0 top-0 bottom-2 w-12 bg-gradient-to-r from-dv-bg to-transparent z-10 pointer-events-none" />
-              <button
-                onClick={() => scroll('left')}
-                className="absolute left-1 top-[45%] -translate-y-1/2 z-20 bg-black/80 hover:bg-black text-white p-2 rounded-full shadow-lg opacity-0 group-hover/carousel:opacity-100 transition-all"
-              >
-                <ChevronLeft size={18} />
+              <div className="absolute left-0 top-0 bottom-2 w-10 bg-gradient-to-r from-dv-bg to-transparent z-10 pointer-events-none" />
+              <button onClick={() => scroll('left')} className="absolute left-1 top-[45%] -translate-y-1/2 z-20 bg-black/80 text-white p-2 rounded-full shadow-lg opacity-0 group-hover/carousel:opacity-100 transition-all">
+                <ChevronLeft size={16} />
               </button>
             </>
           )}
           {canRight && (
             <>
-              <div className="absolute right-0 top-0 bottom-2 w-12 bg-gradient-to-l from-dv-bg to-transparent z-10 pointer-events-none" />
-              <button
-                onClick={() => scroll('right')}
-                className="absolute right-1 top-[45%] -translate-y-1/2 z-20 bg-black/80 hover:bg-black text-white p-2 rounded-full shadow-lg opacity-0 group-hover/carousel:opacity-100 transition-all"
-              >
-                <ChevronRight size={18} />
+              <div className="absolute right-0 top-0 bottom-2 w-10 bg-gradient-to-l from-dv-bg to-transparent z-10 pointer-events-none" />
+              <button onClick={() => scroll('right')} className="absolute right-1 top-[45%] -translate-y-1/2 z-20 bg-black/80 text-white p-2 rounded-full shadow-lg opacity-0 group-hover/carousel:opacity-100 transition-all">
+                <ChevronRight size={16} />
               </button>
             </>
           )}
-          <div
-            ref={ref}
-            onScroll={onScroll}
-            className="flex gap-3 overflow-x-auto scrollbar-hide pr-4 pb-2"
-          >
+          <div ref={ref} onScroll={onScroll} className="flex gap-3 overflow-x-auto scrollbar-hide px-4 pb-2">
             {movies.map((movie, i) => (
-              <MovieCard
-                key={movie.id}
-                movie={cinemaOnly ? { ...movie, platforms: [] } : movie}
-                showRank={showRanks ? (movie.rank ?? i + 1) : undefined}
-                onClick={onMovieClick}
-              />
+              <MovieCard key={movie.id} movie={cinemaOnly ? { ...movie, platforms: [] } : movie}
+                showRank={showRanks ? (movie.rank ?? i + 1) : undefined} onClick={onMovieClick} />
             ))}
           </div>
         </div>

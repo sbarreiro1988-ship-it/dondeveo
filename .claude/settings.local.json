@@ -28,7 +28,9 @@
       "WebFetch(domain:www.grupocine.com.uy)",
       "WebFetch(domain:api.themoviedb.org)",
       "Bash(git init *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }
