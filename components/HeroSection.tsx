@@ -4,14 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { Play, Info, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import StreamingBadge from './StreamingBadge';
-import { PLATFORMS } from '@/lib/mockData';
 import type { Movie } from '@/types';
-
-const PLATFORM_STRIP = [
-  PLATFORMS.netflix, PLATFORMS.prime, PLATFORMS.disneyplus,
-  PLATFORMS.max, PLATFORMS.paramountplus, PLATFORMS.appletv,
-  PLATFORMS.crunchyroll, PLATFORMS.plutotv,
-].filter(Boolean);
 
 interface Props {
   movies: Movie[];
@@ -178,23 +171,6 @@ export default function HeroSection({ movies, onMovieClick }: Props) {
         {current + 1} / {slides.length}
       </div>
 
-      {/* ── Platform strip ── */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#111111] to-transparent pt-10 pb-3 px-6 md:px-12">
-        <div className="flex items-center gap-2 justify-center flex-wrap">
-          <span className="text-white/40 text-[10px] font-semibold uppercase tracking-widest mr-1">
-            Streaming disponible
-          </span>
-          {PLATFORM_STRIP.map((pl) => (
-            <span
-              key={pl.id}
-              className="text-[9px] font-black px-2 py-1 rounded-md"
-              style={{ backgroundColor: pl.bgColor + '22', color: pl.color, border: `1px solid ${pl.bgColor}55` }}
-            >
-              {pl.shortName || pl.name}
-            </span>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
