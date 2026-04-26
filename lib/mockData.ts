@@ -91,6 +91,16 @@ export const PLATFORMS: Record<string, Platform> = {
     url: 'https://pluto.tv',
     type: 'free',
   },
+  universalplus: {
+    id: 'universalplus',
+    name: 'Universal+',
+    shortName: 'U+',
+    color: '#E8891A',
+    bgColor: '#E8891A',
+    textColor: '#ffffff',
+    url: 'https://www.universalplus.com',
+    type: 'flatrate',
+  },
   crunchyroll: {
     id: 'crunchyroll',
     name: 'Crunchyroll',

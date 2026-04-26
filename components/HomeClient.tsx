@@ -11,6 +11,7 @@ import FilterBar from './FilterBar';
 import MovieCard from './MovieCard';
 import MovieModal from './MovieModal';
 import { PLATFORMS } from '@/lib/mockData';
+import { getManualOverridesMap } from '@/lib/manualOverrides';
 import type { Movie, FilterState, Platform } from '@/types';
 import type { NewsItem } from '@/lib/newsApi';
 
@@ -124,6 +125,18 @@ export default function HomeClient({
     assign(paramountSeries, PLATFORMS.paramountplus);
     assign(appleTvSeries,   PLATFORMS.appletv);
     assign(crunchyrollSeries, PLATFORMS.crunchyroll);
+
+    // Manual overrides — plataformas asignadas a mano (ej: Universal+)
+    const manualMap = getManualOverridesMap();
+    manualMap.forEach((platforms, tmdbId) => {
+      const prev = map.get(tmdbId) ?? [];
+      const merged = [...prev];
+      for (const pl of platforms) {
+        if (!merged.find(p => p.id === pl.id)) merged.push(pl);
+      }
+      map.set(tmdbId, merged);
+    });
+
     return map;
   }, [netflix, disneyplus, max, prime, paramountplus, appleTv, pluto, directvgo, mubi,
       mercadoplay, curiositystream, plex, googleplay,
