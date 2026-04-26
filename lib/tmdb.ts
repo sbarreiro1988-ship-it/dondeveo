@@ -1,5 +1,6 @@
 import type { Movie, Platform } from '@/types';
 import { PLATFORMS } from './mockData';
+import { MANUAL_OVERRIDES } from './manualOverrides';
 
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 const TMDB_TOKEN = process.env.TMDB_ACCESS_TOKEN;
@@ -107,6 +108,7 @@ const PROVIDER: Record<number, Platform> = {
   2302: PLATFORMS.mercadoplay,   // Mercado Play (Mercado Libre)
   190:  PLATFORMS.curiositystream,// Curiosity Stream
   538:  PLATFORMS.plex,          // Plex (gratis)
+  344:  PLATFORMS.viki,          // Rakuten Viki (K-dramas, anime)
 };
 
 // ─── Fetch with configurable regions ─────────────────────────────────────────
@@ -318,6 +320,7 @@ export const PLATFORM_PROVIDER_ID: Record<string, number> = {
   mercadoplay:      2302,
   curiositystream:  190,
   plex:             538,
+  viki:             344,
 };
 
 // ─── Fetch ALL pages for a platform (used by /plataforma/[id]) ───────────────
@@ -487,6 +490,35 @@ export async function fetchNewOnPlatform(
   }
 
   return results;
+}
+
+// ─── Universal+ (manual overrides → TMDB detail fetch) ───────────────────────
+// Universal+ no tiene provider ID válido en TMDB para UY/AR,
+// así que buscamos cada título directamente por su TMDB ID.
+export async function fetchUniversalPlusContent(): Promise<Movie[]> {
+  const [movieGenres, tvGenres] = await Promise.all([getGenres('movie'), getGenres('tv')]);
+  const uPlus = PLATFORMS.universalplus;
+
+  const results = await Promise.allSettled(
+    MANUAL_OVERRIDES.map(async (override) => {
+      const isMovie  = override.type === 'movie';
+      const endpoint = isMovie ? `/movie/${override.tmdbId}` : `/tv/${override.tmdbId}`;
+      const genres   = isMovie ? movieGenres : tvGenres;
+      const mediaType = isMovie ? 'movie' : 'series';
+      try {
+        const item = await get<TMDBItem>(endpoint);
+        if (!item.poster_path) return null;
+        return mapItem(item, genres, uPlus, mediaType);
+      } catch {
+        return null;
+      }
+    }),
+  );
+
+  return results
+    .filter((r): r is PromiseFulfilledResult<Movie | null> => r.status === 'fulfilled')
+    .map((r) => r.value)
+    .filter((m): m is Movie => m !== null);
 }
 
 // ─── Search ───────────────────────────────────────────────────────────────────

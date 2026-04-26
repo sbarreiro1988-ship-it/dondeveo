@@ -191,6 +191,16 @@ export const PLATFORMS: Record<string, Platform> = {
     url: 'https://www.plex.tv',
     type: 'free',
   },
+  viki: {
+    id: 'viki',
+    name: 'Rakuten Viki',
+    shortName: 'VIKI',
+    color: '#1DAFE6',
+    bgColor: '#1DAFE6',
+    textColor: '#ffffff',
+    url: 'https://www.viki.com',
+    type: 'flatrate',
+  },
   vtv: {
     id: 'vtv',
     name: 'VTV',

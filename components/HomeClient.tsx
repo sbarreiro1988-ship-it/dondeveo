@@ -41,6 +41,7 @@ interface Props {
   upcoming: Movie[]; nowPlaying: Movie[];
   pluto: Movie[]; directvgo: Movie[]; mubi: Movie[];
   mercadoplay: Movie[]; curiositystream: Movie[]; plex: Movie[]; googleplay: Movie[];
+  universalplus: Movie[]; viki: Movie[];
   top10Accion: Movie[]; top10Comedia: Movie[]; top10Drama: Movie[];
   top10Terror: Movie[]; top10Scifi: Movie[];
   top10AccionSeries: Movie[]; top10DramaSeries: Movie[];
@@ -57,6 +58,7 @@ export default function HomeClient({
   paramountSeries, appleTvSeries, crunchyrollSeries,
   topRatedMovies, upcoming, nowPlaying,
   pluto, directvgo, mubi, mercadoplay, curiositystream, plex, googleplay,
+  universalplus, viki,
   top10Accion, top10Comedia, top10Drama, top10Terror, top10Scifi,
   top10AccionSeries, top10DramaSeries,
   news,
@@ -130,6 +132,8 @@ export default function HomeClient({
     assign(plex,            PLATFORMS.plex);
     assign(googleplay,      PLATFORMS.googleplay);
     assign(mubi,            PLATFORMS.mubi);
+    assign(universalplus,   PLATFORMS.universalplus);
+    assign(viki,            PLATFORMS.viki);
     assign(netflixSeries,   PLATFORMS.netflix);
     assign(maxSeries,       PLATFORMS.max);
     assign(primeSeries,     PLATFORMS.prime);
@@ -151,7 +155,7 @@ export default function HomeClient({
 
     return map;
   }, [netflix, disneyplus, max, prime, paramountplus, appleTv, pluto, directvgo, mubi,
-      mercadoplay, curiositystream, plex, googleplay,
+      mercadoplay, curiositystream, plex, googleplay, universalplus, viki,
       netflixSeries, maxSeries, primeSeries, disneySeries,
       paramountSeries, appleTvSeries, crunchyrollSeries]);
 
@@ -175,17 +179,21 @@ export default function HomeClient({
     () => [...netflix, ...disneyplus, ...max, ...prime, ...paramountplus,
             ...appleTv, ...pluto, ...directvgo, ...mubi,
             ...mercadoplay, ...curiositystream, ...plex, ...googleplay,
+            ...universalplus.filter(m => m.type === 'movie'),
             ...nowPlaying, ...topRatedMovies]
            .filter((m, i, arr) => arr.findIndex((x) => x.id === m.id) === i),
     [netflix, disneyplus, max, prime, paramountplus, appleTv, pluto, directvgo, mubi,
-     mercadoplay, curiositystream, plex, googleplay, nowPlaying, topRatedMovies],
+     mercadoplay, curiositystream, plex, googleplay, universalplus, nowPlaying, topRatedMovies],
   );
 
   const allSeries = useMemo(
     () => [...netflixSeries, ...maxSeries, ...primeSeries, ...disneySeries,
-            ...paramountSeries, ...appleTvSeries, ...crunchyrollSeries]
+            ...paramountSeries, ...appleTvSeries, ...crunchyrollSeries,
+            ...universalplus.filter(m => m.type === 'series'),
+            ...viki]
            .filter((m, i, arr) => arr.findIndex((x) => x.id === m.id) === i),
-    [netflixSeries, maxSeries, primeSeries, disneySeries, paramountSeries, appleTvSeries, crunchyrollSeries],
+    [netflixSeries, maxSeries, primeSeries, disneySeries, paramountSeries, appleTvSeries,
+     crunchyrollSeries, universalplus, viki],
   );
 
   const filtered = useMemo(() => {
@@ -412,6 +420,15 @@ export default function HomeClient({
                   layout="sidebar" onMovieClick={handleMovieClick} />
               )}
 
+              {/* ── Universal+ ── */}
+              {universalplus.length > 0 && (
+                <ContentCarousel title="Universal+" movies={universalplus}
+                  platformBadge={PLATFORMS.universalplus} platformId="universalplus"
+                  layout="sidebar"
+                  description="Series y películas exclusivas de Universal: FROM, Ted, The Rookie, House, Chicago PD, Interstellar y más."
+                  onMovieClick={handleMovieClick} />
+              )}
+
               {/* ── Ciencia Ficción ── */}
               {top10Scifi.length > 0 && (
                 <ContentCarousel title="Top 10 Ciencia Ficción"
@@ -427,6 +444,15 @@ export default function HomeClient({
                   platformBadge={PLATFORMS.crunchyroll} platformId="crunchyroll"
                   layout="sidebar"
                   description="El mejor anime disponible en Crunchyroll para Uruguay y la región."
+                  onMovieClick={handleMovieClick} />
+              )}
+
+              {/* ── Rakuten Viki ── (solo si hay contenido disponible) */}
+              {viki.length > 0 && (
+                <ContentCarousel title="🎭 K-dramas en Rakuten Viki" movies={viki}
+                  platformBadge={PLATFORMS.viki} platformId="viki"
+                  layout="sidebar"
+                  description="Los mejores K-dramas y series asiáticas disponibles en Rakuten Viki."
                   onMovieClick={handleMovieClick} />
               )}
 

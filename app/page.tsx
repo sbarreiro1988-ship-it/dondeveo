@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import {
   fetchByProvider, fetchTrending, fetchTopRated,
   fetchUpcoming, fetchHeroContent, fetchTopByGenre, GENRE_IDS,
-  fetchTrendingMovies, fetchTrendingSeries,
+  fetchTrendingMovies, fetchTrendingSeries, fetchUniversalPlusContent,
 } from '@/lib/tmdb';
 import { fetchCinemaUY } from '@/lib/cinemaUY';
 import { fetchStreamingNews } from '@/lib/newsApi';
@@ -19,6 +19,8 @@ export default async function HomePage() {
     paramountSeries, appleTvSeries, crunchyrollSeries,
     topRatedMovies, upcoming, nowPlaying,
     pluto, directvgo, mubi, mercadoplay, curiositystream, plex, googleplay,
+    universalplus,
+    viki,
     top10Accion, top10Comedia, top10Drama, top10Terror, top10Scifi,
     top10AccionSeries, top10DramaSeries,
     news,
@@ -50,6 +52,8 @@ export default async function HomePage() {
     fetchByProvider(190,  'movie', 16),  // Curiosity Stream (docs)
     fetchByProvider(538,  'movie', 20),  // Plex (gratis)
     fetchByProvider(3,    'movie', 20),  // Google Play Movies
+    fetchUniversalPlusContent(),          // Universal+ (manual overrides)
+    fetchByProvider(344,  'tv',   20, ['US', 'AR']), // Rakuten Viki (K-dramas)
     fetchTopByGenre(GENRE_IDS.accion,  'movie', 10),
     fetchTopByGenre(GENRE_IDS.comedia, 'movie', 10),
     fetchTopByGenre(GENRE_IDS.drama,   'movie', 10),
@@ -76,6 +80,7 @@ export default async function HomePage() {
         pluto={pluto} directvgo={directvgo} mubi={mubi}
         mercadoplay={mercadoplay} curiositystream={curiositystream}
         plex={plex} googleplay={googleplay}
+        universalplus={universalplus} viki={viki}
         top10Accion={top10Accion} top10Comedia={top10Comedia}
         top10Drama={top10Drama} top10Terror={top10Terror} top10Scifi={top10Scifi}
         top10AccionSeries={top10AccionSeries} top10DramaSeries={top10DramaSeries}

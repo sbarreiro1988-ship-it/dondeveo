@@ -13,7 +13,7 @@ const STREAMING_PLATFORMS = [
   'netflix', 'disneyplus', 'max', 'prime',
   'paramountplus', 'appletv', 'plutotv',
   'universalplus', 'directvgo', 'crunchyroll', 'mubi',
-  'mercadoplay', 'curiositystream', 'plex', 'googleplay',
+  'mercadoplay', 'curiositystream', 'plex', 'googleplay', 'viki',
 ];
 
 export default function FilterBar({ filters, onChange }: Props) {
