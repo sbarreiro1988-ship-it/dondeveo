@@ -11,7 +11,7 @@ const NAV_LINKS = [
   { label: 'Lo nuevo',  href: '/novedades/netflix',   hash: null },
   { label: 'Películas', href: '/?tipo=peliculas',      hash: null, tipo: 'peliculas' },
   { label: 'Series',    href: '/?tipo=series',         hash: null, tipo: 'series' },
-  { label: 'Noticias',  href: null,                   hash: 'noticias' },
+  { label: 'Noticias',  href: '/noticias',             hash: null },
 ] as const;
 
 const linkClass = (active: boolean) =>
