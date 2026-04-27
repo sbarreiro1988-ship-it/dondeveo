@@ -5,7 +5,7 @@ import {
   fetchTrendingMovies, fetchTrendingSeries, fetchUniversalPlusContent,
 } from '@/lib/tmdb';
 import { fetchCinemaUY } from '@/lib/cinemaUY';
-import { fetchStreamingNews } from '@/lib/newsApi';
+import { fetchStreamingNews, fetchInternalNews } from '@/lib/newsApi';
 import HomeClient from '@/components/HomeClient';
 
 export const revalidate = 1800;
@@ -61,7 +61,8 @@ export default async function HomePage() {
     fetchTopByGenre(GENRE_IDS.scifi,   'movie', 10),
     fetchTopByGenre(GENRE_IDS.accion,  'tv',    10),
     fetchTopByGenre(GENRE_IDS.drama,   'tv',    10),
-    fetchStreamingNews(),
+    // Noticias: preferir internas (Gemini) → fallback RSS externo
+    fetchInternalNews().then((n) => n.length > 0 ? n : fetchStreamingNews()),
   ]);
 
   return (

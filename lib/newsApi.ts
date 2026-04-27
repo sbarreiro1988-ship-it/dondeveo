@@ -7,7 +7,8 @@ export interface NewsItem {
   id:         string;
   title:      string;
   excerpt:    string;
-  link:       string;
+  link:       string;       // si hay slug → '/noticias/slug', si no → URL externa
+  slug?:      string;       // presente cuando el artículo fue reescrito por Gemini
   pubDate:    string;
   thumbnail:  string | null;
   source:     string;
@@ -182,6 +183,42 @@ const FALLBACK_NEWS: NewsItem[] = [
     category: 'Cine',
   },
 ];
+
+// ─── Noticias internas (generadas por Gemini + script Python) ─────────────────
+// Lee el index.json guardado por el script en el servidor cPanel.
+// NEWS_DATA_URL debe apuntar a la carpeta pública, ej:
+//   https://midominio.com/dondeveo-news
+export async function fetchInternalNews(): Promise<NewsItem[]> {
+  const baseUrl = process.env.NEWS_DATA_URL;
+  if (!baseUrl) return [];
+
+  try {
+    const res = await fetch(`${baseUrl}/index.json`, {
+      next: { revalidate: 1800 },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json() as { articles: Array<{
+      uid: string; slug: string; title: string; intro: string;
+      category: string; thumbnail?: string | null; source: string; publishedAt: string;
+    }> };
+
+    return (data.articles ?? []).map((a) => ({
+      id:         a.uid,
+      title:      a.title,
+      excerpt:    a.intro,
+      link:       `/noticias/${a.slug}`,   // URL interna ← clave para AdSense
+      slug:       a.slug,
+      pubDate:    a.publishedAt,
+      thumbnail:  a.thumbnail ?? null,
+      source:     a.source,
+      sourceLang: 'es' as const,
+      category:   a.category ?? 'Streaming',
+    }));
+  } catch {
+    return [];
+  }
+}
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 export async function fetchStreamingNews(): Promise<NewsItem[]> {

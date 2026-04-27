@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { ExternalLink, Clock, Newspaper } from 'lucide-react';
 import type { NewsItem } from '@/lib/newsApi';
 
@@ -30,15 +31,14 @@ function SourceBadge({ source }: { source: string }) {
 
 function NewsCard({ item }: { item: NewsItem }) {
   const hasThumbnail = item.thumbnail && item.thumbnail.startsWith('http');
+  const isInternal   = !!item.slug;
+  const Wrapper      = ({ children, className }: { children: React.ReactNode; className: string }) =>
+    isInternal
+      ? <Link href={item.link} className={className}>{children}</Link>
+      : <a href={item.link} target="_blank" rel="noopener noreferrer" className={className}>{children}</a>;
 
   return (
-    <a
-      href={item.link}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group flex flex-col rounded-xl overflow-hidden bg-dv-card border border-white/5 hover:border-white/15 transition-all hover:shadow-xl hover:shadow-black/50 hover:-translate-y-0.5"
-      onClick={(e) => e.stopPropagation()}
-    >
+    <Wrapper className="group flex flex-col rounded-xl overflow-hidden bg-dv-card border border-white/5 hover:border-white/15 transition-all hover:shadow-xl hover:shadow-black/50 hover:-translate-y-0.5">
       {/* Thumbnail */}
       {hasThumbnail ? (
         <div className="relative h-40 overflow-hidden bg-black flex-shrink-0">
@@ -88,23 +88,25 @@ function NewsCard({ item }: { item: NewsItem }) {
               </span>
             )}
           </div>
-          <ExternalLink size={12} className="text-dv-muted group-hover:text-dv-accent transition-colors flex-shrink-0" />
+          {isInternal
+            ? <span className="text-[10px] text-dv-accent font-bold">Leer más →</span>
+            : <ExternalLink size={12} className="text-dv-muted group-hover:text-dv-accent transition-colors flex-shrink-0" />}
         </div>
       </div>
-    </a>
+    </Wrapper>
   );
 }
 
 function FeaturedCard({ item }: { item: NewsItem }) {
   const hasThumbnail = item.thumbnail && item.thumbnail.startsWith('http');
+  const isInternal   = !!item.slug;
+  const Wrapper      = ({ children, className }: { children: React.ReactNode; className: string }) =>
+    isInternal
+      ? <Link href={item.link} className={className}>{children}</Link>
+      : <a href={item.link} target="_blank" rel="noopener noreferrer" className={className}>{children}</a>;
 
   return (
-    <a
-      href={item.link}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group relative rounded-xl overflow-hidden bg-dv-card border border-white/5 hover:border-white/20 transition-all col-span-2 hover:shadow-2xl hover:shadow-black/60"
-    >
+    <Wrapper className="group relative rounded-xl overflow-hidden bg-dv-card border border-white/5 hover:border-white/20 transition-all col-span-2 hover:shadow-2xl hover:shadow-black/60">
       {hasThumbnail ? (
         <div className="relative h-56 md:h-64">
           <Image
@@ -152,7 +154,7 @@ function FeaturedCard({ item }: { item: NewsItem }) {
           <p className="text-dv-muted text-sm line-clamp-3">{item.excerpt}</p>
         </div>
       )}
-    </a>
+    </Wrapper>
   );
 }
 
@@ -170,7 +172,7 @@ export default function NoticiasSection({ news }: Props) {
           <Newspaper size={18} className="text-dv-accent" />
           <h2 className="text-white text-lg font-bold">Noticias de streaming y cine</h2>
         </div>
-        <span className="text-dv-muted text-xs">Actualizado cada 30 min</span>
+        <span className="text-dv-muted text-xs">Actualizado cada hora</span>
       </div>
 
       {/* Main grid: 1 featured (2 cols) + small cards */}
