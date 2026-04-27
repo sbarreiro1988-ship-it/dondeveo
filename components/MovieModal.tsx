@@ -144,18 +144,19 @@ export default function MovieModal({ movie, onClose }: Props) {
   const hasRent   = rentProviders.length > 0;
   const hasBuy    = buyProviders.length > 0;
 
-  // If TMDB has no stream data but we already know the platform from the carousel fetch → use it
-  const fallbackPlatforms = !hasStream && !providersLoading && movie.platforms.length > 0
-    ? movie.platforms
-    : [];
+  // Our curated platform data (from carousel fetch + manual overrides).
+  // Always preferred over TMDB regional data, which is often wrong for UY/AR.
+  const curatedPlatforms = movie.platforms;
+  const useCurated = curatedPlatforms.length > 0;
 
-  const effectiveHasStream = hasStream || fallbackPlatforms.length > 0;
+  // Only use TMDB stream data when we have no curated info
+  const effectiveHasStream = useCurated || hasStream;
 
   // A movie is "in cinemas" if: no stream/rent/buy yet, it's a movie (not series), and released recently
   const inCinemas = !providersLoading && !effectiveHasStream && !hasRent && !hasBuy
     && movie.type === 'movie' && isRecentRelease;
 
-  const streamCount = streamProviders.length || fallbackPlatforms.length;
+  const streamCount = useCurated ? curatedPlatforms.length : streamProviders.length;
   const tabs = [
     { id: 'stream' as const, label: 'Stream',   count: streamCount,         show: true },
     { id: 'rent'   as const, label: 'Alquilar', count: rentProviders.length, show: hasRent },
@@ -328,21 +329,16 @@ export default function MovieModal({ movie, onClose }: Props) {
 
                 {/* Stream providers */}
                 {activeTab === 'stream' && (
-                  hasStream ? (
+                  useCurated ? (
+                    /* Plataformas curadas (de carruseles + overrides manuales) — siempre prioritarias */
+                    <div className="flex flex-wrap gap-4">
+                      {curatedPlatforms.map((pl) => (
+                        <FallbackPlatformLogo key={pl.id} platform={pl} />
+                      ))}
+                    </div>
+                  ) : hasStream ? (
                     <div className="flex flex-wrap gap-4">
                       {streamProviders.map((p) => <ProviderLogo key={p.provider_id} p={p} />)}
-                    </div>
-                  ) : fallbackPlatforms.length > 0 ? (
-                    /* TMDB no tiene datos UY/AR pero sabemos la plataforma por el carrusel */
-                    <div>
-                      <div className="flex flex-wrap gap-4 mb-2">
-                        {fallbackPlatforms.map((pl) => (
-                          <FallbackPlatformLogo key={pl.id} platform={pl} />
-                        ))}
-                      </div>
-                      <p className="text-gray-600 text-[10px]">
-                        Disponible en estas plataformas · Los datos de región pueden variar
-                      </p>
                     </div>
                   ) : inCinemas ? (
                     /* ── SOLO EN CINES ── */
@@ -401,7 +397,9 @@ export default function MovieModal({ movie, onClose }: Props) {
 
                 {/* Note */}
                 <p className="text-gray-700 text-[10px] mt-3">
-                  Datos de TMDB · Región: Uruguay / Argentina · Puede variar según tu plan
+                  {useCurated
+                    ? 'Datos de disponibilidad para Uruguay · Puede variar según tu plan'
+                    : 'Datos de TMDB · Región: Uruguay / Argentina · Puede variar según tu plan'}
                 </p>
               </div>
             )}
