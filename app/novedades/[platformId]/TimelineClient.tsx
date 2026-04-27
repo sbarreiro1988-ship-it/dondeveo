@@ -24,6 +24,7 @@ const PLATFORM_NAV = [
   { id: 'curiositystream', label: 'Curiosity Stream' },
   { id: 'plex',            label: 'Plex' },
   { id: 'googleplay',      label: 'Google Play' },
+  { id: 'universalplus',   label: 'Universal+' },
   { id: 'viki',            label: 'Rakuten Viki' },
 ];
 
