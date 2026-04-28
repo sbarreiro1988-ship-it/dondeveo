@@ -17,6 +17,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es-UY">
+      <head>
+        {/* Google AdSense — se activa cuando Google apruebe el sitio */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4971004283595233"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body>
         <Suspense fallback={null}>
           <Navbar />

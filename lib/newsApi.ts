@@ -114,75 +114,21 @@ async function parseFeed(feed: typeof FEEDS[number]): Promise<NewsItem[]> {
   } catch { return []; }
 }
 
-// ─── Static fallback (always shown if all feeds fail) ────────────────────────
-const FALLBACK_NEWS: NewsItem[] = [
-  {
-    id: 'static-1',
-    title: 'Netflix suma más de 300 títulos nuevos este mes de abril 2026',
-    excerpt: 'La plataforma continúa expandiendo su catálogo con películas originales, documentales y nuevas temporadas de series populares.',
-    link: 'https://www.netflix.com/browse/new-additions',
-    pubDate: new Date().toISOString(),
-    thumbnail: null,
-    source: 'DondeVeo',
-    sourceLang: 'es',
-    category: 'Streaming',
-  },
-  {
-    id: 'static-2',
-    title: 'Disney+ incorpora contenido de Hulu y amplía su catálogo en Latinoamérica',
-    excerpt: 'La fusión de contenidos permite a los suscriptores acceder a miles de títulos adicionales incluyendo series exclusivas de Hulu.',
-    link: 'https://www.disneyplus.com',
-    pubDate: new Date(Date.now() - 86400000).toISOString(),
-    thumbnail: null,
-    source: 'DondeVeo',
-    sourceLang: 'es',
-    category: 'Streaming',
-  },
-  {
-    id: 'static-3',
-    title: 'Max (HBO) estrena nuevas temporadas de sus series más premiadas',
-    excerpt: 'The Last of Us, House of the Dragon y otras producciones premium regresan con nuevos episodios exclusivos en la plataforma.',
-    link: 'https://www.max.com',
-    pubDate: new Date(Date.now() - 2 * 86400000).toISOString(),
-    thumbnail: null,
-    source: 'DondeVeo',
-    sourceLang: 'es',
-    category: 'Streaming',
-  },
-  {
-    id: 'static-4',
-    title: 'Prime Video presenta su lineup de estrenos para el mes de mayo 2026',
-    excerpt: 'Amazon anuncia nuevas películas originales y temporadas de The Boys, Reacher y otras series exclusivas para el próximo mes.',
-    link: 'https://www.primevideo.com',
-    pubDate: new Date(Date.now() - 3 * 86400000).toISOString(),
-    thumbnail: null,
-    source: 'DondeVeo',
-    sourceLang: 'es',
-    category: 'Streaming',
-  },
-  {
-    id: 'static-5',
-    title: 'Paramount+ refuerza su apuesta por el cine de estreno en streaming',
-    excerpt: 'La plataforma seguirá ofreciendo acceso a películas de Paramount Pictures poco después de su lanzamiento en cines.',
-    link: 'https://www.paramountplus.com',
-    pubDate: new Date(Date.now() - 4 * 86400000).toISOString(),
-    thumbnail: null,
-    source: 'DondeVeo',
-    sourceLang: 'es',
-    category: 'Cine',
-  },
-  {
-    id: 'static-6',
-    title: 'Cines en Uruguay: récord de espectadores en el primer trimestre de 2026',
-    excerpt: 'Las salas uruguayas reportan los mejores números desde la pandemia, impulsados por grandes estrenos de Hollywood y cine nacional.',
-    link: 'https://cartelera.montevideo.com.uy',
-    pubDate: new Date(Date.now() - 5 * 86400000).toISOString(),
-    thumbnail: null,
-    source: 'DondeVeo',
-    sourceLang: 'es',
-    category: 'Cine',
-  },
-];
+// ─── Static DondeVeo articles (always internal pages, always shown first) ─────
+import { STATIC_ARTICLES } from './staticArticles';
+
+const FALLBACK_NEWS: NewsItem[] = STATIC_ARTICLES.map((a) => ({
+  id:         a.uid,
+  title:      a.title,
+  excerpt:    a.intro,
+  link:       `/noticias/${a.slug}`,  // ← siempre página interna
+  slug:       a.slug,
+  pubDate:    a.publishedAt,
+  thumbnail:  null,
+  source:     'DondeVeo',
+  sourceLang: 'es' as const,
+  category:   a.category,
+}));
 
 // ─── Noticias internas (generadas por Gemini + script Python) ─────────────────
 // Lee el index.json guardado por el script en el servidor cPanel.
@@ -248,7 +194,8 @@ export async function fetchStreamingNews(): Promise<NewsItem[]> {
     if (!seen.has(key)) { seen.add(key); deduped.push(item); }
   }
 
-  // Always append a few fallback items so section is never empty
-  const extra = FALLBACK_NEWS.filter(f => !deduped.find(d => d.id === f.id));
-  return [...deduped, ...extra.slice(0, 2)].slice(0, 24);
+  // DondeVeo siempre primero, luego el resto de fuentes
+  const dondeveo  = FALLBACK_NEWS.filter(f => !deduped.find(d => d.id === f.id));
+  const combined  = [...dondeveo.slice(0, 3), ...deduped];
+  return combined.filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i).slice(0, 24);
 }

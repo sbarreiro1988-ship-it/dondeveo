@@ -57,8 +57,14 @@ function NewsCard({ item }: { item: NewsItem }) {
           </span>
         </div>
       ) : (
-        <div className="h-28 flex-shrink-0 bg-gradient-to-br from-dv-card to-black flex items-center justify-center">
-          <Newspaper size={32} className="text-white/10" />
+        <div className="h-28 flex-shrink-0 bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] flex flex-col items-center justify-center gap-1 relative">
+          <div className="flex items-center gap-1">
+            <span className="text-dv-accent text-lg font-black">▶</span>
+            <span className="text-lg font-black text-white tracking-tight leading-none">
+              Donde<span className="text-dv-accent">Veo</span>
+            </span>
+          </div>
+          <span className="text-white/30 text-[9px]">🇺🇾 Uruguay</span>
           <span className="absolute text-[9px] font-black uppercase tracking-wider bg-dv-accent/90 text-[#111] px-2 py-0.5 rounded top-2 left-2">
             {item.category}
           </span>
@@ -144,14 +150,25 @@ function FeaturedCard({ item }: { item: NewsItem }) {
           </div>
         </div>
       ) : (
-        <div className="p-5">
-          <span className="text-[9px] font-black uppercase tracking-wider bg-dv-accent text-[#111] px-2 py-0.5 rounded mb-3 inline-block">
-            {item.category}
-          </span>
-          <h3 className="text-white text-xl font-black leading-tight mb-2 group-hover:text-dv-accent transition-colors">
-            {item.title}
-          </h3>
-          <p className="text-dv-muted text-sm line-clamp-3">{item.excerpt}</p>
+        <div>
+          <div className="relative bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] h-44 flex flex-col items-center justify-center gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-dv-accent text-3xl font-black">▶</span>
+              <span className="text-3xl font-black text-white tracking-tight">
+                Donde<span className="text-dv-accent">Veo</span>
+              </span>
+              <span className="text-xl">🇺🇾</span>
+            </div>
+            <span className="absolute top-3 left-3 text-[9px] font-black uppercase tracking-wider bg-dv-accent text-[#111] px-2 py-1 rounded">
+              {item.category}
+            </span>
+          </div>
+          <div className="p-4">
+            <h3 className="text-white text-lg font-black leading-tight mb-2 group-hover:text-dv-accent transition-colors">
+              {item.title}
+            </h3>
+            <p className="text-dv-muted text-sm line-clamp-3">{item.excerpt}</p>
+          </div>
         </div>
       )}
     </Wrapper>
