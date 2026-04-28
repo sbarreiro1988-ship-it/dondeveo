@@ -33,7 +33,6 @@ const FEEDS = [
 
 // ─── XML helpers ──────────────────────────────────────────────────────────────
 function extractTag(xml: string, tag: string): string {
-  // Handles CDATA and plain text
   const re = new RegExp(`<${tag}[^>]*>(?:<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>|([^<]*))<\\/${tag}>`, 'i');
   const m  = re.exec(xml);
   return (m?.[1] ?? m?.[2] ?? '').trim();
@@ -52,20 +51,73 @@ function stripHtml(s: string): string {
     .replace(/\s+/g, ' ').trim();
 }
 
+function isGoodImage(url: string): boolean {
+  if (!url.startsWith('http')) return false;
+  if (url.includes('.svg')) return false;
+  // Excluir iconos pequeños, avatares, logos genéricos
+  if (/\/(icon|logo|avatar|badge|button|sprite|pixel|1x1|blank)\./i.test(url)) return false;
+  if (/[?&](w|width)=[1-9][0-9]{0,1}(&|$)/i.test(url)) return false; // ancho < 100px
+  return true;
+}
+
 function findImage(itemXml: string): string | null {
-  // media:content, enclosure, or first img in description/content
-  const media = extractAttr(itemXml, 'media:content', 'url');
-  if (media && media.match(/\.(jpg|jpeg|png|webp)/i)) return media;
+  // 1. media:thumbnail (SensaCine, algunos feeds)
+  const thumb1 = extractAttr(itemXml, 'media:thumbnail', 'url');
+  if (thumb1 && isGoodImage(thumb1)) return thumb1;
 
-  const enc = extractAttr(itemXml, 'enclosure', 'url');
-  if (enc && enc.match(/\.(jpg|jpeg|png|webp)/i)) return enc;
+  // 2. media:content con url de imagen (20minutos, etc.)
+  const mediaRe = /<media:content[^>]+url="([^"]+)"[^>]*>/gi;
+  let mm: RegExpExecArray | null;
+  while ((mm = mediaRe.exec(itemXml)) !== null) {
+    const u = mm[1];
+    if (isGoodImage(u)) return u;
+  }
 
-  const imgRe = /<img[^>]+src="([^"]+)"/i;
-  const content = extractTag(itemXml, 'content:encoded') || extractTag(itemXml, 'description');
-  const imgM = imgRe.exec(content);
-  if (imgM?.[1]?.startsWith('http')) return imgM[1];
+  // 3. enclosure con tipo imagen o URL de imagen (Clarín, etc.)
+  const encRe = /<enclosure[^>]+url="([^"]+)"[^>]*>/gi;
+  let em: RegExpExecArray | null;
+  while ((em = encRe.exec(itemXml)) !== null) {
+    const u = em[1];
+    const isImg = /type="image/i.test(em[0]) || /\.(jpg|jpeg|png|webp|gif)/i.test(u);
+    if (isImg && isGoodImage(u)) return u;
+  }
+
+  // 4. Buscar en content:encoded y description — tomar la primera imagen "grande"
+  const content = extractTag(itemXml, 'content:encoded') || extractTag(itemXml, 'description') || '';
+  const imgRe = /<img[^>]+src="([^"]+)"/gi;
+  let imgM: RegExpExecArray | null;
+  while ((imgM = imgRe.exec(content)) !== null) {
+    const u = imgM[1];
+    if (isGoodImage(u)) return u;
+  }
+
+  // 5. Buscar en el bloque crudo (para feeds que escapan los atributos)
+  const rawImg = /https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp)(?:\?[^\s"'<>]*)?/i.exec(itemXml);
+  if (rawImg && isGoodImage(rawImg[0])) return rawImg[0];
 
   return null;
+}
+
+// Extrae og:image del HTML de un artículo (para feeds sin imagen en RSS)
+async function fetchOgImage(articleUrl: string): Promise<string | null> {
+  try {
+    const res = await fetch(articleUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+      signal: AbortSignal.timeout(4000),
+      next: { revalidate: 7200 },
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    // og:image
+    const og = /property="og:image"\s+content="([^"]+)"/i.exec(html)
+            || /content="([^"]+)"\s+property="og:image"/i.exec(html);
+    if (og?.[1] && isGoodImage(og[1])) return og[1];
+    // twitter:image
+    const tw = /name="twitter:image"\s+content="([^"]+)"/i.exec(html)
+            || /content="([^"]+)"\s+name="twitter:image"/i.exec(html);
+    if (tw?.[1] && isGoodImage(tw[1])) return tw[1];
+    return null;
+  } catch { return null; }
 }
 
 async function parseFeed(feed: typeof FEEDS[number]): Promise<NewsItem[]> {
@@ -83,10 +135,10 @@ async function parseFeed(feed: typeof FEEDS[number]): Promise<NewsItem[]> {
 
     // Extract <item> blocks
     const itemRe = /<item>([\s\S]*?)<\/item>/gi;
-    const items: NewsItem[] = [];
+    const rawItems: Array<{ title: string; link: string; excerpt: string; pubDate: string; thumb: string | null }> = [];
     let m: RegExpExecArray | null;
 
-    while ((m = itemRe.exec(xml)) !== null && items.length < 8) {
+    while ((m = itemRe.exec(xml)) !== null && rawItems.length < 6) {
       const block = m[1];
       const title   = stripHtml(extractTag(block, 'title'));
       const link    = extractTag(block, 'link') || extractAttr(block, 'guid', 'isPermaLink') || '';
@@ -94,23 +146,32 @@ async function parseFeed(feed: typeof FEEDS[number]): Promise<NewsItem[]> {
       const excerpt = stripHtml(rawDesc).slice(0, 240);
       const pubDate = extractTag(block, 'pubDate');
       const thumb   = findImage(block);
-
-      if (!title || title.length < 4) continue;
-      if (!link.startsWith('http')) continue;
-
-      items.push({
-        id:         `${feed.source}-${link}`,
-        title,
-        excerpt:    excerpt || title,
-        link,
-        pubDate,
-        thumbnail:  thumb,
-        source:     feed.source,
-        sourceLang: feed.lang,
-        category:   feed.category,
-      });
+      if (!title || title.length < 4 || !link.startsWith('http')) continue;
+      rawItems.push({ title, link, excerpt, pubDate, thumb });
     }
-    return items;
+
+    // Para artículos sin imagen, intentar extraer og:image en paralelo
+    const itemsWithImages = await Promise.all(
+      rawItems.map(async (item) => {
+        let thumbnail = item.thumb;
+        if (!thumbnail) {
+          thumbnail = await fetchOgImage(item.link);
+        }
+        return {
+          id:         `${feed.source}-${item.link}`,
+          title:      item.title,
+          excerpt:    item.excerpt || item.title,
+          link:       item.link,
+          pubDate:    item.pubDate,
+          thumbnail,
+          source:     feed.source,
+          sourceLang: feed.lang,
+          category:   feed.category,
+        } satisfies NewsItem;
+      })
+    );
+
+    return itemsWithImages;
   } catch { return []; }
 }
 

@@ -36,8 +36,8 @@ export default async function NovedadesPage({ params }: Props) {
   if (!providerId) notFound();
 
   const [movies, series] = await Promise.all([
-    fetchNewOnPlatform(providerId, 'movie', 60),
-    fetchNewOnPlatform(providerId, 'tv',    60),
+    fetchNewOnPlatform(providerId, 'movie'),
+    fetchNewOnPlatform(providerId, 'tv'),
   ]);
 
   return (

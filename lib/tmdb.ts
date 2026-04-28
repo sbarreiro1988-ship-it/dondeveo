@@ -469,32 +469,31 @@ export async function fetchTopByGenre(
 }
 
 // ─── New on platform (timeline page) ─────────────────────────────────────────
+// Nota: TMDB actualiza disponibilidad regional con 2-4 días de demora respecto
+// a JustWatch. El contenido más reciente siempre es lo último que TMDB tiene.
 export async function fetchNewOnPlatform(
   providerId: number,
   type: 'movie' | 'tv',
-  daysBack = 60,
 ): Promise<Movie[]> {
   const genres    = await getGenres(type);
   const mediaType = type === 'tv' ? 'series' : 'movie';
   const platform  = PROVIDER[providerId] ?? null;
-
-  const today    = new Date();
-  const fromDate = new Date(today.getTime() - daysBack * 86400000).toISOString().split('T')[0];
-  const toDate   = today.toISOString().split('T')[0];
-  const dateKey  = type === 'tv' ? 'first_air_date' : 'primary_release_date';
+  const dateKey   = type === 'tv' ? 'first_air_date' : 'primary_release_date';
+  // Solo excluir contenido futuro — sin límite inferior para siempre mostrar lo más reciente
+  const toDate    = new Date().toISOString().split('T')[0];
 
   const seen    = new Set<number>();
   const results: Movie[] = [];
 
-  // Fetch up to 5 pages sorted by release date desc — sin caché para datos siempre frescos
-  for (let page = 1; page <= 5; page++) {
+  // Fetch 4 páginas ordenadas por fecha desc — sin filtro inferior = siempre lo más reciente disponible
+  for (let page = 1; page <= 4; page++) {
     try {
       const data = await getFresh<TMDBListResponse>(`/discover/${type}`, {
         with_watch_providers: String(providerId),
         watch_region:         'AR',
         sort_by:              `${dateKey}.desc`,
-        [`${dateKey}.gte`]:   fromDate,
-        [`${dateKey}.lte`]:   toDate,
+        [`${dateKey}.lte`]:   toDate,          // solo hasta hoy, sin límite inferior
+        'vote_count.gte':     '3',             // evitar contenido sin votos
         page:                 String(page),
       });
       for (const item of data.results) {
