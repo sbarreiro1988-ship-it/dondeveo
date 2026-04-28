@@ -61,8 +61,8 @@ export default async function HomePage() {
     fetchTopByGenre(GENRE_IDS.scifi,   'movie', 10),
     fetchTopByGenre(GENRE_IDS.accion,  'tv',    10),
     fetchTopByGenre(GENRE_IDS.drama,   'tv',    10),
-    // Noticias: preferir internas (Gemini) → fallback RSS externo
-    fetchInternalNews().then((n) => n.length > 0 ? n : fetchStreamingNews()),
+    // Noticias: internas Gemini primero → RSS externo (solo noticias reales, sin inventadas)
+    fetchInternalNews().then((gemini) => gemini.length > 0 ? gemini : fetchStreamingNews()),
   ]);
 
   return (

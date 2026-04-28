@@ -176,9 +176,13 @@ function FeaturedCard({ item }: { item: NewsItem }) {
 }
 
 export default function NoticiasSection({ news }: Props) {
-  if (!news || news.length === 0) return null;
+  // Solo mostrar si hay noticias reales (con imagen o de fuente externa)
+  const realNews = (news || []).filter(
+    (n) => n.source !== 'DondeVeo' || n.thumbnail
+  );
+  if (realNews.length === 0) return null;
 
-  const [featured, ...rest] = news;
+  const [featured, ...rest] = realNews;
   const secondary = rest.slice(0, 5);
 
   return (
@@ -194,10 +198,7 @@ export default function NoticiasSection({ news }: Props) {
 
       {/* Main grid: 1 featured (2 cols) + small cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-        {/* Featured — spans 2 columns */}
         {featured && <FeaturedCard item={featured} />}
-
-        {/* First small card alongside featured */}
         {secondary[0] && <NewsCard item={secondary[0]} />}
       </div>
 
@@ -206,6 +207,13 @@ export default function NoticiasSection({ news }: Props) {
         {secondary.slice(1).map((item) => (
           <NewsCard key={item.id} item={item} />
         ))}
+      </div>
+
+      {/* Ver todas */}
+      <div className="mt-4 text-center">
+        <Link href="/noticias" className="inline-flex items-center gap-2 text-dv-accent text-sm font-bold hover:underline">
+          Ver todas las noticias →
+        </Link>
       </div>
     </section>
   );

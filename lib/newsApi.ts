@@ -175,21 +175,10 @@ async function parseFeed(feed: typeof FEEDS[number]): Promise<NewsItem[]> {
   } catch { return []; }
 }
 
-// ─── Static DondeVeo articles (always internal pages, always shown first) ─────
-import { STATIC_ARTICLES } from './staticArticles';
-
-const FALLBACK_NEWS: NewsItem[] = STATIC_ARTICLES.map((a) => ({
-  id:         a.uid,
-  title:      a.title,
-  excerpt:    a.intro,
-  link:       `/noticias/${a.slug}`,  // ← siempre página interna
-  slug:       a.slug,
-  pubDate:    a.publishedAt,
-  thumbnail:  null,
-  source:     'DondeVeo',
-  sourceLang: 'es' as const,
-  category:   a.category,
-}));
+// Nota: los artículos estáticos de DondeVeo (lib/staticArticles.ts) solo se usan
+// en /noticias/[slug] como fallback. NO aparecen en el feed de noticias de la home
+// porque son genéricos y sin imagen — eso se ve poco profesional.
+// En la home solo aparecen noticias reales (RSS) o artículos Gemini (NEWS_DATA_URL).
 
 // ─── Noticias internas (generadas por Gemini + script Python) ─────────────────
 // Lee el index.json guardado por el script en el servidor cPanel.
@@ -236,27 +225,22 @@ export async function fetchStreamingNews(): Promise<NewsItem[]> {
     if (r.status === 'fulfilled') all.push(...r.value);
   }
 
-  if (all.length === 0) {
-    console.warn('[newsApi] all RSS feeds failed — using fallback');
-    return FALLBACK_NEWS;
-  }
+  // Sin RSS: devolver array vacío (la home usará fetchInternalNews como fallback)
+  if (all.length === 0) return [];
 
-  // Sort by date desc, dedup by title
+  // Ordenar por fecha desc, deduplicar por título
   all.sort((a, b) => {
     const da = a.pubDate ? new Date(a.pubDate).getTime() : 0;
     const db = b.pubDate ? new Date(b.pubDate).getTime() : 0;
     return db - da;
   });
 
-  const seen = new Set<string>();
+  const seen    = new Set<string>();
   const deduped: NewsItem[] = [];
   for (const item of all) {
     const key = item.title.toLowerCase().slice(0, 50);
     if (!seen.has(key)) { seen.add(key); deduped.push(item); }
   }
 
-  // DondeVeo siempre primero, luego el resto de fuentes
-  const dondeveo  = FALLBACK_NEWS.filter(f => !deduped.find(d => d.id === f.id));
-  const combined  = [...dondeveo.slice(0, 3), ...deduped];
-  return combined.filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i).slice(0, 24);
+  return deduped.slice(0, 24);
 }
