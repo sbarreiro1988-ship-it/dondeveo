@@ -8,7 +8,7 @@ import { fetchCinemaUY } from '@/lib/cinemaUY';
 import { fetchStreamingNews, fetchInternalNews } from '@/lib/newsApi';
 import HomeClient from '@/components/HomeClient';
 
-export const revalidate = 1800;
+export const revalidate = 3600; // 1 hora — sincronizado con el cron de revalidación
 
 export default async function HomePage() {
   const [

@@ -1,18 +1,15 @@
 import { notFound } from 'next/navigation';
 import { PLATFORMS } from '@/lib/mockData';
-import { fetchNewOnPlatform, PLATFORM_PROVIDER_ID, fetchUniversalPlusContent } from '@/lib/tmdb';
+import { fetchNewOnPlatform, fetchUniversalPlusContent, PLATFORM_PROVIDER_ID } from '@/lib/tmdb';
 import TimelineClient from './TimelineClient';
 
-export const revalidate = 1800;
+// force-dynamic: la página se renderiza en el servidor en cada visita.
+// Esto garantiza que la fecha de hoy y los datos de TMDB sean siempre frescos.
+// Sin esto, el ISR puede quedar congelado con la fecha del último deploy.
+export const dynamic = 'force-dynamic';
 
 interface Props {
   params: { platformId: string };
-}
-
-export async function generateStaticParams() {
-  const fromProvider = Object.keys(PLATFORM_PROVIDER_ID).map((id) => ({ platformId: id }));
-  // Universal+ no tiene provider ID en TMDB — se genera con overrides manuales
-  return [...fromProvider, { platformId: 'universalplus' }];
 }
 
 export default async function NovedadesPage({ params }: Props) {
