@@ -21,10 +21,11 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('es-UY', { day: 'numeric', month: 'short' });
 }
 
-function SourceBadge({ source }: { source: string }) {
+function SourceBadge({ source, isInternal }: { source: string; isInternal: boolean }) {
+  const label = isInternal ? 'DondeVeo' : source.split(/[-–|:]/)[0].trim().slice(0, 18);
   return (
     <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/8 text-dv-muted">
-      {source}
+      {label}
     </span>
   );
 }
@@ -86,7 +87,7 @@ function NewsCard({ item }: { item: NewsItem }) {
         {/* Footer */}
         <div className="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
           <div className="flex items-center gap-2">
-            <SourceBadge source={item.source} />
+            <SourceBadge source={item.source} isInternal={!!item.slug} />
             {item.pubDate && (
               <span className="flex items-center gap-1 text-[10px] text-dv-muted">
                 <Clock size={9} />
@@ -133,7 +134,7 @@ function FeaturedCard({ item }: { item: NewsItem }) {
           {/* Content at bottom */}
           <div className="absolute bottom-0 inset-x-0 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <SourceBadge source={item.source} />
+              <SourceBadge source={item.source} isInternal={!!item.slug} />
               {item.pubDate && (
                 <span className="flex items-center gap-1 text-[10px] text-white/50">
                   <Clock size={9} />

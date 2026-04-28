@@ -439,14 +439,14 @@ export async function fetchTopByGenre(
 
   try {
     const [arData, mxData] = await Promise.all([
-      get<TMDBListResponse>(`/discover/${type}`, {
+      getFresh<TMDBListResponse>(`/discover/${type}`, {
         with_genres:      String(genreId),
         sort_by:          'popularity.desc',
         watch_region:     'AR',
         'vote_count.gte': '20',
         page:             '1',
       }).catch(() => ({ results: [] })),
-      get<TMDBListResponse>(`/discover/${type}`, {
+      getFresh<TMDBListResponse>(`/discover/${type}`, {
         with_genres:      String(genreId),
         sort_by:          'popularity.desc',
         watch_region:     'MX',
@@ -469,8 +469,12 @@ export async function fetchTopByGenre(
 }
 
 // ─── New on platform (timeline page) ─────────────────────────────────────────
-// Nota: TMDB actualiza disponibilidad regional con 2-4 días de demora respecto
-// a JustWatch. El contenido más reciente siempre es lo último que TMDB tiene.
+// Estrategia dual:
+//  1. Ordenar por fecha desc (lo más reciente que TMDB conoce para esta región)
+//  2. Ordenar por popularidad (últimos 6 meses) — captura títulos recién
+//     agregados al catálogo que pegan pico de popularidad aunque TMDB tenga
+//     su fecha de estreno original (no "fecha agregado"). Esto compensa el
+//     lag de 2-4 días de TMDB vs JustWatch.
 export async function fetchNewOnPlatform(
   providerId: number,
   type: 'movie' | 'tv',
@@ -479,22 +483,30 @@ export async function fetchNewOnPlatform(
   const mediaType = type === 'tv' ? 'series' : 'movie';
   const platform  = PROVIDER[providerId] ?? null;
   const dateKey   = type === 'tv' ? 'first_air_date' : 'primary_release_date';
-  // Solo excluir contenido futuro — sin límite inferior para siempre mostrar lo más reciente
   const toDate    = new Date().toISOString().split('T')[0];
+
+  // Ventana "reciente" = últimos 6 meses para el sort por popularidad
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  const recentFrom = sixMonthsAgo.toISOString().split('T')[0];
 
   const seen    = new Set<number>();
   const results: Movie[] = [];
 
-  // Fetch 4 páginas ordenadas por fecha desc — sin filtro inferior = siempre lo más reciente disponible
-  for (let page = 1; page <= 4; page++) {
+  const base = {
+    with_watch_providers: String(providerId),
+    watch_region:         'AR',
+  };
+
+  // ── Fase 1: más recientes según fecha de estreno (lo que TMDB ya registró) ──
+  for (let page = 1; page <= 3; page++) {
     try {
       const data = await getFresh<TMDBListResponse>(`/discover/${type}`, {
-        with_watch_providers: String(providerId),
-        watch_region:         'AR',
-        sort_by:              `${dateKey}.desc`,
-        [`${dateKey}.lte`]:   toDate,          // solo hasta hoy, sin límite inferior
-        'vote_count.gte':     '3',             // evitar contenido sin votos
-        page:                 String(page),
+        ...base,
+        sort_by:            `${dateKey}.desc`,
+        [`${dateKey}.lte`]: toDate,
+        'vote_count.gte':   '1',   // incluir títulos muy nuevos con pocos votos
+        page:               String(page),
       });
       for (const item of data.results) {
         if (item.poster_path && !seen.has(item.id)) {
@@ -505,6 +517,36 @@ export async function fetchNewOnPlatform(
       if (!data.total_pages || page >= (data.total_pages ?? 1)) break;
     } catch { break; }
   }
+
+  // ── Fase 2: más populares de los últimos 6 meses ──────────────────────────
+  // Captura títulos recién agregados al catálogo (estreno viejo, recién llegaron)
+  // que tienen pico de popularidad — complementa perfectamente la fase 1.
+  for (let page = 1; page <= 3; page++) {
+    try {
+      const data = await getFresh<TMDBListResponse>(`/discover/${type}`, {
+        ...base,
+        sort_by:            'popularity.desc',
+        [`${dateKey}.gte`]: recentFrom,
+        [`${dateKey}.lte`]: toDate,
+        'vote_count.gte':   '3',
+        page:               String(page),
+      });
+      for (const item of data.results) {
+        if (item.poster_path && !seen.has(item.id)) {
+          seen.add(item.id);
+          results.push(mapItem(item, genres, platform, mediaType));
+        }
+      }
+      if (!data.total_pages || page >= (data.total_pages ?? 1)) break;
+    } catch { break; }
+  }
+
+  // Re-ordenar el resultado combinado por fecha desc para la UI de timeline
+  results.sort((a, b) => {
+    const da = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
+    const db = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
+    return db - da;
+  });
 
   return results;
 }
