@@ -34,6 +34,24 @@ async function get<T>(endpoint: string, params: Record<string, string> = {}): Pr
   return res.json() as Promise<T>;
 }
 
+// Versión sin caché — para datos que deben ser siempre frescos (novedades, trending)
+async function getFresh<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
+  const url = new URL(`${TMDB_BASE}${endpoint}`);
+  url.searchParams.set('language', 'es-419');
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+
+  const res = await fetch(url.toString(), {
+    headers: {
+      Authorization: `Bearer ${TMDB_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    cache: 'no-store',  // ← siempre va a TMDB, sin caché de Next.js
+  });
+
+  if (!res.ok) throw new Error(`TMDB ${res.status}: ${endpoint}`);
+  return res.json() as Promise<T>;
+}
+
 interface TMDBItem {
   id: number;
   title?: string;
@@ -168,7 +186,7 @@ export async function fetchByProvider(
 export async function fetchTrending(): Promise<Movie[]> {
   const [mg, tg] = await Promise.all([getGenres('movie'), getGenres('tv')]);
   try {
-    const data = await get<TMDBListResponse>('/trending/all/day', { watch_region: WATCH_REGION });
+    const data = await getFresh<TMDBListResponse>('/trending/all/day', { watch_region: WATCH_REGION });
     return data.results
       .filter((i) => i.poster_path && i.media_type !== 'person')
       .slice(0, 20)
@@ -184,7 +202,7 @@ export async function fetchTrending(): Promise<Movie[]> {
 export async function fetchTrendingMovies(): Promise<Movie[]> {
   const genres = await getGenres('movie');
   try {
-    const data = await get<TMDBListResponse>('/trending/movie/day', { watch_region: WATCH_REGION });
+    const data = await getFresh<TMDBListResponse>('/trending/movie/day', { watch_region: WATCH_REGION });
     return data.results
       .filter((i) => i.poster_path)
       .slice(0, 10)
@@ -195,7 +213,7 @@ export async function fetchTrendingMovies(): Promise<Movie[]> {
 export async function fetchTrendingSeries(): Promise<Movie[]> {
   const genres = await getGenres('tv');
   try {
-    const data = await get<TMDBListResponse>('/trending/tv/day', { watch_region: WATCH_REGION });
+    const data = await getFresh<TMDBListResponse>('/trending/tv/day', { watch_region: WATCH_REGION });
     return data.results
       .filter((i) => i.poster_path)
       .slice(0, 10)
@@ -468,10 +486,10 @@ export async function fetchNewOnPlatform(
   const seen    = new Set<number>();
   const results: Movie[] = [];
 
-  // Fetch up to 5 pages sorted by release date desc (AR region has best data)
+  // Fetch up to 5 pages sorted by release date desc — sin caché para datos siempre frescos
   for (let page = 1; page <= 5; page++) {
     try {
-      const data = await get<TMDBListResponse>(`/discover/${type}`, {
+      const data = await getFresh<TMDBListResponse>(`/discover/${type}`, {
         with_watch_providers: String(providerId),
         watch_region:         'AR',
         sort_by:              `${dateKey}.desc`,
