@@ -8,6 +8,11 @@ export const metadata: Metadata = {
   title: 'DondeVeo 🇺🇾 — Películas y series en Uruguay',
   description: 'Encontrá dónde ver películas, series y deportes en tus plataformas de streaming en Uruguay. Netflix, Disney+, Max, Prime Video y más.',
   keywords: ['streaming', 'Uruguay', 'películas', 'series', 'Netflix', 'Disney+', 'Max', 'donde ver'],
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
   openGraph: {
     title: 'DondeVeo 🇺🇾',
     description: 'Tu guía de streaming en Uruguay',
