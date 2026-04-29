@@ -176,7 +176,7 @@ export default function TimelineClient({ platform, movies, series, platformId }:
           <span className="text-[#8a8a9a] text-sm">— Lo nuevo</span>
         </div>
         <p className="text-[#8a8a9a] text-sm">
-          {totalCount} títulos añadidos en los últimos 60 días
+          {totalCount} títulos agregados recientemente · datos en tiempo real
         </p>
       </div>
 
