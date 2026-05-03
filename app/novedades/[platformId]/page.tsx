@@ -1,9 +1,15 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { PLATFORMS } from '@/lib/mockData';
 import { fetchNewOnPlatform, fetchUniversalPlusContent, PLATFORM_PROVIDER_ID } from '@/lib/tmdb';
+import { generateNovedadesMetadata } from './metadata';
 import TimelineClient from './TimelineClient';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  return generateNovedadesMetadata(params.platformId);
+}
 
 interface Props {
   params: { platformId: string };

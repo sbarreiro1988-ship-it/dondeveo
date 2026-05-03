@@ -50,26 +50,40 @@ export async function generateStaticParams() {
   return STATIC_ARTICLES.map((a) => ({ slug: a.slug }));
 }
 
+const BASE = 'https://uru2.com';
+
 export async function generateMetadata(
   { params }: { params: { slug: string } }
 ): Promise<Metadata> {
   const article = await fetchArticle(params.slug);
-  if (!article) return { title: 'Artículo no encontrado — DondeVeo' };
+  if (!article) return { title: 'Artículo no encontrado' };
+
+  const url    = `${BASE}/noticias/${article.slug}`;
+  const image  = article.thumbnail ?? `${BASE}/favicon.svg`;
+  const desc   = article.intro.slice(0, 160);
+
   return {
-    title:       `${article.title} | DondeVeo`,
-    description: article.intro,
+    title:       article.title,
+    description: desc,
+    keywords:    [...(article.tags ?? []), 'streaming Uruguay', 'cine Uruguay', 'DondeVeo'],
+    alternates:  { canonical: url },
     openGraph: {
-      title:       article.title,
-      description: article.intro,
-      images:      article.thumbnail ? [article.thumbnail] : ['/og-default.png'],
-      type:        'article',
-      siteName:    'DondeVeo Uruguay',
+      title:           article.title,
+      description:     desc,
+      url,
+      type:            'article',
+      locale:          'es_UY',
+      siteName:        'DondeVeo Uruguay',
+      images:          [{ url: image, width: 1200, height: 630, alt: article.title }],
+      publishedTime:   article.publishedAt,
+      authors:         ['DondeVeo Uruguay'],
+      tags:            article.tags ?? [],
     },
     twitter: {
       card:        'summary_large_image',
       title:       article.title,
-      description: article.intro,
-      images:      article.thumbnail ? [article.thumbnail] : ['/og-default.png'],
+      description: desc,
+      images:      [image],
     },
   };
 }
@@ -86,6 +100,27 @@ export default async function ArticlePage({ params }: { params: { slug: string }
   const article = await fetchArticle(params.slug);
   if (!article) notFound();
 
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: article.title,
+    description: article.intro,
+    image: article.thumbnail ? [article.thumbnail] : [],
+    datePublished: article.publishedAt,
+    dateModified: article.publishedAt,
+    author: [{ '@type': 'Organization', name: 'DondeVeo Uruguay', url: BASE }],
+    publisher: {
+      '@type': 'Organization',
+      name: 'DondeVeo Uruguay',
+      url: BASE,
+      logo: { '@type': 'ImageObject', url: `${BASE}/favicon.svg` },
+    },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${BASE}/noticias/${article.slug}` },
+    keywords: (article.tags ?? []).join(', '),
+    articleSection: article.category,
+    inLanguage: 'es-UY',
+  };
+
   const paragraphs = article.body
     .split(/\n{2,}/)
     .map(p => p.trim())
@@ -93,6 +128,10 @@ export default async function ArticlePage({ params }: { params: { slug: string }
 
   return (
     <div className="min-h-screen bg-dv-bg">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
 
       {/* ── Back nav ── */}
       <div className="max-w-3xl mx-auto px-4 pt-6 pb-2">
