@@ -635,35 +635,30 @@ export async function fetchFindeRecommendations(): Promise<Movie[]> {
     }).catch((): TMDBListResponse => ({ results: [] })),
   ]);
 
-  const topMovies = (moviesData.results ?? [])
+  type Candidate = { item: TMDBItem; type: 'movie' | 'tv'; score: number };
+
+  const topMovies: Candidate[] = (moviesData.results ?? [])
     .filter((i) => i.poster_path && i.backdrop_path)
     .slice(0, 4)
     .map((i) => ({ item: i, type: 'movie' as const, score: i.popularity ?? 0 }));
 
-  const topSeries = (seriesData.results ?? [])
+  const topSeries: Candidate[] = (seriesData.results ?? [])
     .filter((i) => i.poster_path && i.backdrop_path)
     .slice(0, 4)
     .map((i) => ({ item: i, type: 'tv' as const, score: i.popularity ?? 0 }));
 
   // Mix: asegurar al menos 1 película y 1 serie en el top 3
-  let candidates: typeof topMovies = [];
+  let candidates: Candidate[];
   if (topMovies.length > 0 && topSeries.length > 0) {
-    // Top 2 películas + top 2 series → ordenar por popularidad → tomar 3
     candidates = [...topMovies.slice(0, 2), ...topSeries.slice(0, 2)]
       .sort((a, b) => b.score - a.score)
       .slice(0, 3);
-    // Garantizar mix: si los 3 son del mismo tipo, forzar al menos 1 del otro
     const movieCount  = candidates.filter((c) => c.type === 'movie').length;
     const seriesCount = candidates.filter((c) => c.type === 'tv').length;
-    if (movieCount === 0 && topMovies.length > 0) {
-      candidates[2] = topMovies[0];
-    } else if (seriesCount === 0 && topSeries.length > 0) {
-      candidates[2] = topSeries[0];
-    }
+    if (movieCount === 0 && topMovies.length > 0) candidates[2] = topMovies[0];
+    else if (seriesCount === 0 && topSeries.length > 0) candidates[2] = topSeries[0];
   } else {
-    candidates = [...topMovies, ...topSeries]
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3);
+    candidates = [...topMovies, ...topSeries].sort((a, b) => b.score - a.score).slice(0, 3);
   }
 
   // Enriquecer con plataforma real de UY
