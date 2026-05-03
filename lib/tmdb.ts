@@ -610,29 +610,28 @@ export async function fetchFindeRecommendations(): Promise<Movie[]> {
   const [movieGenres, tvGenres] = await Promise.all([getGenres('movie'), getGenres('tv')]);
 
   const today    = new Date();
-  const fromDate = new Date(today.getTime() - 20 * 86400000).toISOString().split('T')[0];
+  // Ventana amplia: últimos 60 días para tener suficientes resultados en AR/UY
+  const fromDate = new Date(today.getTime() - 60 * 86400000).toISOString().split('T')[0];
   const toDate   = today.toISOString().split('T')[0];
 
+  // Usamos AR (mejor cobertura que UY en TMDB) — mismas plataformas disponibles
   const [moviesData, seriesData] = await Promise.all([
     getFresh<TMDBListResponse>('/discover/movie', {
-      watch_region:                   'UY',
-      with_watch_monetization_types:  'flatrate|buy|rent',
-      with_release_type:              '4|5|6',
-      'primary_release_date.gte':     fromDate,
-      'primary_release_date.lte':     toDate,
-      sort_by:                        'popularity.desc',
-      'vote_count.gte':               '5',
-      page:                           '1',
-    }).catch(() => ({ results: [] } as TMDBListResponse)),
+      watch_region:               'AR',
+      'primary_release_date.gte': fromDate,
+      'primary_release_date.lte': toDate,
+      sort_by:                    'popularity.desc',
+      'vote_count.gte':           '20',
+      page:                       '1',
+    }).catch((): TMDBListResponse => ({ results: [] })),
     getFresh<TMDBListResponse>('/discover/tv', {
-      watch_region:                   'UY',
-      with_watch_monetization_types:  'flatrate|buy|rent',
-      'first_air_date.gte':           fromDate,
-      'first_air_date.lte':           toDate,
-      sort_by:                        'popularity.desc',
-      'vote_count.gte':               '3',
-      page:                           '1',
-    }).catch(() => ({ results: [] } as TMDBListResponse)),
+      watch_region:           'AR',
+      'first_air_date.gte':   fromDate,
+      'first_air_date.lte':   toDate,
+      sort_by:                'popularity.desc',
+      'vote_count.gte':       '10',
+      page:                   '1',
+    }).catch((): TMDBListResponse => ({ results: [] })),
   ]);
 
   const topMovies = (moviesData.results ?? [])
