@@ -136,6 +136,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </a>
               {' '}· watch_region=UY
             </p>
+            <div className="flex items-center justify-center gap-4 mt-4">
+              <a href="/privacidad" className="text-dv-muted text-xs hover:text-white transition-colors">
+                Política de Privacidad
+              </a>
+              <span className="text-white/10">·</span>
+              <a href="/noticias" className="text-dv-muted text-xs hover:text-white transition-colors">
+                Noticias
+              </a>
+              <span className="text-white/10">·</span>
+              <a href="/novedades/netflix" className="text-dv-muted text-xs hover:text-white transition-colors">
+                Lo nuevo
+              </a>
+            </div>
           </div>
         </footer>
       </body>
