@@ -3,6 +3,7 @@ import {
   fetchByProvider, fetchTrending, fetchTopRated,
   fetchUpcoming, fetchHeroContent, fetchTopByGenre, GENRE_IDS,
   fetchTrendingMovies, fetchTrendingSeries, fetchUniversalPlusContent,
+  fetchFindeRecommendations,
 } from '@/lib/tmdb';
 import { fetchCinemaUY } from '@/lib/cinemaUY';
 import { fetchStreamingNews, fetchInternalNews } from '@/lib/newsApi';
@@ -23,7 +24,7 @@ export default async function HomePage() {
     viki,
     top10Accion, top10Comedia, top10Drama, top10Terror, top10Scifi,
     top10AccionSeries, top10DramaSeries,
-    news,
+    news, finde,
   ] = await Promise.all([
     fetchHeroContent(),
     fetchTrending(),
@@ -61,8 +62,10 @@ export default async function HomePage() {
     fetchTopByGenre(GENRE_IDS.scifi,   'movie', 10),
     fetchTopByGenre(GENRE_IDS.accion,  'tv',    10),
     fetchTopByGenre(GENRE_IDS.drama,   'tv',    10),
-    // Noticias: internas Gemini primero → RSS externo (solo noticias reales, sin inventadas)
+    // Noticias: internas Gemini primero → RSS externo
     fetchInternalNews().then((gemini) => gemini.length > 0 ? gemini : fetchStreamingNews()),
+    // Top 3 Finde — contenido trending en streaming UY últimos 20 días
+    fetchFindeRecommendations().catch(() => []),
   ]);
 
   return (
@@ -85,7 +88,7 @@ export default async function HomePage() {
         top10Accion={top10Accion} top10Comedia={top10Comedia}
         top10Drama={top10Drama} top10Terror={top10Terror} top10Scifi={top10Scifi}
         top10AccionSeries={top10AccionSeries} top10DramaSeries={top10DramaSeries}
-        news={news}
+        news={news} finde={finde}
       />
     </Suspense>
   );

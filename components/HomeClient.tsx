@@ -7,6 +7,7 @@ import ContentCarousel from './ContentCarousel';
 import FeaturedSpotlight from './FeaturedSpotlight';
 import NewSeriesCards from './NewSeriesCards';
 import NoticiasSection from './NoticiasSection';
+import FindeSection from './FindeSection';
 import FilterBar from './FilterBar';
 import MovieCard from './MovieCard';
 import MovieModal from './MovieModal';
@@ -46,6 +47,7 @@ interface Props {
   top10Terror: Movie[]; top10Scifi: Movie[];
   top10AccionSeries: Movie[]; top10DramaSeries: Movie[];
   news: NewsItem[];
+  finde: Movie[];
 }
 
 const DEFAULT_FILTERS: FilterState = { platformIds: [], genres: [], contentType: 'all', query: '' };
@@ -61,7 +63,7 @@ export default function HomeClient({
   universalplus, viki,
   top10Accion, top10Comedia, top10Drama, top10Terror, top10Scifi,
   top10AccionSeries, top10DramaSeries,
-  news,
+  news, finde,
 }: Props) {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
@@ -262,6 +264,11 @@ export default function HomeClient({
               onClear={() => setFilters(DEFAULT_FILTERS)} onMovieClick={handleMovieClick} />
           ) : (
             <>
+              {/* 🍿 Top 3 Finde */}
+              {finde.length > 0 && (
+                <FindeSection movies={finde} onMovieClick={handleMovieClick} />
+              )}
+
               {/* ── Ahora en cines ── */}
               {nowPlaying.length > 0 && (
                 <ContentCarousel title="🍿 Ahora en cines" movies={nowPlaying} cinemaOnly

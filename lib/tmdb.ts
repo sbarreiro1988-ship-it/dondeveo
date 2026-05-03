@@ -580,6 +580,104 @@ export async function fetchUniversalPlusContent(): Promise<Movie[]> {
     .filter((m): m is Movie => m !== null);
 }
 
+// ─── Top 3 Finde — contenido trending en streaming UY (últimos 20 días) ───────
+interface WatchProviderResult {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string;
+}
+interface WatchProvidersResponse {
+  results?: Record<string, {
+    flatrate?: WatchProviderResult[];
+    buy?: WatchProviderResult[];
+    rent?: WatchProviderResult[];
+  }>;
+}
+
+async function getUYProviders(id: number, type: 'movie' | 'tv'): Promise<Platform | null> {
+  try {
+    const data = await getFresh<WatchProvidersResponse>(`/${type}/${id}/watch/providers`);
+    const uy = data.results?.['UY'];
+    const providers = [...(uy?.flatrate ?? []), ...(uy?.buy ?? []), ...(uy?.rent ?? [])];
+    for (const p of providers) {
+      if (PROVIDER[p.provider_id]) return PROVIDER[p.provider_id];
+    }
+    return null;
+  } catch { return null; }
+}
+
+export async function fetchFindeRecommendations(): Promise<Movie[]> {
+  const [movieGenres, tvGenres] = await Promise.all([getGenres('movie'), getGenres('tv')]);
+
+  const today    = new Date();
+  const fromDate = new Date(today.getTime() - 20 * 86400000).toISOString().split('T')[0];
+  const toDate   = today.toISOString().split('T')[0];
+
+  const [moviesData, seriesData] = await Promise.all([
+    getFresh<TMDBListResponse>('/discover/movie', {
+      watch_region:                   'UY',
+      with_watch_monetization_types:  'flatrate|buy|rent',
+      with_release_type:              '4|5|6',
+      'primary_release_date.gte':     fromDate,
+      'primary_release_date.lte':     toDate,
+      sort_by:                        'popularity.desc',
+      'vote_count.gte':               '5',
+      page:                           '1',
+    }).catch(() => ({ results: [] } as TMDBListResponse)),
+    getFresh<TMDBListResponse>('/discover/tv', {
+      watch_region:                   'UY',
+      with_watch_monetization_types:  'flatrate|buy|rent',
+      'first_air_date.gte':           fromDate,
+      'first_air_date.lte':           toDate,
+      sort_by:                        'popularity.desc',
+      'vote_count.gte':               '3',
+      page:                           '1',
+    }).catch(() => ({ results: [] } as TMDBListResponse)),
+  ]);
+
+  const topMovies = (moviesData.results ?? [])
+    .filter((i) => i.poster_path && i.backdrop_path)
+    .slice(0, 4)
+    .map((i) => ({ item: i, type: 'movie' as const, score: i.popularity ?? 0 }));
+
+  const topSeries = (seriesData.results ?? [])
+    .filter((i) => i.poster_path && i.backdrop_path)
+    .slice(0, 4)
+    .map((i) => ({ item: i, type: 'tv' as const, score: i.popularity ?? 0 }));
+
+  // Mix: asegurar al menos 1 película y 1 serie en el top 3
+  let candidates: typeof topMovies = [];
+  if (topMovies.length > 0 && topSeries.length > 0) {
+    // Top 2 películas + top 2 series → ordenar por popularidad → tomar 3
+    candidates = [...topMovies.slice(0, 2), ...topSeries.slice(0, 2)]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+    // Garantizar mix: si los 3 son del mismo tipo, forzar al menos 1 del otro
+    const movieCount  = candidates.filter((c) => c.type === 'movie').length;
+    const seriesCount = candidates.filter((c) => c.type === 'tv').length;
+    if (movieCount === 0 && topMovies.length > 0) {
+      candidates[2] = topMovies[0];
+    } else if (seriesCount === 0 && topSeries.length > 0) {
+      candidates[2] = topSeries[0];
+    }
+  } else {
+    candidates = [...topMovies, ...topSeries]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+  }
+
+  // Enriquecer con plataforma real de UY
+  const enriched = await Promise.all(
+    candidates.map(async ({ item, type }) => {
+      const genres   = type === 'movie' ? movieGenres : tvGenres;
+      const platform = await getUYProviders(item.id, type);
+      return mapItem(item, genres, platform, type === 'movie' ? 'movie' : 'series');
+    })
+  );
+
+  return enriched;
+}
+
 // ─── Search ───────────────────────────────────────────────────────────────────
 export async function searchContent(query: string): Promise<Movie[]> {
   const [mg, tg] = await Promise.all([getGenres('movie'), getGenres('tv')]);
