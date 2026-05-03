@@ -9,7 +9,7 @@ Uso:
     python3 generate_news.py
 
 Cron (cada hora):
-    0 * * * * /usr/bin/python3 /home/TU_USUARIO/scripts/generate_news.py >> /home/TU_USUARIO/logs/noticias.log 2>&1
+    0 * * * * /usr/bin/python3 /home/surastre/scripts/generate_news.py >> /home/surastre/logs/noticias.log 2>&1
 """
 
 import os
@@ -22,36 +22,33 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import feedparser
-import google.generativeai as genai
 import requests
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONFIGURACIÓN — editar antes de subir al servidor
 # ═══════════════════════════════════════════════════════════════════════════════
 
-GEMINI_API_KEY = "TU_API_KEY_DE_GEMINI"   # https://aistudio.google.com/app/apikey
+GROQ_API_KEY = "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"
 
 # Carpeta en cPanel donde se guardan los JSON (debe ser pública, dentro de public_html)
 # Ejemplo: /home/sbarreiro/public_html/dondeveo-news
-OUTPUT_DIR = Path("/home/TU_USUARIO/public_html/dondeveo-news")
+OUTPUT_DIR = Path("/home/surastre/public_html/dondeveo-news")
 
 # Máximo de artículos a mantener en el índice (los más nuevos)
 MAX_ARTICLES = 40
 
 # Artículos nuevos máximos por ejecución (para no agotar la cuota de Gemini)
-MAX_NEW_PER_RUN = 8
+MAX_NEW_PER_RUN = 5
 
 # Fuentes RSS — cine y streaming en español
 RSS_FEEDS = [
-    # Entretenimiento español/latino
-    "https://www.espinof.com/feed",
-    "https://www.sensacine.com/noticias/rss/",
-    "https://www.fotogramas.es/rss",
     "https://www.20minutos.es/rss/cine/",
-    # Argentina (sin deportes, solo cine/TV)
-    "https://www.infobae.com/rss/entretenimiento/",
-    "https://www.lanacion.com.ar/rss/espectaculos",
-    # El Observador UY
+    "https://www.espinof.com/rss",
+    "https://www.fotogramas.es/feed/",
+    "https://www.sensacine.com/rss/noticias-cine.xml",
+    "https://www.infobae.com/feeds/rss/entretenimiento/",
+    "https://www.clarin.com/rss/espectaculos/",
+    "https://www.lanacion.com.ar/rss/secciones/espectaculos.xml",
     "https://www.elobservador.com.uy/rss/cultura",
 ]
 
@@ -100,44 +97,57 @@ def is_relevant(title: str) -> bool:
 
 # ─── Gemini ───────────────────────────────────────────────────────────────────
 
-def rewrite_with_gemini(title: str, summary: str, source: str) -> dict | None:
-    """Llama a Gemini para reescribir el artículo de forma original."""
-    prompt = f"""Sos redactor de DondeVeo, una web de entretenimiento uruguaya sobre cine y streaming.
-
-Reescribí completamente el siguiente artículo en español rioplatense (tuteo, estilo argentino/uruguayo),
-de manera original y atractiva. El contenido debe ser 100% único y útil para el lector.
-
-Título original: {title}
-Resumen: {summary[:600]}
-Fuente: {source}
-
-Devolvé ÚNICAMENTE un objeto JSON válido (sin markdown, sin bloques de código) con esta estructura exacta:
-{{
-  "title": "Título reescrito, atractivo, máximo 80 caracteres",
-  "intro": "Párrafo introductorio de 2-3 oraciones que enganche al lector.",
-  "body": "Desarrollo en 3-4 párrafos separados por doble salto de línea. Incluí contexto, datos relevantes y opinión editorial ligera.",
-  "conclusion": "Párrafo final con recomendación o reflexión para el lector.",
-  "tags": ["tag1", "tag2", "tag3"],
-  "category": "Cine | Series | Streaming | Estrenos | Trailer"
-}}"""
+def rewrite_with_groq(title: str, summary: str, source: str) -> dict:
+    """Llama a Groq API para reescribir el artículo de forma original."""
+    prompt = (
+        "Sos redactor de DondeVeo, una web de entretenimiento uruguaya sobre cine y streaming. "
+        "Reescribi completamente el siguiente articulo en espanol rioplatense (tuteo, estilo argentino/uruguayo), "
+        "de manera original y atractiva. El contenido debe ser 100% unico y util para el lector.\n\n"
+        "Titulo original: " + title + "\n"
+        "Resumen: " + summary[:600] + "\n"
+        "Fuente: " + source + "\n\n"
+        "Devolvé UNICAMENTE un objeto JSON valido (sin markdown, sin bloques de codigo) con esta estructura:\n"
+        '{"title":"titulo reescrito maximo 80 chars","intro":"2-3 oraciones de intro",'
+        '"body":"3-4 parrafos de desarrollo","conclusion":"parrafo final",'
+        '"tags":["tag1","tag2"],"category":"Cine"}'
+    )
 
     try:
-        response = genai.GenerativeModel("gemini-2.0-flash").generate_content(prompt)
-        text = response.text.strip()
-        # Limpiar posible markdown
+        resp = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": "Bearer " + GROQ_API_KEY,
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": "llama-3.1-8b-instant",
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.7,
+                "max_tokens": 1024,
+            },
+            timeout=30,
+        )
+        resp.raise_for_status()
+        text = resp.json()["choices"][0]["message"]["content"].strip()
         text = re.sub(r"^```(?:json)?\s*", "", text)
         text = re.sub(r"\s*```$", "", text)
-        data = json.loads(text)
-        # Validar campos mínimos
+        # Eliminar caracteres de control que rompen el parser JSON
+        text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", text)
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError:
+            # Segundo intento: reemplazar saltos de línea dentro de strings
+            text2 = re.sub(r':\s*"(.*?)"(?=[,}])', lambda m: ': "' + m.group(1).replace('\n', ' ').replace('\r', '') + '"', text, flags=re.DOTALL)
+            data = json.loads(text2)
         if not all(k in data for k in ("title", "intro", "body", "conclusion")):
-            log(f"  ⚠ Gemini devolvió JSON incompleto")
+            log("  WARNING: respuesta JSON incompleta")
             return None
         return data
     except json.JSONDecodeError as e:
-        log(f"  ⚠ JSON inválido de Gemini: {e}")
+        log("  WARNING: JSON invalido: " + str(e))
         return None
     except Exception as e:
-        log(f"  ✗ Error Gemini: {e}")
+        log("  ERROR Groq: " + str(e))
         return None
 
 
@@ -171,9 +181,6 @@ def main():
     log("=" * 60)
     log("DondeVeo — Generador de noticias iniciado")
 
-    # Configurar Gemini
-    genai.configure(api_key=GEMINI_API_KEY)
-
     # Preparar carpetas
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     articles_dir = OUTPUT_DIR / "articles"
@@ -206,6 +213,19 @@ def main():
                 if not is_relevant(title_raw):
                     continue
 
+                # Filtrar artículos viejos (más de 30 días)
+                pub_raw = entry.get("published", "")
+                if pub_raw:
+                    try:
+                        import email.utils
+                        pub_ts = email.utils.parsedate_to_datetime(pub_raw)
+                        age_days = (datetime.now(timezone.utc) - pub_ts).days
+                        if age_days > 30:
+                            log(f"   ⏭  Muy viejo ({age_days}d): {title_raw[:40]}")
+                            continue
+                    except Exception:
+                        pass
+
                 uid = article_uid(url)
                 if uid in existing_uids:
                     log(f"   ⏭  Ya existe: {title_raw[:55]}")
@@ -218,7 +238,19 @@ def main():
                 if len(summary) < 30:
                     summary = title_raw
 
-                source_name = clean_html(feed.feed.get("title", feed_url.split("/")[2]))
+                # Nombre corto de la fuente — extraer dominio si el título es muy largo
+                raw_source = clean_html(feed.feed.get("title", ""))
+                raw_source = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', raw_source)
+                raw_source = re.sub(r'https?://\S+', '', raw_source).strip(" -:|")
+                # Si tiene separadores típicos (- | :) tomar solo la primera parte
+                for sep in [" - ", " | ", ": "]:
+                    if sep in raw_source:
+                        raw_source = raw_source.split(sep)[0].strip()
+                        break
+                # Si sigue siendo largo, usar el dominio del feed
+                if len(raw_source) > 20:
+                    raw_source = feed_url.split("/")[2].replace("www.", "")
+                source_name = raw_source[:20] if raw_source else feed_url.split("/")[2]
 
                 # Obtener thumbnail
                 thumbnail = None
@@ -232,9 +264,9 @@ def main():
                         thumbnail = enc.get("url")
 
                 log(f"   ✍  Reescribiendo: {title_raw[:60]}")
-                rewritten = rewrite_with_gemini(title_raw, summary, source_name)
+                rewritten = rewrite_with_groq(title_raw, summary, source_name)
                 if not rewritten:
-                    time.sleep(2)
+                    time.sleep(5)
                     continue
 
                 slug = make_slug(rewritten["title"], uid)
@@ -275,7 +307,7 @@ def main():
                 existing_uids.add(uid)
                 processed += 1
                 log(f"   ✅ Guardado: {rewritten['title'][:60]}")
-                time.sleep(1.5)   # Pausa entre llamadas a Gemini
+                time.sleep(5)     # Pausa entre llamadas a Groq (free tier: 30 req/min)
 
         except Exception as e:
             log(f"   ✗ Error en feed {feed_url}: {e}")

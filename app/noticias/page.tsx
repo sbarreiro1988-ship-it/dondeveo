@@ -10,11 +10,11 @@ export const metadata: Metadata = {
   title: 'Noticias de cine y streaming en Uruguay',
   description: 'Las últimas noticias de cine, series y plataformas de streaming para Uruguay. Netflix, Disney+, Max, estrenos y novedades. Actualizado cada hora.',
   keywords: ['noticias cine Uruguay', 'noticias streaming', 'estrenos cine', 'novedades Netflix', 'series nuevas'],
-  alternates: { canonical: 'https://uru2.com/noticias' },
+  alternates: { canonical: 'https://www.uru2.com/noticias' },
   openGraph: {
     title: 'Noticias de cine y streaming — DondeVeo Uruguay',
     description: 'Las últimas noticias de cine y streaming para Uruguay. Actualizado cada hora.',
-    url: 'https://uru2.com/noticias',
+    url: 'https://www.uru2.com/noticias',
     type: 'website',
     locale: 'es_UY',
   },

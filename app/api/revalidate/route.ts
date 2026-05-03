@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
  *
  * Fuerza la regeneración de todas las páginas con contenido dinámico.
  * Llamar desde cPanel con cron cada hora:
- *   0 * * * * curl -s "https://uru2.com/api/revalidate?secret=TU_SECRETO" >> /home/user/logs/revalidate.log 2>&1
+ *   0 * * * * curl -s "https://www.uru2.com/api/revalidate?secret=TU_SECRETO" >> /home/user/logs/revalidate.log 2>&1
  *
  * Variable de entorno requerida en Vercel:
  *   REVALIDATE_SECRET = una cadena aleatoria larga (ej: generada en https://1password.com/password-generator/)

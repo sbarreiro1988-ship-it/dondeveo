@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { PLATFORMS } from '@/lib/mockData';
 
-const BASE = 'https://uru2.com';
+const BASE = 'https://www.uru2.com';
 
 export function generateNovedadesMetadata(platformId: string): Metadata {
   const platform = PLATFORMS[platformId];

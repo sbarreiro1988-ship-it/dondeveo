@@ -95,6 +95,19 @@ function mapShow(show: SAShow, platform: Platform, country: string): Movie | nul
   };
 }
 
+interface SAChange {
+  changeType: string;
+  itemType:   string;
+  show?:      SAShow;
+  timestamp?: number;
+}
+
+interface SAChangesResponse {
+  changes:   SAChange[];
+  hasMore:   boolean;
+  nextCursor?: string;
+}
+
 async function fetchByType(
   catalogId: string,
   showType: 'movie' | 'series',
@@ -103,15 +116,16 @@ async function fetchByType(
   cursor?: string,
 ): Promise<{ shows: Movie[]; nextCursor?: string }> {
   const params = new URLSearchParams({
-    catalogs:  `${catalogId}/${country}`,
-    show_type: showType,
-    order_by:  'recently_added',
-    order_direction: 'desc',
+    change_type:     'new',
+    item_type:       'show',
+    show_type:       showType === 'movie' ? 'movie' : 'series',
+    catalogs:        catalogId,
+    country:         country,
     output_language: 'es',
   });
   if (cursor) params.set('cursor', cursor);
 
-  const res = await fetch(`${API_BASE}/shows/search/filters?${params}`, {
+  const res = await fetch(`${API_BASE}/changes?${params}`, {
     headers: {
       'x-rapidapi-key':  RAPIDAPI_KEY,
       'x-rapidapi-host': API_HOST,
@@ -121,13 +135,22 @@ async function fetchByType(
   });
 
   if (!res.ok) {
-    console.error(`StreamingAPI ${res.status}: ${catalogId}/${country} ${showType}`);
+    console.error(`StreamingAPI ${res.status}: ${catalogId}/${country} ${showType} - ${await res.text()}`);
     return { shows: [] };
   }
 
-  const data = await res.json() as SAResponse;
-  const shows = (data.shows ?? [])
-    .map((s) => mapShow(s, platform, country))
+  const data = await res.json() as SAChangesResponse;
+  const shows = (data.changes ?? [])
+    .filter((c) => c.show && c.changeType === 'new')
+    .map((c) => {
+      const show = c.show!;
+      // Usar timestamp del cambio como fecha de agregado
+      if (c.timestamp) {
+        const opts = show.streamingOptions?.[country];
+        if (opts?.[0]) opts[0].availableSince = c.timestamp;
+      }
+      return mapShow(show, platform, country);
+    })
     .filter((s): s is Movie => s !== null);
 
   return { shows, nextCursor: data.hasMore ? data.nextCursor : undefined };

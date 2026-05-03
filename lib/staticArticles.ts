@@ -40,7 +40,7 @@ Para quienes gustan del cine clásico, la plataforma también incorporó un paqu
     category:   'Streaming',
     thumbnail:  null,
     source:     'DondeVeo',
-    originalUrl: 'https://uru2.com',
+    originalUrl: 'https://www.uru2.com',
     publishedAt: new Date(now).toISOString(),
   },
   {
@@ -60,7 +60,7 @@ National Geographic es quizás el diferencial más subestimado de Disney+. Los d
     category:   'Streaming',
     thumbnail:  null,
     source:     'DondeVeo',
-    originalUrl: 'https://uru2.com',
+    originalUrl: 'https://www.uru2.com',
     publishedAt: new Date(now - 86400000).toISOString(),
   },
   {
@@ -80,7 +80,7 @@ Además de estos grandes títulos, Max tiene una biblioteca de películas de War
     category:   'Series',
     thumbnail:  null,
     source:     'DondeVeo',
-    originalUrl: 'https://uru2.com',
+    originalUrl: 'https://www.uru2.com',
     publishedAt: new Date(now - 2 * 86400000).toISOString(),
   },
   {
@@ -100,7 +100,7 @@ La oferta de películas de Prime Video incluye producciones originales que llega
     category:   'Streaming',
     thumbnail:  null,
     source:     'DondeVeo',
-    originalUrl: 'https://uru2.com',
+    originalUrl: 'https://www.uru2.com',
     publishedAt: new Date(now - 3 * 86400000).toISOString(),
   },
   {
@@ -120,7 +120,7 @@ En cuanto a series originales, Yellowstone y su universo expandido es el gran é
     category:   'Cine',
     thumbnail:  null,
     source:     'DondeVeo',
-    originalUrl: 'https://uru2.com',
+    originalUrl: 'https://www.uru2.com',
     publishedAt: new Date(now - 4 * 86400000).toISOString(),
   },
   {
@@ -140,7 +140,7 @@ El cine nacional uruguayo también está viviendo un buen momento. Las produccio
     category:   'Cine',
     thumbnail:  null,
     source:     'DondeVeo',
-    originalUrl: 'https://uru2.com',
+    originalUrl: 'https://www.uru2.com',
     publishedAt: new Date(now - 5 * 86400000).toISOString(),
   },
 ];

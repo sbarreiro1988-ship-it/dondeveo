@@ -50,7 +50,7 @@ export async function generateStaticParams() {
   return STATIC_ARTICLES.map((a) => ({ slug: a.slug }));
 }
 
-const BASE = 'https://uru2.com';
+const BASE = 'https://www.uru2.com';
 
 export async function generateMetadata(
   { params }: { params: { slug: string } }

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { PLATFORM_PROVIDER_ID } from '@/lib/tmdb';
 
-const BASE = 'https://uru2.com';
+const BASE = 'https://www.uru2.com';
 
 async function fetchNewsArticleSlugs(): Promise<string[]> {
   const baseUrl = process.env.NEWS_DATA_URL;
