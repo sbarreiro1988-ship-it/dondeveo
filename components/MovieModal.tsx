@@ -39,12 +39,23 @@ function FallbackPlatformLogo({ platform }: { platform: Platform }) {
   return (
     <div className="flex flex-col items-center gap-1.5 w-16">
       <div
-        className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md"
+        className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 shadow-md flex items-center justify-center"
         style={{ backgroundColor: platform.bgColor }}
       >
-        <span className="text-[11px] font-black" style={{ color: platform.textColor }}>
-          {platform.shortName || platform.name.slice(0, 4)}
-        </span>
+        {platform.logoUrl ? (
+          <Image
+            src={platform.logoUrl}
+            alt={platform.name}
+            width={48}
+            height={48}
+            className="object-cover w-full h-full"
+            unoptimized
+          />
+        ) : (
+          <span className="text-[11px] font-black" style={{ color: platform.textColor }}>
+            {platform.shortName || platform.name.slice(0, 4)}
+          </span>
+        )}
       </div>
       <span className="text-[9px] text-gray-400 text-center leading-tight line-clamp-2">
         {platform.name}

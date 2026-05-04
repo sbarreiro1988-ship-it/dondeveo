@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowLeft, Star, Play, Tv, Film, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Star, Play, Tv, Film } from 'lucide-react';
 import { searchByTitle, fetchAllWatchProviders, IMAGE_BASE } from '@/lib/tmdb';
 
 export const dynamic    = 'force-dynamic';
@@ -109,20 +109,29 @@ export default async function DondeVerPage({ params }: Props) {
 
           {providers.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {providers.map(({ platform, link }) => (
-                <a key={platform.id} href={link || platform.url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 rounded-xl border border-white/10 hover:border-white/30 transition-all hover:shadow-xl group"
-                  style={{ backgroundColor: platform.bgColor + '15' }}>
-                  <div className="w-12 h-12 rounded-lg flex items-center justify-center font-black text-lg flex-shrink-0"
-                    style={{ backgroundColor: platform.bgColor, color: platform.textColor }}>
-                    {platform.shortName}
+              {providers.map(({ platform, logoPath }) => (
+                <div key={platform.id}
+                  className="flex items-center gap-4 p-4 rounded-xl border border-white/10 bg-white/5"
+                  style={{ borderColor: platform.bgColor + '40' }}>
+                  <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-black flex items-center justify-center"
+                    style={{ backgroundColor: platform.bgColor }}>
+                    {logoPath ? (
+                      <Image src={logoPath} alt={platform.name} width={56} height={56}
+                        className="object-cover w-full h-full" unoptimized />
+                    ) : (
+                      <span className="font-black text-sm" style={{ color: platform.textColor }}>
+                        {platform.shortName || platform.name.slice(0, 4)}
+                      </span>
+                    )}
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-bold">{platform.name}</p>
                     <p className="text-dv-muted text-xs">Disponible con suscripción</p>
                   </div>
-                  <ExternalLink size={16} className="text-dv-muted group-hover:text-dv-accent transition-colors" />
-                </a>
+                  <span className="text-xs bg-dv-accent/20 text-dv-accent px-2 py-1 rounded-full font-semibold">
+                    Streaming
+                  </span>
+                </div>
               ))}
             </div>
           ) : (

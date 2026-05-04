@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
 import HeroSection from './HeroSection';
 import ContentCarousel from './ContentCarousel';
 import FeaturedSpotlight from './FeaturedSpotlight';
@@ -14,6 +16,7 @@ import MovieModal from './MovieModal';
 import { PLATFORMS } from '@/lib/mockData';
 import { getManualOverridesMap } from '@/lib/manualOverrides';
 import type { Movie, FilterState, Platform } from '@/types';
+import type { PersonResult } from '@/lib/tmdb';
 
 // Detecta títulos en caracteres no-latinos (chino, japonés, coreano, árabe, etc.)
 function hasNonLatinTitle(title: string): boolean {
@@ -68,6 +71,7 @@ export default function HomeClient({
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
+  const [searchPersons, setSearchPersons] = useState<PersonResult[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
   const searchParams = useSearchParams();
@@ -96,13 +100,14 @@ export default function HomeClient({
   }, [searchParams]);
 
   const doSearch = useCallback(async (q: string) => {
-    if (!q.trim()) { setSearchResults([]); return; }
+    if (!q.trim()) { setSearchResults([]); setSearchPersons([]); return; }
     setSearchLoading(true);
     try {
       const res  = await fetch(`/api/search?q=${encodeURIComponent(q.trim())}`);
-      const data = await res.json();
-      setSearchResults(data);
-    } catch { setSearchResults([]); }
+      const data = await res.json() as { movies: Movie[]; persons: PersonResult[] };
+      setSearchResults(data.movies ?? []);
+      setSearchPersons(data.persons ?? []);
+    } catch { setSearchResults([]); setSearchPersons([]); }
     finally   { setSearchLoading(false); }
   }, []);
 
@@ -240,21 +245,54 @@ export default function HomeClient({
         </div>
 
         {filters.query && (
-          <div className="px-4 md:px-8 mt-3 flex items-center gap-2">
-            {searchLoading ? (
-              <span className="text-dv-muted text-sm flex items-center gap-2">
-                <span className="w-3 h-3 border-2 border-dv-muted border-t-white rounded-full animate-spin" />
-                Buscando…
-              </span>
-            ) : (
-              <span className="text-dv-muted text-sm">
-                Resultados para: <span className="text-white font-semibold">"{filters.query}"</span>
-                {searchResults.length > 0 && <span className="text-dv-muted ml-2">({searchResults.length})</span>}
-              </span>
+          <div className="px-4 md:px-8 mt-3">
+            <div className="flex items-center gap-2 mb-3">
+              {searchLoading ? (
+                <span className="text-dv-muted text-sm flex items-center gap-2">
+                  <span className="w-3 h-3 border-2 border-dv-muted border-t-white rounded-full animate-spin" />
+                  Buscando…
+                </span>
+              ) : (
+                <span className="text-dv-muted text-sm">
+                  Resultados para: <span className="text-white font-semibold">"{filters.query}"</span>
+                  {searchResults.length > 0 && <span className="text-dv-muted ml-2">({searchResults.length})</span>}
+                </span>
+              )}
+              <button onClick={() => setFilters((f) => ({ ...f, query: '' }))} className="text-xs text-dv-accent hover:underline ml-1">
+                × Limpiar
+              </button>
+            </div>
+
+            {/* ── Actores encontrados ── */}
+            {searchPersons.length > 0 && !searchLoading && (
+              <div className="mb-5">
+                <p className="text-white/50 text-xs uppercase tracking-widest font-bold mb-3">👤 Actores</p>
+                <div className="flex gap-4 flex-wrap">
+                  {searchPersons.map((person) => (
+                    <Link
+                      key={person.id}
+                      href={`/actor/${person.id}`}
+                      className="flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-dv-accent/40 rounded-xl px-3 py-2.5 transition-all group"
+                    >
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-[#222] flex-shrink-0 ring-2 ring-white/10 group-hover:ring-dv-accent/50 transition-all">
+                        {person.profilePath ? (
+                          <Image src={person.profilePath} alt={person.name} width={48} height={48}
+                            className="object-cover w-full h-full" unoptimized />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-500 text-xl">👤</div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-white font-bold text-sm group-hover:text-dv-accent transition-colors">{person.name}</p>
+                        {person.knownFor.length > 0 && (
+                          <p className="text-gray-500 text-xs line-clamp-1">{person.knownFor.join(' · ')}</p>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             )}
-            <button onClick={() => setFilters((f) => ({ ...f, query: '' }))} className="text-xs text-dv-accent hover:underline ml-1">
-              × Limpiar
-            </button>
           </div>
         )}
 

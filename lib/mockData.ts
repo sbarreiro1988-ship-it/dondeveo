@@ -1,5 +1,8 @@
 import type { Platform, Movie, SportEvent } from '@/types';
 
+// TMDB sirve logos de providers en: https://image.tmdb.org/t/p/original{logo_path}
+const T = (path: string) => `https://image.tmdb.org/t/p/original${path}`;
+
 export const PLATFORMS: Record<string, Platform> = {
   netflix: {
     id: 'netflix',
@@ -10,6 +13,7 @@ export const PLATFORMS: Record<string, Platform> = {
     textColor: '#ffffff',
     url: 'https://netflix.com',
     type: 'flatrate',
+    logoUrl: T('/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg'),
   },
   disneyplus: {
     id: 'disneyplus',
@@ -20,6 +24,7 @@ export const PLATFORMS: Record<string, Platform> = {
     textColor: '#ffffff',
     url: 'https://disneyplus.com',
     type: 'flatrate',
+    logoUrl: T('/7rwgEs15tFwyR9NPQ5vpzxTj19Q.jpg'),
   },
   starplus: {
     id: 'starplus',
@@ -40,6 +45,7 @@ export const PLATFORMS: Record<string, Platform> = {
     textColor: '#ffffff',
     url: 'https://max.com',
     type: 'flatrate',
+    logoUrl: T('/Ajqyt5aNxNx3ssm4pPZS74RJ3rn.jpg'),
   },
   prime: {
     id: 'prime',
@@ -50,6 +56,7 @@ export const PLATFORMS: Record<string, Platform> = {
     textColor: '#ffffff',
     url: 'https://primevideo.com',
     type: 'flatrate',
+    logoUrl: T('/dQeAar5H991VYporEjUspolDarG.jpg'),
   },
   paramountplus: {
     id: 'paramountplus',
@@ -60,6 +67,7 @@ export const PLATFORMS: Record<string, Platform> = {
     textColor: '#ffffff',
     url: 'https://paramountplus.com',
     type: 'flatrate',
+    logoUrl: T('/xbhHHa1YgtpwhC8lb1NQ3ACVcLd.jpg'),
   },
   dgo: {
     id: 'dgo',
@@ -74,12 +82,13 @@ export const PLATFORMS: Record<string, Platform> = {
   appletv: {
     id: 'appletv',
     name: 'Apple TV+',
-    shortName: '',
+    shortName: 'ATV+',
     color: '#555555',
     bgColor: '#1D1D1F',
     textColor: '#ffffff',
     url: 'https://tv.apple.com',
     type: 'flatrate',
+    logoUrl: T('/peURlLlr8jggOwK53fJ5wdQl05y.jpg'),
   },
   plutotv: {
     id: 'plutotv',
@@ -90,6 +99,7 @@ export const PLATFORMS: Record<string, Platform> = {
     textColor: '#000000',
     url: 'https://pluto.tv',
     type: 'free',
+    logoUrl: T('/3rKkRVEHGHQMY1i57gJzMnJFLyI.jpg'),
   },
   universalplus: {
     id: 'universalplus',
@@ -110,6 +120,7 @@ export const PLATFORMS: Record<string, Platform> = {
     textColor: '#ffffff',
     url: 'https://crunchyroll.com',
     type: 'flatrate',
+    logoUrl: T('/8Gt1iClBlzTeQs8WQm8UrCoIRnQ.jpg'),
   },
   clarovideo: {
     id: 'clarovideo',
@@ -140,6 +151,7 @@ export const PLATFORMS: Record<string, Platform> = {
     textColor: '#ffffff',
     url: 'https://mubi.com',
     type: 'flatrate',
+    logoUrl: T('/fj9Y8iIMFUC6952HwxbGixTQPb7.jpg'),
   },
   movistar: {
     id: 'movistar',
@@ -180,6 +192,7 @@ export const PLATFORMS: Record<string, Platform> = {
     textColor: '#ffffff',
     url: 'https://curiositystream.com',
     type: 'flatrate',
+    logoUrl: T('/nrPgT4HMXA5efIuLDHSzS80hOSl.jpg'),
   },
   plex: {
     id: 'plex',
@@ -190,6 +203,7 @@ export const PLATFORMS: Record<string, Platform> = {
     textColor: '#E5A00D',
     url: 'https://www.plex.tv',
     type: 'free',
+    logoUrl: T('/mEzFKTRnfWkEqBOUfCgf2HaFb3r.jpg'),
   },
   viki: {
     id: 'viki',

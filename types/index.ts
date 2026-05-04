@@ -10,6 +10,7 @@ export interface Platform {
   textColor: string;
   url: string;
   type: PlatformType;
+  logoUrl?: string;  // Logo oficial de la plataforma (TMDB CDN)
 }
 
 export interface Genre {

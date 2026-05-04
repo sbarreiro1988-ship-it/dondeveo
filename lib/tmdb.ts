@@ -684,23 +684,74 @@ export async function searchContent(query: string): Promise<Movie[]> {
   } catch { return []; }
 }
 
+// ─── Search with persons (actors) ─────────────────────────────────────────────
+export interface PersonResult {
+  id: number;
+  name: string;
+  profilePath: string | null;
+  knownFor: string[];
+  department: string;
+}
+
+interface TMDBPersonResult {
+  id: number;
+  name: string;
+  profile_path: string | null;
+  known_for_department: string;
+  known_for: { title?: string; name?: string; media_type: string }[];
+  media_type: string;
+  popularity: number;
+}
+
+export async function searchWithPersons(query: string): Promise<{ movies: Movie[]; persons: PersonResult[] }> {
+  const [mg, tg] = await Promise.all([getGenres('movie'), getGenres('tv')]);
+  try {
+    const data = await get<{ results: (TMDBItem & TMDBPersonResult)[] }>('/search/multi', { query });
+
+    const movies: Movie[] = data.results
+      .filter((i) => i.poster_path && i.media_type !== 'person')
+      .slice(0, 20)
+      .map((i) => {
+        const type = i.media_type === 'tv' ? 'series' : 'movie';
+        return mapItem(i, type === 'series' ? tg : mg, null, type);
+      });
+
+    const persons: PersonResult[] = data.results
+      .filter((i): i is TMDBPersonResult & TMDBItem => i.media_type === 'person' && !!i.profile_path)
+      .slice(0, 5)
+      .map((i) => ({
+        id: i.id,
+        name: i.name,
+        profilePath: i.profile_path ? `${IMAGE_BASE}/w185${i.profile_path}` : null,
+        knownFor: (i.known_for ?? []).map((k) => k.title ?? k.name ?? '').filter(Boolean).slice(0, 3),
+        department: i.known_for_department ?? 'Acting',
+      }));
+
+    return { movies, persons };
+  } catch { return { movies: [], persons: [] }; }
+}
+
 // ─── Watch providers for a specific title ─────────────────────────────────────
 export async function fetchAllWatchProviders(
   tmdbId: number,
   type: 'movie' | 'tv',
-): Promise<{ platform: Platform; link: string }[]> {
+): Promise<{ platform: Platform; link: string; logoPath: string | null }[]> {
   try {
     const data = await get<WatchProvidersResponse>(`/${type}/${tmdbId}/watch/providers`);
     const uy = data.results?.['UY'] ?? data.results?.['AR'] ?? {};
     const all = [...(uy.flatrate ?? []), ...(uy.buy ?? []), ...(uy.rent ?? [])];
     const seen = new Set<number>();
-    const result: { platform: Platform; link: string }[] = [];
+    const result: { platform: Platform; link: string; logoPath: string | null }[] = [];
     const link = (data.results?.['UY'] as { link?: string })?.link
               ?? (data.results?.['AR'] as { link?: string })?.link ?? '';
     for (const p of all) {
       if (!seen.has(p.provider_id) && PROVIDER[p.provider_id]) {
         seen.add(p.provider_id);
-        result.push({ platform: PROVIDER[p.provider_id], link });
+        result.push({
+          platform: PROVIDER[p.provider_id],
+          link,
+          logoPath: p.logo_path ? `${IMAGE_BASE}/original${p.logo_path}` : null,
+        });
       }
     }
     return result;
