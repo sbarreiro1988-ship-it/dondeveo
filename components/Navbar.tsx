@@ -63,13 +63,20 @@ export default function Navbar() {
   );
 
   const isLinkActive = (link: (typeof NAV_LINKS)[number]): boolean => {
-    if (link.hash) return false;
     if (!link.href) return false;
     const tipo = (link as { tipo?: string }).tipo;
-    if (!tipo && !currentTipo && pathname === '/') return true;
-    if (tipo && currentTipo === tipo) return true;
-    if (link.href === pathname && !tipo && !currentTipo) return true;
-    return false;
+
+    // Películas / Series — activo solo cuando el param tipo coincide
+    if (tipo) return currentTipo === tipo;
+
+    // Inicio — activo solo en / sin tipo
+    if (link.href === '/') return pathname === '/' && !currentTipo;
+
+    // Lo nuevo — activo en cualquier /novedades/*
+    if (link.href.startsWith('/novedades/')) return pathname.startsWith('/novedades/');
+
+    // Resto — coincidencia exacta de pathname
+    return pathname === link.href;
   };
 
   return (
