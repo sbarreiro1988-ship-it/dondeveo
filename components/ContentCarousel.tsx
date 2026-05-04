@@ -30,18 +30,25 @@ export default function ContentCarousel({
   layout = 'default',
   onMovieClick,
 }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
+  const refDesktop = useRef<HTMLDivElement>(null);
+  const refMobile  = useRef<HTMLDivElement>(null);
   const [canLeft, setCanLeft]   = useState(false);
   const [canRight, setCanRight] = useState(true);
 
+  function getActiveRef() {
+    // Usar el ref visible según el ancho de pantalla
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return refMobile;
+    return refDesktop;
+  }
+
   function scroll(dir: 'left' | 'right') {
-    const el = ref.current;
+    const el = getActiveRef().current;
     if (!el) return;
     el.scrollBy({ left: dir === 'left' ? -(el.clientWidth * 0.75) : el.clientWidth * 0.75, behavior: 'smooth' });
   }
 
   function onScroll() {
-    const el = ref.current;
+    const el = getActiveRef().current;
     if (!el) return;
     setCanLeft(el.scrollLeft > 10);
     setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 10);
@@ -121,7 +128,7 @@ export default function ContentCarousel({
                 </button>
               </>
             )}
-            <div ref={ref} onScroll={onScroll} className="flex gap-3 overflow-x-auto scrollbar-hide pr-4 pb-2">
+            <div ref={refDesktop} onScroll={onScroll} className="flex gap-3 overflow-x-auto scrollbar-hide pr-4 pb-2">
               {movies.map((movie, i) => (
                 <MovieCard key={movie.id} movie={cinemaOnly ? { ...movie, platforms: [] } : movie}
                   showRank={showRanks ? (movie.rank ?? i + 1) : undefined} onClick={onMovieClick} />
@@ -148,7 +155,7 @@ export default function ContentCarousel({
               </button>
             </>
           )}
-          <div ref={ref} onScroll={onScroll} className="flex gap-3 overflow-x-auto scrollbar-hide px-4 pb-2">
+          <div ref={refMobile} onScroll={onScroll} className="flex gap-3 overflow-x-auto scrollbar-hide px-4 pb-2">
             {movies.map((movie, i) => (
               <MovieCard key={movie.id} movie={cinemaOnly ? { ...movie, platforms: [] } : movie}
                 showRank={showRanks ? (movie.rank ?? i + 1) : undefined} onClick={onMovieClick} />
@@ -202,7 +209,7 @@ export default function ContentCarousel({
           </>
         )}
         <div
-          ref={ref}
+          ref={refDesktop}
           onScroll={onScroll}
           className="flex gap-3 overflow-x-auto scrollbar-hide px-4 md:px-8 pb-2"
         >
