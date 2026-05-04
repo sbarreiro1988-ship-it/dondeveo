@@ -239,19 +239,21 @@ export default function MovieModal({ movie, onClose }: Props) {
   const hasRent   = rentProviders.length > 0;
   const hasBuy    = buyProviders.length > 0;
 
-  // Our curated platform data (from carousel fetch + manual overrides).
-  // Always preferred over TMDB regional data, which is often wrong for UY/AR.
+  // PRIORIDAD: TMDB watch-providers (datos reales y actualizados) > curated (carrusel)
+  // Los datos de carrusel solo se usan como fallback cuando TMDB no tiene info para UY/AR.
   const curatedPlatforms = movie.platforms;
-  const useCurated = curatedPlatforms.length > 0;
 
-  // Only use TMDB stream data when we have no curated info
-  const effectiveHasStream = useCurated || hasStream;
+  // TMDB tiene datos → usarlos. TMDB vacío → curated como fallback.
+  const useStream  = hasStream;                                   // TMDB flatrate/free
+  const useCurated = !hasStream && curatedPlatforms.length > 0;  // fallback si TMDB no tiene nada
+
+  const effectiveHasStream = hasStream || curatedPlatforms.length > 0;
 
   // A movie is "in cinemas" if: no stream/rent/buy yet, it's a movie (not series), and released recently
   const inCinemas = !providersLoading && !effectiveHasStream && !hasRent && !hasBuy
     && movie.type === 'movie' && isRecentRelease;
 
-  const streamCount = useCurated ? curatedPlatforms.length : streamProviders.length;
+  const streamCount = hasStream ? streamProviders.length : curatedPlatforms.length;
   const tabs = [
     { id: 'stream' as const, label: 'Stream',   count: streamCount,         show: true },
     { id: 'rent'   as const, label: 'Alquilar', count: rentProviders.length, show: hasRent },
@@ -432,18 +434,19 @@ export default function MovieModal({ movie, onClose }: Props) {
 
                 {/* Stream providers */}
                 {activeTab === 'stream' && (
-                  useCurated ? (
-                    /* Plataformas curadas (de carruseles + overrides manuales) — siempre prioritarias */
+                  useStream ? (
+                    /* TMDB watch-providers — fuente de verdad, más precisa */
+                    <div className="flex flex-wrap gap-4">
+                      {streamProviders.map((p) => <ProviderLogo key={p.provider_id} p={p} />)}
+                    </div>
+                  ) : useCurated ? (
+                    /* Fallback: plataformas del carrusel (solo si TMDB no tiene datos UY/AR) */
                     <div className="flex flex-wrap gap-4">
                       {curatedPlatforms.map((pl) => {
                         const dynamicLogo = providerLogos[pl.id];
                         const enriched = dynamicLogo ? { ...pl, logoUrl: dynamicLogo } : pl;
                         return <FallbackPlatformLogo key={pl.id} platform={enriched} />;
                       })}
-                    </div>
-                  ) : hasStream ? (
-                    <div className="flex flex-wrap gap-4">
-                      {streamProviders.map((p) => <ProviderLogo key={p.provider_id} p={p} />)}
                     </div>
                   ) : inCinemas ? (
                     /* ── SOLO EN CINES ── */
@@ -502,9 +505,9 @@ export default function MovieModal({ movie, onClose }: Props) {
 
                 {/* Note */}
                 <p className="text-gray-700 text-[10px] mt-3">
-                  {useCurated
-                    ? 'Datos de disponibilidad para Uruguay · Puede variar según tu plan'
-                    : 'Datos de TMDB · Región: Uruguay / Argentina · Puede variar según tu plan'}
+                  {useStream
+                    ? 'Datos de TMDB · Región: Uruguay / Argentina · Puede variar según tu plan'
+                    : 'Datos de disponibilidad para Uruguay · Puede variar según tu plan'}
                 </p>
               </div>
             )}
