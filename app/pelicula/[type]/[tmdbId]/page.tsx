@@ -8,37 +8,36 @@ import { fetchAllWatchProviders, IMAGE_BASE } from '@/lib/tmdb';
 const TMDB_BASE  = 'https://api.themoviedb.org/3';
 const TMDB_TOKEN = process.env.TMDB_ACCESS_TOKEN;
 
-export const dynamic    = 'force-dynamic';
+export const dynamic       = 'force-dynamic';
 export const dynamicParams = true;
 
-interface Props { params: { tmdbId: string } }
+interface Props { params: { type: string; tmdbId: string } }
 
-// ── Fetch helpers ──────────────────────────────────────────────────────────────
-async function fetchMovieDetail(id: string) {
-  // Try movie first, then TV
-  for (const type of ['movie', 'tv'] as const) {
-    try {
-      const res = await fetch(
-        `${TMDB_BASE}/${type}/${id}?language=es-419`,
-        { headers: { Authorization: `Bearer ${TMDB_TOKEN}` }, next: { revalidate: 3600 } }
-      );
-      if (!res.ok) continue;
-      const d = await res.json() as {
-        id: number; title?: string; name?: string; overview: string;
-        poster_path: string | null; backdrop_path: string | null;
-        vote_average: number; release_date?: string; first_air_date?: string;
-        runtime?: number; number_of_seasons?: number;
-        genres?: { name: string }[];
-        tagline?: string; status?: string;
-      };
-      if (!d.id) continue;
-      return { ...d, mediaType: type };
-    } catch { continue; }
-  }
-  return null;
+// type param is 'movie' | 'tv' — always explicit, no guessing
+function resolveType(t: string): 'movie' | 'tv' {
+  return t === 'tv' ? 'tv' : 'movie';
 }
 
-async function fetchCast(id: string, type: string) {
+async function fetchDetail(id: string, type: 'movie' | 'tv') {
+  try {
+    const res = await fetch(
+      `${TMDB_BASE}/${type}/${id}?language=es-419`,
+      { headers: { Authorization: `Bearer ${TMDB_TOKEN}` }, next: { revalidate: 3600 } }
+    );
+    if (!res.ok) return null;
+    const d = await res.json() as {
+      id: number; title?: string; name?: string; overview: string;
+      poster_path: string | null; backdrop_path: string | null;
+      vote_average: number; release_date?: string; first_air_date?: string;
+      runtime?: number; number_of_seasons?: number;
+      genres?: { name: string }[];
+      tagline?: string; status?: string;
+    };
+    return d.id ? d : null;
+  } catch { return null; }
+}
+
+async function fetchCast(id: string, type: 'movie' | 'tv') {
   try {
     const res = await fetch(
       `${TMDB_BASE}/${type}/${id}/credits?language=es-419`,
@@ -55,7 +54,7 @@ async function fetchCast(id: string, type: string) {
   } catch { return []; }
 }
 
-async function fetchRecommendations(id: string, type: string) {
+async function fetchRecs(id: string, type: 'movie' | 'tv') {
   try {
     const res = await fetch(
       `${TMDB_BASE}/${type}/${id}/recommendations?language=es-419`,
@@ -63,52 +62,58 @@ async function fetchRecommendations(id: string, type: string) {
     );
     if (!res.ok) return [];
     const data = await res.json() as {
-      results?: { id: number; title?: string; name?: string; poster_path: string | null; vote_average: number }[]
+      results?: { id: number; title?: string; name?: string; poster_path: string | null; vote_average: number; media_type?: string }[]
     };
     return (data.results ?? []).filter((m) => m.poster_path).slice(0, 12).map((m) => ({
       id: m.id,
       title: m.title ?? m.name ?? '',
       posterPath: `${IMAGE_BASE}/w342${m.poster_path}`,
       voteAverage: Math.round(m.vote_average * 10) / 10,
+      // recommendations include media_type for mixed results
+      recType: m.title ? 'movie' : 'tv',
     }));
   } catch { return []; }
 }
 
-// ── Metadata ───────────────────────────────────────────────────────────────────
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const detail = await fetchMovieDetail(params.tmdbId);
+  const type   = resolveType(params.type);
+  const detail = await fetchDetail(params.tmdbId, type);
   if (!detail) return { title: 'DondeVeo' };
   const title = detail.title ?? detail.name ?? '';
   const year  = (detail.release_date ?? detail.first_air_date ?? '').slice(0, 4);
   return {
     title: `¿Dónde ver ${title} (${year}) en Uruguay? — DondeVeo`,
     description: `Encontrá en qué plataforma ver ${title} en Uruguay. ${detail.overview?.slice(0, 120) ?? ''}`,
-    alternates: { canonical: `https://www.uru2.com/pelicula/${params.tmdbId}` },
-    openGraph: { title, description: detail.overview ?? '', images: detail.poster_path ? [`${IMAGE_BASE}/w500${detail.poster_path}`] : [] },
+    alternates: { canonical: `https://www.uru2.com/pelicula/${params.type}/${params.tmdbId}` },
+    openGraph: {
+      title,
+      description: detail.overview ?? '',
+      images: detail.poster_path ? [`${IMAGE_BASE}/w500${detail.poster_path}`] : [],
+    },
   };
 }
 
-// ── Page ───────────────────────────────────────────────────────────────────────
+const STATUS_MAP: Record<string, string> = {
+  Released: 'Estrenada', 'In Production': 'En producción',
+  'Post Production': 'Pos-producción', 'Returning Series': 'En emisión',
+  Ended: 'Finalizada', Canceled: 'Cancelada',
+};
+
 export default async function PeliculaPage({ params }: Props) {
-  const detail = await fetchMovieDetail(params.tmdbId);
+  const type   = resolveType(params.type);
+  const detail = await fetchDetail(params.tmdbId, type);
   if (!detail) notFound();
 
-  const type = detail.mediaType;
-  const title = detail.title ?? detail.name ?? '';
-  const year  = (detail.release_date ?? detail.first_air_date ?? '').slice(0, 4);
+  const title      = detail.title ?? detail.name ?? '';
+  const year       = (detail.release_date ?? detail.first_air_date ?? '').slice(0, 4);
+  const backdropUrl = detail.backdrop_path ? `${IMAGE_BASE}/w1280${detail.backdrop_path}` : '/placeholder-backdrop.jpg';
+  const posterUrl   = detail.poster_path   ? `${IMAGE_BASE}/w500${detail.poster_path}`   : '/placeholder-poster.jpg';
 
   const [providers, cast, recs] = await Promise.all([
     fetchAllWatchProviders(detail.id, type),
     fetchCast(params.tmdbId, type),
-    fetchRecommendations(params.tmdbId, type),
+    fetchRecs(params.tmdbId, type),
   ]);
-
-  const backdropUrl = detail.backdrop_path
-    ? `${IMAGE_BASE}/w1280${detail.backdrop_path}`
-    : '/placeholder-backdrop.jpg';
-  const posterUrl = detail.poster_path
-    ? `${IMAGE_BASE}/w500${detail.poster_path}`
-    : '/placeholder-poster.jpg';
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -120,11 +125,6 @@ export default async function PeliculaPage({ params }: Props) {
     aggregateRating: detail.vote_average > 0 ? {
       '@type': 'AggregateRating', ratingValue: detail.vote_average, bestRating: 10,
     } : undefined,
-  };
-
-  const STATUS_MAP: Record<string, string> = {
-    Released: 'Estrenada', 'In Production': 'En producción',
-    'Returning Series': 'En emisión', Ended: 'Finalizada', Canceled: 'Cancelada',
   };
 
   return (
@@ -188,9 +188,9 @@ export default async function PeliculaPage({ params }: Props) {
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {detail.genres.map((g) => {
                   const slug = g.name.toLowerCase()
-                    .replace('acción', 'accion').replace('animación', 'animacion')
-                    .replace('ciencia ficción', 'ciencia').replace('fantasía', 'fantasia')
-                    .normalize('NFD').replace(/[̀-ͯ]/g, '');
+                    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+                    .replace('ciencia ficcion', 'ciencia')
+                    .replace(/\s+/g, '-');
                   return (
                     <Link key={g.name} href={`/genero/${slug}`}
                       className="text-xs bg-white/8 text-white/60 hover:text-dv-accent px-2.5 py-1 rounded-full transition-colors">
@@ -238,7 +238,7 @@ export default async function PeliculaPage({ params }: Props) {
           ) : (
             <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
               <p className="text-white/60">No disponible en streaming en Uruguay actualmente.</p>
-              <p className="text-dv-muted text-sm mt-1">Puede estar disponible en cines o próximamente en streaming.</p>
+              <p className="text-dv-muted text-sm mt-1">Puede estar disponible en cines o próximamente.</p>
             </div>
           )}
         </div>
@@ -278,7 +278,7 @@ export default async function PeliculaPage({ params }: Props) {
             <h2 className="text-white text-lg font-bold mb-4">🎬 También te puede gustar</h2>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
               {recs.map((m) => (
-                <Link key={m.id} href={`/pelicula/${m.id}`} className="group">
+                <Link key={m.id} href={`/pelicula/${m.recType}/${m.id}`} className="group">
                   <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-1.5 bg-white/5">
                     <Image src={m.posterPath} alt={m.title} fill
                       className="object-cover group-hover:scale-105 transition-transform" unoptimized />

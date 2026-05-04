@@ -738,8 +738,9 @@ export const HERO_SLIDES = [
   { movie: SERIES[2], tagline: 'Fuego y sangre. La guerra de los dragones.' },
 ];
 
+// Géneros — deben coincidir exactamente con los que TMDB devuelve en español (es-419)
 export const GENRES = [
   'Acción', 'Aventura', 'Animación', 'Comedia', 'Crimen',
-  'Drama', 'Fantasía', 'Historia', 'Terror', 'Ciencia Ficción',
-  'Thriller', 'Western', 'Familia', 'Superhéroes',
+  'Drama', 'Fantasía', 'Historia', 'Terror', 'Ciencia ficción',
+  'Thriller', 'Western', 'Familia', 'Misterio',
 ];

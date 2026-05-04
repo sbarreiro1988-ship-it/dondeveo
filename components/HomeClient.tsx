@@ -221,8 +221,12 @@ export default function HomeClient({
       [...allMovies, ...allSeries];
     if (filters.platformIds.length > 0)
       pool = pool.filter((m) => m.platforms.some((p) => filters.platformIds.includes(p.id)));
-    if (filters.genres.length > 0)
-      pool = pool.filter((m) => m.genres.some((g) => filters.genres.includes(g)));
+    if (filters.genres.length > 0) {
+      const filterLower = filters.genres.map((f) => f.toLowerCase());
+      pool = pool.filter((m) =>
+        m.genres.some((g) => filterLower.includes(g.toLowerCase()))
+      );
+    }
     return pool.filter((m, i, arr) => arr.findIndex((x) => x.id === m.id) === i);
   }, [filters, allMovies, allSeries, searchResults]);
 
