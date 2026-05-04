@@ -435,34 +435,33 @@ export async function fetchTopByGenre(
   type: 'movie' | 'tv' = 'movie',
   limit = 12,
 ): Promise<Movie[]> {
-  const genres   = await getGenres(type);
+  const genres    = await getGenres(type);
   const mediaType = type === 'tv' ? 'series' : 'movie';
+  const pages     = Math.min(Math.ceil(limit / 20), 4); // máx 4 páginas = 80 items
 
   try {
-    const [arData, mxData] = await Promise.all([
+    const fetchPage = (region: string, page: number) =>
       getFresh<TMDBListResponse>(`/discover/${type}`, {
         with_genres:      String(genreId),
         sort_by:          'popularity.desc',
-        watch_region:     'AR',
+        watch_region:     region,
         'vote_count.gte': '20',
-        page:             '1',
-      }).catch(() => ({ results: [] })),
-      getFresh<TMDBListResponse>(`/discover/${type}`, {
-        with_genres:      String(genreId),
-        sort_by:          'popularity.desc',
-        watch_region:     'MX',
-        'vote_count.gte': '20',
-        page:             '1',
-      }).catch(() => ({ results: [] })),
-    ]);
+        page:             String(page),
+      }).catch(() => ({ results: [] as TMDBItem[] }));
+
+    const pageNums = Array.from({ length: pages }, (_, i) => i + 1);
+    const allFetches = pageNums.flatMap((p) => [fetchPage('AR', p), fetchPage('MX', p)]);
+    const allResponses = await Promise.all(allFetches);
 
     const seen = new Set<number>();
     const result: Movie[] = [];
 
-    for (const item of [...arData.results, ...mxData.results]) {
-      if (item.poster_path && !seen.has(item.id)) {
-        seen.add(item.id);
-        result.push(mapItem(item, genres, null, mediaType));
+    for (const resp of allResponses) {
+      for (const item of resp.results) {
+        if (item.poster_path && !seen.has(item.id)) {
+          seen.add(item.id);
+          result.push(mapItem(item, genres, null, mediaType));
+        }
       }
     }
     return result.slice(0, limit);

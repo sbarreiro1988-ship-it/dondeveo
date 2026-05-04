@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { X, Star, Calendar, Clock, Tv, Youtube, Play, ExternalLink, Film } from 'lucide-react';
+import { X, Star, Calendar, Clock, Tv, Youtube, Play, Film, Info, ChevronDown } from 'lucide-react';
 import type { Movie } from '@/types';
 import type { Platform } from '@/types';
 
@@ -94,6 +94,24 @@ export default function MovieModal({ movie, onClose }: Props) {
   const [activeTab,      setActiveTab]      = useState<'stream' | 'cinema' | 'rent' | 'buy'>('stream');
   const [cast,           setCast]           = useState<CastMember[]>([]);
   const [castLoading,    setCastLoading]    = useState(false);
+  const [similar,        setSimilar]        = useState<Movie[]>([]);
+  const [showInfo,       setShowInfo]       = useState(false);
+  const [infoLoading,    setInfoLoading]    = useState(false);
+  const [providerLogos,  setProviderLogos]  = useState<Record<string, string>>({});
+
+  // Fetch provider logos once on mount (real TMDB logos)
+  useEffect(() => {
+    fetch('/api/provider-logos')
+      .then((r) => r.json())
+      .then((data: Record<string, string>) => setProviderLogos(data))
+      .catch(() => {});
+  }, []);
+
+  // Reset info panel when movie changes
+  useEffect(() => {
+    setShowInfo(false);
+    setSimilar([]);
+  }, [movie?.tmdbId]);
 
   // Lock scroll
   useEffect(() => {
@@ -146,6 +164,20 @@ export default function MovieModal({ movie, onClose }: Props) {
       .catch(() => setProviders(null))
       .finally(() => setProvidersLoading(false));
   }, [movie?.tmdbId, movie?.type]);
+
+  const toggleInfo = useCallback(async () => {
+    if (showInfo) { setShowInfo(false); return; }
+    setShowInfo(true);
+    if (similar.length > 0 || !movie?.tmdbId) return;
+    setInfoLoading(true);
+    const type = movie.type === 'series' ? 'tv' : 'movie';
+    try {
+      const res  = await fetch(`/api/similar?id=${movie.tmdbId}&type=${type}`);
+      const data = await res.json() as { similar: Movie[] };
+      setSimilar(data.similar ?? []);
+    } catch { setSimilar([]); }
+    finally   { setInfoLoading(false); }
+  }, [showInfo, similar.length, movie?.tmdbId, movie?.type]);
 
   const handleEsc = useCallback(
     (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); }, [onClose],
@@ -373,9 +405,11 @@ export default function MovieModal({ movie, onClose }: Props) {
                   useCurated ? (
                     /* Plataformas curadas (de carruseles + overrides manuales) — siempre prioritarias */
                     <div className="flex flex-wrap gap-4">
-                      {curatedPlatforms.map((pl) => (
-                        <FallbackPlatformLogo key={pl.id} platform={pl} />
-                      ))}
+                      {curatedPlatforms.map((pl) => {
+                        const dynamicLogo = providerLogos[pl.id];
+                        const enriched = dynamicLogo ? { ...pl, logoUrl: dynamicLogo } : pl;
+                        return <FallbackPlatformLogo key={pl.id} platform={enriched} />;
+                      })}
                     </div>
                   ) : hasStream ? (
                     <div className="flex flex-wrap gap-4">
@@ -446,7 +480,7 @@ export default function MovieModal({ movie, onClose }: Props) {
             )}
           </div>
 
-          {/* ── Trailer buttons ── */}
+          {/* ── Botones: Trailer + +Info ── */}
           <div className="flex flex-wrap gap-2">
             {trailerLoading && (
               <div className="flex items-center gap-2 text-gray-500 text-sm px-2">
@@ -455,23 +489,12 @@ export default function MovieModal({ movie, onClose }: Props) {
               </div>
             )}
             {trailerKey && !showTrailer && (
-              <>
-                <button
-                  onClick={() => setShowTrailer(true)}
-                  className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all"
-                >
-                  <Youtube size={15} /> Ver Trailer
-                </button>
-                <a
-                  href={`https://www.youtube.com/watch?v=${trailerKey}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-all"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <ExternalLink size={13} /> YouTube
-                </a>
-              </>
+              <button
+                onClick={() => setShowTrailer(true)}
+                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all"
+              >
+                <Youtube size={15} /> Ver Trailer
+              </button>
             )}
             {showTrailer && (
               <button
@@ -483,10 +506,97 @@ export default function MovieModal({ movie, onClose }: Props) {
             )}
             {!trailerKey && !trailerLoading && (
               <span className="text-gray-600 text-sm px-1 flex items-center gap-1.5">
-                <Youtube size={13} className="text-gray-700" /> Trailer no disponible
+                <Youtube size={13} className="text-gray-700" /> Sin trailer
               </span>
             )}
+            {/* Botón +Info */}
+            <button
+              onClick={toggleInfo}
+              className={`flex items-center gap-2 font-semibold px-4 py-2.5 rounded-xl text-sm transition-all ${
+                showInfo
+                  ? 'bg-dv-accent text-[#111]'
+                  : 'bg-white/10 hover:bg-white/20 text-white'
+              }`}
+            >
+              <Info size={14} />
+              {showInfo ? 'Ocultar info' : '+ Más info'}
+              <ChevronDown size={12} className={`transition-transform ${showInfo ? 'rotate-180' : ''}`} />
+            </button>
           </div>
+
+          {/* ── Panel +Info: descripción larga + similares ── */}
+          {showInfo && (
+            <div className="border border-white/10 rounded-xl overflow-hidden">
+              <div className="bg-white/5 px-4 py-2.5 border-b border-white/10">
+                <p className="text-white text-xs font-black uppercase tracking-widest">
+                  📖 Más información
+                </p>
+              </div>
+              <div className="p-4 space-y-5">
+                {/* Sinopsis completa */}
+                <div>
+                  <h4 className="text-white/50 text-[10px] uppercase tracking-widest font-bold mb-2">Sinopsis</h4>
+                  <p className="text-gray-300 text-sm leading-relaxed">
+                    {movie.overview || 'Sin descripción disponible.'}
+                  </p>
+                </div>
+
+                {/* Títulos similares */}
+                <div>
+                  <h4 className="text-white/50 text-[10px] uppercase tracking-widest font-bold mb-3">
+                    También te puede gustar
+                  </h4>
+                  {infoLoading ? (
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="flex-shrink-0 w-24 animate-pulse">
+                          <div className="aspect-[2/3] bg-white/10 rounded-lg mb-1.5" />
+                          <div className="h-2 bg-white/10 rounded w-20" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : similar.length > 0 ? (
+                    <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+                      {similar.map((m) => (
+                        <button
+                          key={m.id}
+                          onClick={() => {
+                            // Cierra info y abre el nuevo modal
+                            setShowInfo(false);
+                            onClose();
+                            // Dispatch a custom event to open this movie
+                            window.dispatchEvent(new CustomEvent('open-movie', { detail: m }));
+                          }}
+                          className="flex-shrink-0 w-24 text-left group"
+                        >
+                          <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-1.5 bg-white/5">
+                            <Image
+                              src={m.posterPath}
+                              alt={m.title}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform"
+                              unoptimized
+                            />
+                            {m.voteAverage > 0 && (
+                              <div className="absolute bottom-1 left-1 flex items-center gap-0.5 bg-black/70 px-1 py-0.5 rounded">
+                                <Star size={7} className="text-yellow-400 fill-yellow-400" />
+                                <span className="text-yellow-400 text-[8px] font-bold">{m.voteAverage.toFixed(1)}</span>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-white/70 text-[10px] leading-tight line-clamp-2 group-hover:text-dv-accent transition-colors">
+                            {m.title}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-600 text-sm">No hay títulos similares disponibles.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ── Reparto ── */}
           {(castLoading || cast.length > 0) && (

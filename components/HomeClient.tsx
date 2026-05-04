@@ -117,6 +117,16 @@ export default function HomeClient({
     return () => clearTimeout(timer);
   }, [filters.query, doSearch]);
 
+  // Escucha evento global para abrir modal de película similar
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const movie = (e as CustomEvent<Movie>).detail;
+      if (movie) setSelectedMovie(movie);
+    };
+    window.addEventListener('open-movie', handler);
+    return () => window.removeEventListener('open-movie', handler);
+  }, []);
+
   // Platform lookup for enriching Trending / Top 10
   const platformLookup = useMemo(() => {
     const map = new Map<number, Platform[]>();

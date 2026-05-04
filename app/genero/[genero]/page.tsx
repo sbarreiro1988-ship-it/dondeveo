@@ -48,8 +48,8 @@ export default async function GeneroPage({ params }: Props) {
   if (!g) notFound();
 
   const [movies, series] = await Promise.all([
-    fetchByGenreName(g.tmdb, 'movie', 40),
-    fetchByGenreName(g.tmdb, 'tv', 20),
+    fetchByGenreName(g.tmdb, 'movie', 80),
+    fetchByGenreName(g.tmdb, 'tv', 40),
   ]);
 
   const all = [...movies, ...series];
