@@ -2,9 +2,17 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { X, Star, Calendar, Clock, Tv, Youtube, Play, ExternalLink, Film } from 'lucide-react';
 import type { Movie } from '@/types';
 import type { Platform } from '@/types';
+
+interface CastMember {
+  id: number;
+  name: string;
+  character: string;
+  profilePath: string | null;
+}
 
 interface Props {
   movie: Movie | null;
@@ -73,6 +81,8 @@ export default function MovieModal({ movie, onClose }: Props) {
   const [providers,      setProviders]      = useState<RegionProviders | null>(null);
   const [providersLoading, setProvidersLoading] = useState(false);
   const [activeTab,      setActiveTab]      = useState<'stream' | 'cinema' | 'rent' | 'buy'>('stream');
+  const [cast,           setCast]           = useState<CastMember[]>([]);
+  const [castLoading,    setCastLoading]    = useState(false);
 
   // Lock scroll
   useEffect(() => {
@@ -90,6 +100,18 @@ export default function MovieModal({ movie, onClose }: Props) {
       .then((d) => setTrailerKey(d.key ?? null))
       .catch(() => setTrailerKey(null))
       .finally(() => setTrailerLoading(false));
+  }, [movie?.tmdbId, movie?.type]);
+
+  // Fetch cast
+  useEffect(() => {
+    if (!movie?.tmdbId) { setCast([]); return; }
+    setCast([]); setCastLoading(true);
+    const type = movie.type === 'series' ? 'tv' : 'movie';
+    fetch(`/api/cast?id=${movie.tmdbId}&type=${type}`)
+      .then((r) => r.json())
+      .then((d) => setCast(d.cast ?? []))
+      .catch(() => setCast([]))
+      .finally(() => setCastLoading(false));
   }, [movie?.tmdbId, movie?.type]);
 
   // Fetch watch providers
@@ -271,14 +293,22 @@ export default function MovieModal({ movie, onClose }: Props) {
             )}
           </div>
 
-          {/* Genres */}
+          {/* Genres — clicables */}
           {movie.genres.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {movie.genres.map((g) => (
-                <span key={g} className="text-xs px-2.5 py-0.5 rounded-full border border-white/15 text-gray-300 bg-white/5">
-                  {g}
-                </span>
-              ))}
+              {movie.genres.map((g) => {
+                const slug = g.toLowerCase()
+                  .replace('acción', 'accion').replace('animación', 'animacion')
+                  .replace('ciencia ficción', 'ciencia').replace('fantasía', 'fantasia')
+                  .replace('suspenso', 'thriller').replace('suspenso', 'thriller')
+                  .replace(/\s+/g, '-');
+                return (
+                  <Link key={g} href={`/genero/${slug}`} onClick={onClose}
+                    className="text-xs px-2.5 py-0.5 rounded-full border border-white/15 text-gray-300 bg-white/5 hover:border-dv-accent/50 hover:text-dv-accent transition-colors">
+                    {g}
+                  </Link>
+                );
+              })}
             </div>
           )}
 
@@ -446,6 +476,63 @@ export default function MovieModal({ movie, onClose }: Props) {
               </span>
             )}
           </div>
+
+          {/* ── Reparto ── */}
+          {(castLoading || cast.length > 0) && (
+            <div>
+              <h3 className="text-white text-xs font-black uppercase tracking-widest mb-3 flex items-center gap-2">
+                <span className="text-dv-accent">★</span> Reparto principal
+              </h3>
+              {castLoading ? (
+                <div className="flex gap-3 overflow-x-auto pb-1">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="flex-shrink-0 w-16 animate-pulse">
+                      <div className="w-14 h-14 rounded-full bg-white/10 mx-auto mb-1.5" />
+                      <div className="h-2 bg-white/10 rounded w-12 mx-auto mb-1" />
+                      <div className="h-2 bg-white/5 rounded w-10 mx-auto" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+                  {cast.map((member) => (
+                    <Link
+                      key={member.id}
+                      href={`/actor/${member.id}`}
+                      onClick={onClose}
+                      className="flex-shrink-0 w-16 group text-center"
+                    >
+                      <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-white/10 group-hover:ring-dv-accent/60 transition-all mx-auto mb-1.5 bg-[#222]">
+                        {member.profilePath ? (
+                          <Image
+                            src={member.profilePath}
+                            alt={member.name}
+                            width={56}
+                            height={56}
+                            className="object-cover w-full h-full group-hover:scale-105 transition-transform"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-600 text-xl">
+                            👤
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-white text-[10px] font-semibold leading-tight line-clamp-2 group-hover:text-dv-accent transition-colors">
+                        {member.name}
+                      </p>
+                      {member.character && (
+                        <p className="text-gray-500 text-[9px] leading-tight line-clamp-1 mt-0.5">
+                          {member.character}
+                        </p>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
       </div>
     </div>

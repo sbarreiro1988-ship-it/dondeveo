@@ -14,16 +14,16 @@ const PLATFORM_INFO: Record<string, {
   price: string; trial: string; quality: string;
   downloads: boolean; screens: number; originals: boolean;
 }> = {
-  netflix:       { price: '$699/mes',  trial: 'No',       quality: '4K HDR',  downloads: true,  screens: 4, originals: true  },
-  disneyplus:    { price: '$519/mes',  trial: 'No',       quality: '4K HDR',  downloads: true,  screens: 4, originals: true  },
-  max:           { price: '$599/mes',  trial: '7 días',   quality: '4K HDR',  downloads: true,  screens: 3, originals: true  },
-  prime:         { price: '$299/mes',  trial: '30 días',  quality: '4K HDR',  downloads: true,  screens: 3, originals: true  },
-  paramountplus: { price: '$399/mes',  trial: '7 días',   quality: 'Full HD', downloads: true,  screens: 3, originals: true  },
-  appletv:       { price: '$499/mes',  trial: '7 días',   quality: '4K HDR',  downloads: true,  screens: 6, originals: true  },
-  mubi:          { price: '$299/mes',  trial: '30 días',  quality: 'Full HD', downloads: false, screens: 2, originals: false },
-  crunchyroll:   { price: '$299/mes',  trial: '14 días',  quality: 'Full HD', downloads: true,  screens: 4, originals: false },
-  plutotv:       { price: 'Gratis',    trial: 'N/A',      quality: 'HD',      downloads: false, screens: 1, originals: false },
-  plex:          { price: 'Gratis',    trial: 'N/A',      quality: 'HD',      downloads: false, screens: 1, originals: false },
+  netflix:       { price: '$699 UYU/mes',  trial: 'No',       quality: '4K HDR',  downloads: true,  screens: 4, originals: true  },
+  disneyplus:    { price: '$519 UYU/mes',  trial: 'No',       quality: '4K HDR',  downloads: true,  screens: 4, originals: true  },
+  max:           { price: '$599 UYU/mes',  trial: '7 días',   quality: '4K HDR',  downloads: true,  screens: 3, originals: true  },
+  prime:         { price: '$299 UYU/mes',  trial: '30 días',  quality: '4K HDR',  downloads: true,  screens: 3, originals: true  },
+  paramountplus: { price: '$399 UYU/mes',  trial: '7 días',   quality: 'Full HD', downloads: true,  screens: 3, originals: true  },
+  appletv:       { price: 'USD 9.99/mes',  trial: '7 días',   quality: '4K HDR',  downloads: true,  screens: 6, originals: true  },
+  mubi:          { price: '$299 UYU/mes',  trial: '30 días',  quality: 'Full HD', downloads: false, screens: 2, originals: false },
+  crunchyroll:   { price: 'USD 7.99/mes',  trial: '14 días',  quality: 'Full HD', downloads: true,  screens: 4, originals: false },
+  plutotv:       { price: 'Gratis',        trial: 'N/A',      quality: 'HD',      downloads: false, screens: 1, originals: false },
+  plex:          { price: 'Gratis',        trial: 'N/A',      quality: 'HD',      downloads: false, screens: 1, originals: false },
 };
 
 const SLUG_PAIRS: Record<string, [string, string]> = {

@@ -2,8 +2,34 @@
 
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import { useState, useCallback } from 'react';
-import { Search, X, Menu } from 'lucide-react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { Search, X, Menu, ChevronDown } from 'lucide-react';
+
+const GENEROS = [
+  { label: 'Acción',        slug: 'accion' },
+  { label: 'Comedia',       slug: 'comedia' },
+  { label: 'Drama',         slug: 'drama' },
+  { label: 'Terror',        slug: 'terror' },
+  { label: 'Ciencia ficción', slug: 'ciencia' },
+  { label: 'Thriller',      slug: 'thriller' },
+  { label: 'Animación',     slug: 'animacion' },
+  { label: 'Documental',    slug: 'documental' },
+  { label: 'Romance',       slug: 'romance' },
+  { label: 'Aventura',      slug: 'aventura' },
+  { label: 'Fantasía',      slug: 'fantasia' },
+  { label: 'Crimen',        slug: 'crimen' },
+] as const;
+
+const COMPARACIONES = [
+  { label: 'Netflix vs Disney+',    slug: 'netflix-vs-disney' },
+  { label: 'Netflix vs Max',        slug: 'netflix-vs-max' },
+  { label: 'Netflix vs Prime',      slug: 'netflix-vs-prime' },
+  { label: 'Disney+ vs Max',        slug: 'disney-vs-max' },
+  { label: 'Disney+ vs Prime',      slug: 'disney-vs-prime' },
+  { label: 'Max vs Prime',          slug: 'max-vs-prime' },
+  { label: 'Netflix vs Paramount+', slug: 'netflix-vs-paramount' },
+  { label: 'Netflix vs Apple TV+',  slug: 'netflix-vs-appletv' },
+] as const;
 
 // Regular links (Next.js Link) vs hash-scroll links (button)
 const NAV_LINKS = [
@@ -23,11 +49,25 @@ export default function Navbar() {
   const [query, setQuery]           = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [explorarOpen, setExplorarOpen]   = useState(false);
+  const [mobileExplorar, setMobileExplorar] = useState(false);
+  const explorarRef = useRef<HTMLDivElement>(null);
 
   const pathname    = usePathname();
   const searchParams = useSearchParams();
   const router      = useRouter();
   const currentTipo = (searchParams.get('tipo') as string | null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (explorarRef.current && !explorarRef.current.contains(e.target as Node)) {
+        setExplorarOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const submitSearch = useCallback(() => {
     const q = query.trim();
@@ -113,6 +153,58 @@ export default function Navbar() {
               </Link>
             ),
           )}
+
+          {/* ── Explorar dropdown ── */}
+          <div className="relative" ref={explorarRef}>
+            <button
+              onClick={() => setExplorarOpen(!explorarOpen)}
+              className={linkClass(explorarOpen || pathname.startsWith('/genero') || pathname.startsWith('/comparar'))}
+            >
+              <span className="flex items-center gap-1">
+                Explorar
+                <ChevronDown size={12} className={`transition-transform ${explorarOpen ? 'rotate-180' : ''}`} />
+              </span>
+            </button>
+
+            {explorarOpen && (
+              <div className="absolute top-full left-0 mt-1 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden w-[480px]">
+                <div className="grid grid-cols-2 divide-x divide-white/10">
+                  {/* Géneros */}
+                  <div className="p-3">
+                    <p className="text-[10px] uppercase tracking-widest text-dv-muted font-bold px-2 mb-2">Géneros</p>
+                    <div className="grid grid-cols-2 gap-0.5">
+                      {GENEROS.map((g) => (
+                        <Link
+                          key={g.slug}
+                          href={`/genero/${g.slug}`}
+                          onClick={() => setExplorarOpen(false)}
+                          className="px-2 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                        >
+                          {g.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Comparar */}
+                  <div className="p-3">
+                    <p className="text-[10px] uppercase tracking-widest text-dv-muted font-bold px-2 mb-2">Comparar plataformas</p>
+                    <div className="space-y-0.5">
+                      {COMPARACIONES.map((c) => (
+                        <Link
+                          key={c.slug}
+                          href={`/comparar/${c.slug}`}
+                          onClick={() => setExplorarOpen(false)}
+                          className="block px-2 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                        >
+                          {c.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ── Search bar (always visible on desktop) ── */}
@@ -170,7 +262,7 @@ export default function Navbar() {
 
       {/* ── Mobile menu ── */}
       {mobileOpen && (
-        <div className="md:hidden bg-[#111]/98 border-t border-white/5 animate-slide-up">
+        <div className="md:hidden bg-[#111]/98 border-t border-white/5 animate-slide-up max-h-[80vh] overflow-y-auto">
           {NAV_LINKS.map((l) =>
             l.hash ? (
               <button
@@ -192,6 +284,46 @@ export default function Navbar() {
                 {l.label}
               </Link>
             ),
+          )}
+
+          {/* Explorar — acordeón mobile */}
+          <button
+            onClick={() => setMobileExplorar(!mobileExplorar)}
+            className="w-full flex items-center justify-between px-5 py-3 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
+          >
+            <span>Explorar</span>
+            <ChevronDown size={14} className={`transition-transform ${mobileExplorar ? 'rotate-180' : ''}`} />
+          </button>
+
+          {mobileExplorar && (
+            <div className="bg-black/20 border-t border-white/5">
+              <p className="text-[10px] uppercase tracking-widest text-dv-muted font-bold px-5 pt-3 pb-1">Géneros</p>
+              <div className="grid grid-cols-3 gap-0.5 px-3 pb-2">
+                {GENEROS.map((g) => (
+                  <Link
+                    key={g.slug}
+                    href={`/genero/${g.slug}`}
+                    onClick={() => { setMobileOpen(false); setMobileExplorar(false); }}
+                    className="px-2 py-2 text-xs text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-center"
+                  >
+                    {g.label}
+                  </Link>
+                ))}
+              </div>
+              <p className="text-[10px] uppercase tracking-widest text-dv-muted font-bold px-5 pt-2 pb-1 border-t border-white/5">Comparar</p>
+              <div className="px-3 pb-3 space-y-0.5">
+                {COMPARACIONES.map((c) => (
+                  <Link
+                    key={c.slug}
+                    href={`/comparar/${c.slug}`}
+                    onClick={() => { setMobileOpen(false); setMobileExplorar(false); }}
+                    className="block px-2 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                  >
+                    {c.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       )}
