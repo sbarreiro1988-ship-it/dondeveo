@@ -98,6 +98,18 @@ export default function MovieModal({ movie, onClose }: Props) {
   const [showInfo,       setShowInfo]       = useState(false);
   const [infoLoading,    setInfoLoading]    = useState(false);
   const [providerLogos,  setProviderLogos]  = useState<Record<string, string>>({});
+  const [details,        setDetails]        = useState<{
+    tagline?: string | null;
+    status?: string | null;
+    director?: string | null;
+    writers?: string[];
+    country?: string;
+    language?: string;
+    budget?: number | null;
+    revenue?: number | null;
+    networks?: string[];
+    keywords?: string[];
+  } | null>(null);
 
   // Fetch provider logos once on mount (real TMDB logos)
   useEffect(() => {
@@ -111,6 +123,7 @@ export default function MovieModal({ movie, onClose }: Props) {
   useEffect(() => {
     setShowInfo(false);
     setSimilar([]);
+    setDetails(null);
   }, [movie?.tmdbId]);
 
   // Lock scroll
@@ -168,16 +181,33 @@ export default function MovieModal({ movie, onClose }: Props) {
   const toggleInfo = useCallback(async () => {
     if (showInfo) { setShowInfo(false); return; }
     setShowInfo(true);
-    if (similar.length > 0 || !movie?.tmdbId) return;
-    setInfoLoading(true);
+    if (!movie?.tmdbId) return;
     const type = movie.type === 'series' ? 'tv' : 'movie';
+    // Fetch details + similar in parallel (only once per movie)
+    setInfoLoading(true);
     try {
-      const res  = await fetch(`/api/similar?id=${movie.tmdbId}&type=${type}`);
-      const data = await res.json() as { similar: Movie[] };
-      setSimilar(data.similar ?? []);
-    } catch { setSimilar([]); }
-    finally   { setInfoLoading(false); }
-  }, [showInfo, similar.length, movie?.tmdbId, movie?.type]);
+      const fetches: Promise<void>[] = [];
+      if (!details) {
+        fetches.push(
+          fetch(`/api/movie-details?id=${movie.tmdbId}&type=${type}`)
+            .then((r) => r.json())
+            .then((d) => setDetails(d))
+            .catch(() => setDetails({}))
+        );
+      }
+      if (similar.length === 0) {
+        fetches.push(
+          fetch(`/api/similar?id=${movie.tmdbId}&type=${type}`)
+            .then((r) => r.json())
+            .then((d: { similar: Movie[] }) => setSimilar(d.similar ?? []))
+            .catch(() => setSimilar([]))
+        );
+      }
+      await Promise.all(fetches);
+    } finally {
+      setInfoLoading(false);
+    }
+  }, [showInfo, similar.length, details, movie?.tmdbId, movie?.type]);
 
   const handleEsc = useCallback(
     (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); }, [onClose],
@@ -524,77 +554,155 @@ export default function MovieModal({ movie, onClose }: Props) {
             </button>
           </div>
 
-          {/* ── Panel +Info: descripción larga + similares ── */}
+          {/* ── Panel +Info ── */}
           {showInfo && (
             <div className="border border-white/10 rounded-xl overflow-hidden">
-              <div className="bg-white/5 px-4 py-2.5 border-b border-white/10">
-                <p className="text-white text-xs font-black uppercase tracking-widest">
-                  📖 Más información
-                </p>
+              <div className="bg-white/5 px-4 py-2.5 border-b border-white/10 flex items-center justify-between">
+                <p className="text-white text-xs font-black uppercase tracking-widest">📖 Ficha técnica</p>
+                {/* Link SEO a página propia */}
+                <Link
+                  href={`/donde-ver/${encodeURIComponent(movie.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))}`}
+                  onClick={onClose}
+                  className="text-dv-accent text-[10px] font-semibold hover:underline flex items-center gap-1"
+                >
+                  Ver página completa →
+                </Link>
               </div>
-              <div className="p-4 space-y-5">
-                {/* Sinopsis completa */}
-                <div>
-                  <h4 className="text-white/50 text-[10px] uppercase tracking-widest font-bold mb-2">Sinopsis</h4>
-                  <p className="text-gray-300 text-sm leading-relaxed">
-                    {movie.overview || 'Sin descripción disponible.'}
-                  </p>
-                </div>
 
-                {/* Títulos similares */}
-                <div>
-                  <h4 className="text-white/50 text-[10px] uppercase tracking-widest font-bold mb-3">
-                    También te puede gustar
-                  </h4>
-                  {infoLoading ? (
-                    <div className="flex gap-2 overflow-x-auto pb-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} className="flex-shrink-0 w-24 animate-pulse">
-                          <div className="aspect-[2/3] bg-white/10 rounded-lg mb-1.5" />
-                          <div className="h-2 bg-white/10 rounded w-20" />
-                        </div>
-                      ))}
-                    </div>
-                  ) : similar.length > 0 ? (
-                    <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
-                      {similar.map((m) => (
-                        <button
-                          key={m.id}
-                          onClick={() => {
-                            // Cierra info y abre el nuevo modal
-                            setShowInfo(false);
-                            onClose();
-                            // Dispatch a custom event to open this movie
-                            window.dispatchEvent(new CustomEvent('open-movie', { detail: m }));
-                          }}
-                          className="flex-shrink-0 w-24 text-left group"
-                        >
-                          <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-1.5 bg-white/5">
-                            <Image
-                              src={m.posterPath}
-                              alt={m.title}
-                              fill
-                              className="object-cover group-hover:scale-105 transition-transform"
-                              unoptimized
-                            />
-                            {m.voteAverage > 0 && (
-                              <div className="absolute bottom-1 left-1 flex items-center gap-0.5 bg-black/70 px-1 py-0.5 rounded">
-                                <Star size={7} className="text-yellow-400 fill-yellow-400" />
-                                <span className="text-yellow-400 text-[8px] font-bold">{m.voteAverage.toFixed(1)}</span>
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-white/70 text-[10px] leading-tight line-clamp-2 group-hover:text-dv-accent transition-colors">
-                            {m.title}
-                          </p>
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-gray-600 text-sm">No hay títulos similares disponibles.</p>
-                  )}
+              {infoLoading && !details ? (
+                <div className="flex items-center justify-center py-8 gap-2 text-gray-500 text-sm">
+                  <div className="w-4 h-4 border-2 border-gray-600 border-t-gray-300 rounded-full animate-spin" />
+                  Cargando…
                 </div>
-              </div>
+              ) : (
+                <div className="p-4 space-y-5">
+
+                  {/* Tagline */}
+                  {details?.tagline && (
+                    <p className="text-dv-accent italic text-sm font-medium border-l-2 border-dv-accent pl-3">
+                      "{details.tagline}"
+                    </p>
+                  )}
+
+                  {/* Ficha técnica */}
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-2.5">
+                    {details?.director && (
+                      <div>
+                        <p className="text-white/40 text-[9px] uppercase tracking-widest mb-0.5">
+                          {movie.type === 'series' ? 'Creador/a' : 'Director/a'}
+                        </p>
+                        <p className="text-white text-xs font-semibold">{details.director}</p>
+                      </div>
+                    )}
+                    {details?.writers && details.writers.length > 0 && (
+                      <div>
+                        <p className="text-white/40 text-[9px] uppercase tracking-widest mb-0.5">Guión</p>
+                        <p className="text-white text-xs font-semibold">{details.writers.join(', ')}</p>
+                      </div>
+                    )}
+                    {details?.country && (
+                      <div>
+                        <p className="text-white/40 text-[9px] uppercase tracking-widest mb-0.5">País</p>
+                        <p className="text-white text-xs font-semibold">{details.country}</p>
+                      </div>
+                    )}
+                    {details?.language && (
+                      <div>
+                        <p className="text-white/40 text-[9px] uppercase tracking-widest mb-0.5">Idioma original</p>
+                        <p className="text-white text-xs font-semibold">{details.language}</p>
+                      </div>
+                    )}
+                    {details?.status && (
+                      <div>
+                        <p className="text-white/40 text-[9px] uppercase tracking-widest mb-0.5">Estado</p>
+                        <p className="text-white text-xs font-semibold">{details.status}</p>
+                      </div>
+                    )}
+                    {details?.networks && details.networks.length > 0 && (
+                      <div>
+                        <p className="text-white/40 text-[9px] uppercase tracking-widest mb-0.5">Canal/Red</p>
+                        <p className="text-white text-xs font-semibold">{details.networks.join(', ')}</p>
+                      </div>
+                    )}
+                    {details?.budget && (
+                      <div>
+                        <p className="text-white/40 text-[9px] uppercase tracking-widest mb-0.5">Presupuesto</p>
+                        <p className="text-white text-xs font-semibold">
+                          ${(details.budget / 1_000_000).toFixed(0)}M USD
+                        </p>
+                      </div>
+                    )}
+                    {details?.revenue && (
+                      <div>
+                        <p className="text-white/40 text-[9px] uppercase tracking-widest mb-0.5">Recaudación</p>
+                        <p className="text-white text-xs font-semibold">
+                          ${(details.revenue / 1_000_000).toFixed(0)}M USD
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Keywords */}
+                  {details?.keywords && details.keywords.length > 0 && (
+                    <div>
+                      <p className="text-white/40 text-[9px] uppercase tracking-widest mb-2">Temas</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {details.keywords.map((k) => (
+                          <span key={k} className="text-[10px] px-2 py-0.5 rounded-full bg-white/8 border border-white/10 text-gray-400">
+                            {k}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Títulos similares */}
+                  <div>
+                    <p className="text-white/40 text-[9px] uppercase tracking-widest mb-3">También te puede gustar</p>
+                    {infoLoading && similar.length === 0 ? (
+                      <div className="flex gap-2 overflow-x-auto pb-1">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <div key={i} className="flex-shrink-0 w-24 animate-pulse">
+                            <div className="aspect-[2/3] bg-white/10 rounded-lg mb-1.5" />
+                            <div className="h-2 bg-white/10 rounded w-20" />
+                          </div>
+                        ))}
+                      </div>
+                    ) : similar.length > 0 ? (
+                      <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+                        {similar.map((m) => (
+                          <button
+                            key={m.id}
+                            onClick={() => {
+                              setShowInfo(false);
+                              onClose();
+                              window.dispatchEvent(new CustomEvent('open-movie', { detail: m }));
+                            }}
+                            className="flex-shrink-0 w-24 text-left group"
+                          >
+                            <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-1.5 bg-white/5">
+                              <Image src={m.posterPath} alt={m.title} fill
+                                className="object-cover group-hover:scale-105 transition-transform" unoptimized />
+                              {m.voteAverage > 0 && (
+                                <div className="absolute bottom-1 left-1 flex items-center gap-0.5 bg-black/70 px-1 py-0.5 rounded">
+                                  <Star size={7} className="text-yellow-400 fill-yellow-400" />
+                                  <span className="text-yellow-400 text-[8px] font-bold">{m.voteAverage.toFixed(1)}</span>
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-white/70 text-[10px] leading-tight line-clamp-2 group-hover:text-dv-accent transition-colors">
+                              {m.title}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-600 text-xs">Sin títulos similares disponibles.</p>
+                    )}
+                  </div>
+
+                </div>
+              )}
             </div>
           )}
 
