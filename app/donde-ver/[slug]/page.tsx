@@ -2,8 +2,54 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowLeft, Star, Play, Tv, Film } from 'lucide-react';
+import { ArrowLeft, Star } from 'lucide-react';
 import { searchByTitle, fetchAllWatchProviders, IMAGE_BASE } from '@/lib/tmdb';
+
+const TMDB_BASE  = 'https://api.themoviedb.org/3';
+const TMDB_TOKEN = process.env.TMDB_ACCESS_TOKEN;
+
+async function fetchPageCast(id: number, type: string) {
+  try {
+    const res = await fetch(
+      `${TMDB_BASE}/${type}/${id}/credits?language=es-419`,
+      { headers: { Authorization: `Bearer ${TMDB_TOKEN}` }, next: { revalidate: 86400 } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json() as {
+      cast?: { id: number; name: string; character: string; profile_path: string | null; order: number }[]
+    };
+    return (data.cast ?? [])
+      .filter((a) => a.profile_path)
+      .slice(0, 12)
+      .map((a) => ({
+        id: a.id, name: a.name, character: a.character,
+        profilePath: `${IMAGE_BASE}/w185${a.profile_path}`,
+      }));
+  } catch { return []; }
+}
+
+async function fetchPageSimilar(id: number, type: string) {
+  try {
+    const res = await fetch(
+      `${TMDB_BASE}/${type}/${id}/similar?language=es-419`,
+      { headers: { Authorization: `Bearer ${TMDB_TOKEN}` }, next: { revalidate: 86400 } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json() as {
+      results?: { id: number; title?: string; name?: string; poster_path: string | null; vote_average: number }[]
+    };
+    return (data.results ?? [])
+      .filter((m) => m.poster_path)
+      .slice(0, 12)
+      .map((m) => ({
+        id: m.id,
+        title: m.title ?? m.name ?? '',
+        posterPath: `${IMAGE_BASE}/w342${m.poster_path}`,
+        voteAverage: Math.round(m.vote_average * 10) / 10,
+        slug: (m.title ?? m.name ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+      }));
+  } catch { return []; }
+}
 
 export const dynamic    = 'force-dynamic';
 export const dynamicParams = true;
@@ -31,7 +77,13 @@ export default async function DondeVerPage({ params }: Props) {
 
   const main = results[0];
   const type = main.type === 'series' ? 'tv' : 'movie';
-  const providers = await fetchAllWatchProviders(main.tmdbId ?? main.id, type);
+  const tmdbId = main.tmdbId ?? main.id;
+
+  const [providers, cast, similar] = await Promise.all([
+    fetchAllWatchProviders(tmdbId, type),
+    fetchPageCast(tmdbId, type),
+    fetchPageSimilar(tmdbId, type),
+  ]);
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -150,18 +202,50 @@ export default async function DondeVerPage({ params }: Props) {
           </div>
         )}
 
-        {/* Otros resultados */}
-        {results.length > 1 && (
+        {/* Reparto principal */}
+        {cast.length > 0 && (
           <div className="mb-10">
-            <h2 className="text-white text-lg font-bold mb-3">También podría interesarte</h2>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-              {results.slice(1, 7).map((m) => (
-                <Link key={m.id} href={`/donde-ver/${encodeURIComponent(m.title.toLowerCase().replace(/\s+/g, '-'))}`}
-                  className="group">
-                  <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-1">
-                    <Image src={m.posterPath} alt={m.title} fill className="object-cover group-hover:scale-105 transition-transform" unoptimized />
+            <h2 className="text-white text-lg font-bold mb-4">⭐ Reparto principal</h2>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
+              {cast.map((actor) => (
+                <Link key={actor.id} href={`/actor/${actor.id}`} className="group text-center">
+                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden mx-auto mb-2 bg-white/10
+                    ring-2 ring-white/10 group-hover:ring-dv-accent/60 transition-all">
+                    <Image src={actor.profilePath} alt={actor.name} width={80} height={80}
+                      className="object-cover w-full h-full group-hover:scale-105 transition-transform" unoptimized />
                   </div>
-                  <p className="text-white/70 text-xs line-clamp-2 group-hover:text-dv-accent transition-colors">{m.title}</p>
+                  <p className="text-white text-xs font-semibold line-clamp-2 group-hover:text-dv-accent transition-colors">
+                    {actor.name}
+                  </p>
+                  {actor.character && (
+                    <p className="text-white/40 text-[10px] line-clamp-1 mt-0.5">{actor.character}</p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Similares */}
+        {similar.length > 0 && (
+          <div className="mb-10">
+            <h2 className="text-white text-lg font-bold mb-4">🎬 También te puede gustar</h2>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+              {similar.map((m) => (
+                <Link key={m.id} href={`/donde-ver/${m.slug}`} className="group">
+                  <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-1.5 bg-white/5">
+                    <Image src={m.posterPath} alt={m.title} fill
+                      className="object-cover group-hover:scale-105 transition-transform" unoptimized />
+                    {m.voteAverage > 0 && (
+                      <div className="absolute bottom-1 left-1 flex items-center gap-0.5 bg-black/70 px-1.5 py-0.5 rounded">
+                        <Star size={8} className="text-yellow-400 fill-yellow-400" />
+                        <span className="text-yellow-400 text-[9px] font-bold">{m.voteAverage.toFixed(1)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-white/70 text-xs line-clamp-2 group-hover:text-dv-accent transition-colors">
+                    {m.title}
+                  </p>
                 </Link>
               ))}
             </div>
