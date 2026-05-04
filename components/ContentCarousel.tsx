@@ -35,20 +35,23 @@ export default function ContentCarousel({
   const [canLeft, setCanLeft]   = useState(false);
   const [canRight, setCanRight] = useState(true);
 
-  function getActiveRef() {
-    // Usar el ref visible según el ancho de pantalla
-    if (typeof window !== 'undefined' && window.innerWidth < 768) return refMobile;
-    return refDesktop;
+  function getActiveEl(): HTMLDivElement | null {
+    // offsetParent === null significa que el elemento está oculto con display:none
+    const d = refDesktop.current;
+    const m = refMobile.current;
+    if (d && d.offsetParent !== null) return d;
+    if (m && m.offsetParent !== null) return m;
+    return d ?? m;
   }
 
   function scroll(dir: 'left' | 'right') {
-    const el = getActiveRef().current;
+    const el = getActiveEl();
     if (!el) return;
     el.scrollBy({ left: dir === 'left' ? -(el.clientWidth * 0.75) : el.clientWidth * 0.75, behavior: 'smooth' });
   }
 
   function onScroll() {
-    const el = getActiveRef().current;
+    const el = getActiveEl();
     if (!el) return;
     setCanLeft(el.scrollLeft > 10);
     setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 10);

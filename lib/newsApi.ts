@@ -199,7 +199,8 @@ export async function fetchInternalNews(): Promise<NewsItem[]> {
       category: string; thumbnail?: string | null; source: string; publishedAt: string;
     }> };
 
-    return (data.articles ?? []).map((a) => ({
+    // Solo los últimos 20 para la home — el resto vive en /noticias y sitemap
+    return (data.articles ?? []).slice(0, 20).map((a) => ({
       id:         a.uid,
       title:      a.title,
       excerpt:    a.intro,

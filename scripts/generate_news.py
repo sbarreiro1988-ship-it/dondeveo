@@ -35,21 +35,26 @@ GROQ_API_KEY = "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"
 OUTPUT_DIR = Path("/home/surastre/public_html/dondeveo-news")
 
 # Máximo de artículos a mantener en el índice (los más nuevos)
-MAX_ARTICLES = 40
+MAX_ARTICLES = 100000  # Acumular para SEO — prácticamente ilimitado (15GB libres en hosting)
 
 # Artículos nuevos máximos por ejecución (para no agotar la cuota de Gemini)
-MAX_NEW_PER_RUN = 5
+MAX_NEW_PER_RUN = 8
 
 # Fuentes RSS — cine y streaming en español
 RSS_FEEDS = [
-    "https://www.20minutos.es/rss/cine/",
+    # ── Fuentes en inglés primero — actores, directores, plataformas mundiales
+    "https://variety.com/feed/",
+    "https://deadline.com/feed/",
+    "https://www.hollywoodreporter.com/feed/",
+    "https://collider.com/feed/",
+    "https://screenrant.com/feed/",
+
+    # ── Cine y streaming en español ──────────────────────────────────────────
+    "https://www.sensacine.com/rss/noticias-cine.xml",
     "https://www.espinof.com/rss",
     "https://www.fotogramas.es/feed/",
-    "https://www.sensacine.com/rss/noticias-cine.xml",
-    "https://www.infobae.com/feeds/rss/entretenimiento/",
+    "https://www.20minutos.es/rss/cine/",
     "https://www.clarin.com/rss/espectaculos/",
-    "https://www.lanacion.com.ar/rss/secciones/espectaculos.xml",
-    "https://www.elobservador.com.uy/rss/cultura",
 ]
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -86,12 +91,24 @@ def clean_html(text: str) -> str:
 
 
 def is_relevant(title: str) -> bool:
-    """Filtra noticias que no son de cine/streaming."""
+    """Filtra noticias que no son de cine/streaming/actores."""
     title_lower = title.lower()
-    # Excluir política, deportes, economía
-    blocklist = ["fútbol", "futbol", "gobierno", "política", "economía", "banco",
-                 "inflación", "dolar", "peso", "elecciones", "ministerio",
-                 "deporte", "tenis", "basket", "rugby", "cricket"]
+    # Excluir política, deportes, economía, música
+    blocklist = [
+        # Política y economía
+        "gobierno", "política", "economía", "banco", "inflación", "dolar",
+        "peso", "elecciones", "ministerio", "presidente", "senado",
+        # Deportes
+        "fútbol", "futbol", "tenis", "basket", "rugby", "cricket", "golf",
+        "formula 1", "nfl", "nba", "mlb", "fifa", "mundial",
+        # Música (no es el foco del sitio)
+        "canción", "cancion", "álbum", "album", "tour ", " gira", "concierto",
+        "spotify", "grammy", "billboard", "banda ", "cantante", "singer",
+        "música", "musica", "reggaeton", "trap", "rapper", "dj ",
+        "taylor swift", "bad bunny", "shakira", "ed sheeran", "beyonce",
+        # Reality / farándula sin interés cinematográfico
+        "gran hermano", "rating del", "bachelor",
+    ]
     return not any(b in title_lower for b in blocklist)
 
 
@@ -100,16 +117,24 @@ def is_relevant(title: str) -> bool:
 def rewrite_with_groq(title: str, summary: str, source: str) -> dict:
     """Llama a Groq API para reescribir el artículo de forma original."""
     prompt = (
-        "Sos redactor de DondeVeo, una web de entretenimiento uruguaya sobre cine y streaming. "
-        "Reescribi completamente el siguiente articulo en espanol rioplatense (tuteo, estilo argentino/uruguayo), "
-        "de manera original y atractiva. El contenido debe ser 100% unico y util para el lector.\n\n"
+        "Sos redactor de DondeVeo, una web de entretenimiento uruguaya sobre cine y streaming.\n\n"
+        "REGLAS ESTRICTAS — OBLIGATORIO CUMPLIR:\n"
+        "1. NUNCA inventes datos, fechas, nacionalidades, nombres o hechos que no esten en el resumen.\n"
+        "2. NUNCA cambies la nacionalidad de personas (ej: si es americano, es americano).\n"
+        "3. NUNCA agregues informacion que no este en el texto original.\n"
+        "4. Solo podes cambiar el estilo de escritura, NO los datos facticos.\n"
+        "5. Si el articulo esta en ingles, TRADUCILO completamente al espanol rioplatense.\n"
+        "6. Usa tuteo (vos, tenes, mira) — estilo argentino/uruguayo.\n"
+        "7. El tema debe ser sobre: actores, actrices, directores, peliculas, series, plataformas de streaming, estrenos, Oscar, festivales de cine.\n\n"
+        "TAREA: Reescribi (o traduce si esta en ingles) el siguiente articulo en espanol rioplatense, "
+        "manteniendo TODOS los datos originales sin modificarlos.\n\n"
         "Titulo original: " + title + "\n"
-        "Resumen: " + summary[:600] + "\n"
+        "Resumen: " + summary[:800] + "\n"
         "Fuente: " + source + "\n\n"
         "Devolvé UNICAMENTE un objeto JSON valido (sin markdown, sin bloques de codigo) con esta estructura:\n"
-        '{"title":"titulo reescrito maximo 80 chars","intro":"2-3 oraciones de intro",'
-        '"body":"3-4 parrafos de desarrollo","conclusion":"parrafo final",'
-        '"tags":["tag1","tag2"],"category":"Cine"}'
+        '{"title":"titulo en espanol maximo 85 chars","intro":"2-3 oraciones de intro basadas SOLO en el resumen",'
+        '"body":"3-4 parrafos basados SOLO en los datos del resumen sin inventar nada","conclusion":"reflexion final para el lector uruguayo",'
+        '"tags":["tag1","tag2","tag3"],"category":"Cine"}'
     )
 
     try:
@@ -122,7 +147,7 @@ def rewrite_with_groq(title: str, summary: str, source: str) -> dict:
             json={
                 "model": "llama-3.1-8b-instant",
                 "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.7,
+                "temperature": 0.3,
                 "max_tokens": 1024,
             },
             timeout=30,
@@ -238,19 +263,26 @@ def main():
                 if len(summary) < 30:
                     summary = title_raw
 
-                # Nombre corto de la fuente — extraer dominio si el título es muy largo
-                raw_source = clean_html(feed.feed.get("title", ""))
-                raw_source = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', raw_source)
-                raw_source = re.sub(r'https?://\S+', '', raw_source).strip(" -:|")
-                # Si tiene separadores típicos (- | :) tomar solo la primera parte
-                for sep in [" - ", " | ", ": "]:
-                    if sep in raw_source:
-                        raw_source = raw_source.split(sep)[0].strip()
-                        break
-                # Si sigue siendo largo, usar el dominio del feed
-                if len(raw_source) > 20:
-                    raw_source = feed_url.split("/")[2].replace("www.", "")
-                source_name = raw_source[:20] if raw_source else feed_url.split("/")[2]
+                # Nombre corto de la fuente — siempre usar el dominio del feed (más confiable)
+                source_name = feed_url.split("/")[2].replace("www.", "").split(".")[0].capitalize()
+                # Mapeo manual de dominios conocidos a nombres legibles
+                domain_map = {
+                    "20minutos": "20minutos.es",
+                    "espinof": "Espinof",
+                    "fotogramas": "Fotogramas",
+                    "sensacine": "SensaCine",
+                    "infobae": "Infobae",
+                    "clarin": "Clarín",
+                    "lanacion": "La Nación",
+                    "elobservador": "El Observador",
+                    "variety": "Variety",
+                    "deadline": "Deadline",
+                    "hollywoodreporter": "Hollywood Reporter",
+                    "collider": "Collider",
+                    "screenrant": "Screen Rant",
+                }
+                domain_key = feed_url.split("/")[2].replace("www.", "").split(".")[0]
+                source_name = domain_map.get(domain_key, domain_key.capitalize())
 
                 # Obtener thumbnail
                 thumbnail = None
