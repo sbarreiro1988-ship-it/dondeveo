@@ -239,21 +239,28 @@ export default function MovieModal({ movie, onClose }: Props) {
   const hasRent   = rentProviders.length > 0;
   const hasBuy    = buyProviders.length > 0;
 
-  // PRIORIDAD: TMDB watch-providers (datos reales y actualizados) > curated (carrusel)
-  // Los datos de carrusel solo se usan como fallback cuando TMDB no tiene info para UY/AR.
+  // ESTRATEGIA MERGE: TMDB + carrusel combinados (no "uno u otro")
+  // TMDB cubre suscripciones (Netflix, Prime, etc.)
+  // Carrusel cubre servicios gratis/regionales (Pluto TV, Mercado Play, etc.) que TMDB no siempre registra
   const curatedPlatforms = movie.platforms;
 
-  // TMDB tiene datos → usarlos. TMDB vacío → curated como fallback.
-  const useStream  = hasStream;                                   // TMDB flatrate/free
-  const useCurated = !hasStream && curatedPlatforms.length > 0;  // fallback si TMDB no tiene nada
+  // Plataformas curadas que NO aparecen ya en TMDB (evita duplicados)
+  const extraCurated = providersLoading ? [] : curatedPlatforms.filter((pl) => {
+    const firstWord = pl.name.toLowerCase().split(/[\s+]/)[0];
+    return !streamProviders.some((p) =>
+      p.provider_name.toLowerCase().includes(firstWord) ||
+      firstWord.includes(p.provider_name.toLowerCase().split(' ')[0])
+    );
+  });
 
-  const effectiveHasStream = hasStream || curatedPlatforms.length > 0;
+  const totalStreamCount = streamProviders.length + extraCurated.length;
+  const effectiveHasStream = totalStreamCount > 0 || (providersLoading && curatedPlatforms.length > 0);
 
   // A movie is "in cinemas" if: no stream/rent/buy yet, it's a movie (not series), and released recently
   const inCinemas = !providersLoading && !effectiveHasStream && !hasRent && !hasBuy
     && movie.type === 'movie' && isRecentRelease;
 
-  const streamCount = hasStream ? streamProviders.length : curatedPlatforms.length;
+  const streamCount = totalStreamCount || curatedPlatforms.length;
   const tabs = [
     { id: 'stream' as const, label: 'Stream',   count: streamCount,         show: true },
     { id: 'rent'   as const, label: 'Alquilar', count: rentProviders.length, show: hasRent },
@@ -432,17 +439,14 @@ export default function MovieModal({ movie, onClose }: Props) {
                   </div>
                 )}
 
-                {/* Stream providers */}
+                {/* Stream providers — TMDB + curated mezclados */}
                 {activeTab === 'stream' && (
-                  useStream ? (
-                    /* TMDB watch-providers — fuente de verdad, más precisa */
+                  effectiveHasStream && !providersLoading ? (
                     <div className="flex flex-wrap gap-4">
+                      {/* TMDB: suscripciones (Netflix, Prime, Disney+, etc.) */}
                       {streamProviders.map((p) => <ProviderLogo key={p.provider_id} p={p} />)}
-                    </div>
-                  ) : useCurated ? (
-                    /* Fallback: plataformas del carrusel (solo si TMDB no tiene datos UY/AR) */
-                    <div className="flex flex-wrap gap-4">
-                      {curatedPlatforms.map((pl) => {
+                      {/* Carrusel: gratis/regionales no cubiertos por TMDB (Pluto, Mercado Play…) */}
+                      {extraCurated.map((pl) => {
                         const dynamicLogo = providerLogos[pl.id];
                         const enriched = dynamicLogo ? { ...pl, logoUrl: dynamicLogo } : pl;
                         return <FallbackPlatformLogo key={pl.id} platform={enriched} />;
@@ -505,9 +509,7 @@ export default function MovieModal({ movie, onClose }: Props) {
 
                 {/* Note */}
                 <p className="text-gray-700 text-[10px] mt-3">
-                  {useStream
-                    ? 'Datos de TMDB · Región: Uruguay / Argentina · Puede variar según tu plan'
-                    : 'Datos de disponibilidad para Uruguay · Puede variar según tu plan'}
+                  Disponibilidad en Uruguay / Argentina · Puede variar según tu plan
                 </p>
               </div>
             )}
