@@ -486,60 +486,56 @@ export async function fetchNewOnPlatform(
   const dateKey   = type === 'tv' ? 'first_air_date' : 'primary_release_date';
   const toDate    = new Date().toISOString().split('T')[0];
 
-  // Ventana "reciente" = últimos 6 meses para el sort por popularidad
-  const sixMonthsAgo = new Date();
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-  const recentFrom = sixMonthsAgo.toISOString().split('T')[0];
+  // Ventana "reciente" = últimos 12 meses para capturar más contenido
+  const twelveMonthsAgo = new Date();
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+  const recentFrom = twelveMonthsAgo.toISOString().split('T')[0];
 
   const seen    = new Set<number>();
   const results: Movie[] = [];
 
-  const base = {
-    with_watch_providers: String(providerId),
-    watch_region:         'AR',
-  };
+  // Regiones LATAM — mismo catálogo de streaming, mejor cobertura combinada
+  const LATAM = ['AR', 'MX', 'CL', 'CO', 'UY'];
 
-  // ── Fase 1: más recientes según fecha de estreno (lo que TMDB ya registró) ──
-  for (let page = 1; page <= 3; page++) {
-    try {
-      const data = await getFresh<TMDBListResponse>(`/discover/${type}`, {
-        ...base,
-        sort_by:            `${dateKey}.desc`,
-        [`${dateKey}.lte`]: toDate,
-        'vote_count.gte':   '1',   // incluir títulos muy nuevos con pocos votos
-        page:               String(page),
-      });
-      for (const item of data.results) {
-        if (item.poster_path && !seen.has(item.id)) {
-          seen.add(item.id);
-          results.push(mapItem(item, genres, platform, mediaType));
-        }
-      }
-      if (!data.total_pages || page >= (data.total_pages ?? 1)) break;
-    } catch { break; }
+  async function fetchRegion(region: string, sort: string, extra: Record<string, string> = {}) {
+    const data = await getFresh<TMDBListResponse>(`/discover/${type}`, {
+      with_watch_providers: String(providerId),
+      watch_region:         region,
+      sort_by:              sort,
+      'vote_count.gte':     '1',
+      ...extra,
+    }).catch(() => ({ results: [] } as TMDBListResponse));
+    return data.results ?? [];
   }
 
-  // ── Fase 2: más populares de los últimos 6 meses ──────────────────────────
-  // Captura títulos recién agregados al catálogo (estreno viejo, recién llegaron)
-  // que tienen pico de popularidad — complementa perfectamente la fase 1.
-  for (let page = 1; page <= 3; page++) {
-    try {
-      const data = await getFresh<TMDBListResponse>(`/discover/${type}`, {
-        ...base,
-        sort_by:            'popularity.desc',
-        [`${dateKey}.gte`]: recentFrom,
-        [`${dateKey}.lte`]: toDate,
-        'vote_count.gte':   '3',
-        page:               String(page),
-      });
-      for (const item of data.results) {
-        if (item.poster_path && !seen.has(item.id)) {
-          seen.add(item.id);
-          results.push(mapItem(item, genres, platform, mediaType));
-        }
+  // ── Fase 1: más recientes por fecha — todas las regiones LATAM ────────────
+  const dateResults = await Promise.all(
+    LATAM.map((r) => fetchRegion(r, `${dateKey}.desc`, { [`${dateKey}.lte`]: toDate }))
+  );
+  for (const items of dateResults) {
+    for (const item of items) {
+      if (item.poster_path && !seen.has(item.id)) {
+        seen.add(item.id);
+        results.push(mapItem(item, genres, platform, mediaType));
       }
-      if (!data.total_pages || page >= (data.total_pages ?? 1)) break;
-    } catch { break; }
+    }
+  }
+
+  // ── Fase 2: más populares últimos 12 meses — todas las regiones LATAM ─────
+  const popResults = await Promise.all(
+    LATAM.map((r) => fetchRegion(r, 'popularity.desc', {
+      [`${dateKey}.gte`]: recentFrom,
+      [`${dateKey}.lte`]: toDate,
+      'vote_count.gte':   '3',
+    }))
+  );
+  for (const items of popResults) {
+    for (const item of items) {
+      if (item.poster_path && !seen.has(item.id)) {
+        seen.add(item.id);
+        results.push(mapItem(item, genres, platform, mediaType));
+      }
+    }
   }
 
   // Re-ordenar el resultado combinado por fecha desc para la UI de timeline
