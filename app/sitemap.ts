@@ -43,5 +43,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...novedadesPages, ...newsPages];
+  const GENEROS = ['accion','comedia','drama','terror','ciencia','thriller','animacion','documental','romance','aventura','fantasia','crimen'];
+  const PLATAFORMAS = ['netflix','disneyplus','max','prime','paramountplus','appletv','crunchyroll','mubi','plutotv'];
+  const COMPARACIONES = ['netflix-vs-disney','netflix-vs-max','netflix-vs-prime','disney-vs-max','disney-vs-prime','max-vs-prime','netflix-vs-paramount','netflix-vs-appletv'];
+
+  // /genero/[genero]
+  const generoPages: MetadataRoute.Sitemap = GENEROS.map((g) => ({
+    url: `${BASE}/genero/${g}`,
+    lastModified: now,
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }));
+
+  // /mejores/[genero]/[plataforma]
+  const mejoresPages: MetadataRoute.Sitemap = GENEROS.flatMap((g) =>
+    PLATAFORMAS.map((p) => ({
+      url: `${BASE}/mejores/${g}/${p}`,
+      lastModified: now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.75,
+    }))
+  );
+
+  // /comparar/[slug]
+  const compararPages: MetadataRoute.Sitemap = COMPARACIONES.map((slug) => ({
+    url: `${BASE}/comparar/${slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...novedadesPages, ...generoPages, ...mejoresPages, ...compararPages, ...newsPages];
 }

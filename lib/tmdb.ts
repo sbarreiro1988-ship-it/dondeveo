@@ -683,3 +683,173 @@ export async function searchContent(query: string): Promise<Movie[]> {
       });
   } catch { return []; }
 }
+
+// ─── Watch providers for a specific title ─────────────────────────────────────
+export async function fetchAllWatchProviders(
+  tmdbId: number,
+  type: 'movie' | 'tv',
+): Promise<{ platform: Platform; link: string }[]> {
+  try {
+    const data = await get<WatchProvidersResponse>(`/${type}/${tmdbId}/watch/providers`);
+    const uy = data.results?.['UY'] ?? data.results?.['AR'] ?? {};
+    const all = [...(uy.flatrate ?? []), ...(uy.buy ?? []), ...(uy.rent ?? [])];
+    const seen = new Set<number>();
+    const result: { platform: Platform; link: string }[] = [];
+    const link = (data.results?.['UY'] as { link?: string })?.link
+              ?? (data.results?.['AR'] as { link?: string })?.link ?? '';
+    for (const p of all) {
+      if (!seen.has(p.provider_id) && PROVIDER[p.provider_id]) {
+        seen.add(p.provider_id);
+        result.push({ platform: PROVIDER[p.provider_id], link });
+      }
+    }
+    return result;
+  } catch { return []; }
+}
+
+// ─── Movie/Series detail by TMDB ID ───────────────────────────────────────────
+export async function fetchTitleDetail(tmdbId: number, type: 'movie' | 'tv'): Promise<Movie | null> {
+  const genres = await getGenres(type);
+  try {
+    const item = await get<TMDBItem>(`/${type}/${tmdbId}`);
+    if (!item.poster_path) return null;
+    const providers = await fetchAllWatchProviders(tmdbId, type);
+    const platform = providers[0]?.platform ?? null;
+    const movie = mapItem(item, genres, platform, type === 'movie' ? 'movie' : 'series');
+    movie.platforms = providers.map((p) => p.platform);
+    return movie;
+  } catch { return null; }
+}
+
+// ─── Person (actor/director) ───────────────────────────────────────────────────
+export interface PersonData {
+  id: number;
+  name: string;
+  biography: string;
+  birthday: string | null;
+  place_of_birth: string | null;
+  profile_path: string | null;
+  known_for_department: string;
+  popularity: number;
+}
+
+export async function fetchPerson(personId: string): Promise<PersonData | null> {
+  try {
+    return await get<PersonData>(`/person/${personId}`);
+  } catch { return null; }
+}
+
+export async function fetchPersonMovies(personId: string): Promise<Movie[]> {
+  const [mg, tg] = await Promise.all([getGenres('movie'), getGenres('tv')]);
+  try {
+    const data = await get<{ cast: TMDBItem[]; crew: TMDBItem[] }>(
+      `/person/${personId}/combined_credits`
+    );
+    const all = [...(data.cast ?? []), ...(data.crew ?? [])]
+      .filter((i) => i.poster_path && i.vote_count > 5)
+      .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0));
+    const seen = new Set<number>();
+    return all
+      .filter((i) => { if (seen.has(i.id)) return false; seen.add(i.id); return true; })
+      .slice(0, 40)
+      .map((i) => {
+        const type = i.media_type === 'tv' ? 'series' : 'movie';
+        return mapItem(i, type === 'series' ? tg : mg, null, type);
+      });
+  } catch { return []; }
+}
+
+// ─── Content by genre name ─────────────────────────────────────────────────────
+export async function fetchByGenreName(
+  genreName: string,
+  type: 'movie' | 'tv' = 'movie',
+  limit = 40,
+): Promise<Movie[]> {
+  const genres = await getGenres(type);
+  const genreId = Object.entries(genres).find(
+    ([, name]) => name.toLowerCase() === genreName.toLowerCase()
+  )?.[0];
+  if (!genreId) return [];
+  return fetchTopByGenre(Number(genreId), type, limit);
+}
+
+// ─── Best by genre AND platform ────────────────────────────────────────────────
+export async function fetchBestByGenreAndPlatform(
+  genreName: string,
+  providerId: number,
+  type: 'movie' | 'tv' = 'movie',
+  limit = 40,
+): Promise<Movie[]> {
+  const genres    = await getGenres(type);
+  const platform  = PROVIDER[providerId] ?? null;
+  const mediaType = type === 'tv' ? 'series' : 'movie';
+  const genreId   = Object.entries(genres).find(
+    ([, name]) => name.toLowerCase() === genreName.toLowerCase()
+  )?.[0];
+  if (!genreId) return [];
+
+  const results: Movie[] = [];
+  const seen = new Set<number>();
+
+  for (const region of ['AR', 'MX', 'UY']) {
+    try {
+      const data = await getFresh<TMDBListResponse>(`/discover/${type}`, {
+        with_genres:          genreId,
+        with_watch_providers: String(providerId),
+        watch_region:         region,
+        sort_by:              'vote_average.desc',
+        'vote_count.gte':     '50',
+        page:                 '1',
+      });
+      for (const item of data.results ?? []) {
+        if (item.poster_path && !seen.has(item.id)) {
+          seen.add(item.id);
+          results.push(mapItem(item, genres, platform, mediaType));
+        }
+      }
+    } catch { /* continuar */ }
+  }
+  return results.sort((a, b) => b.voteAverage - a.voteAverage).slice(0, limit);
+}
+
+// ─── Platform stats for comparison ────────────────────────────────────────────
+export async function fetchPlatformStats(providerId: number): Promise<{
+  movies: number; series: number; topMovies: Movie[]; topSeries: Movie[];
+}> {
+  const [mg, sg] = await Promise.all([getGenres('movie'), getGenres('tv')]);
+  const platform = PROVIDER[providerId] ?? null;
+  const [movData, tvData] = await Promise.all([
+    getFresh<TMDBListResponse>(`/discover/movie`, {
+      with_watch_providers: String(providerId),
+      watch_region: 'AR', sort_by: 'popularity.desc', 'vote_count.gte': '10', page: '1',
+    }).catch((): TMDBListResponse => ({ results: [] })),
+    getFresh<TMDBListResponse>(`/discover/tv`, {
+      with_watch_providers: String(providerId),
+      watch_region: 'AR', sort_by: 'popularity.desc', 'vote_count.gte': '5', page: '1',
+    }).catch((): TMDBListResponse => ({ results: [] })),
+  ]);
+  return {
+    movies:    movData.total_results ?? movData.results.length,
+    series:    tvData.total_results  ?? tvData.results.length,
+    topMovies: (movData.results ?? []).slice(0, 6).map((i) => mapItem(i, mg, platform, 'movie')),
+    topSeries: (tvData.results  ?? []).slice(0, 6).map((i) => mapItem(i, sg, platform, 'series')),
+  };
+}
+
+// ─── Search movie/series by title (for donde-ver) ─────────────────────────────
+export async function searchByTitle(query: string): Promise<Movie[]> {
+  const [mg, tg] = await Promise.all([getGenres('movie'), getGenres('tv')]);
+  try {
+    const data = await get<TMDBListResponse>('/search/multi', {
+      query,
+      watch_region: 'UY',
+    });
+    return (data.results ?? [])
+      .filter((i) => i.poster_path && i.media_type !== 'person')
+      .slice(0, 8)
+      .map((i) => {
+        const type = i.media_type === 'tv' ? 'series' : 'movie';
+        return mapItem(i, type === 'series' ? tg : mg, null, type);
+      });
+  } catch { return []; }
+}
