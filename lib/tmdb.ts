@@ -449,8 +449,9 @@ export async function fetchTopByGenre(
         page:             String(page),
       }).catch(() => ({ results: [] as TMDBItem[] }));
 
+    const regions = ['AR', 'MX', 'CL', 'CO'];
     const pageNums = Array.from({ length: pages }, (_, i) => i + 1);
-    const allFetches = pageNums.flatMap((p) => [fetchPage('AR', p), fetchPage('MX', p)]);
+    const allFetches = pageNums.flatMap((p) => regions.map((r) => fetchPage(r, p)));
     const allResponses = await Promise.all(allFetches);
 
     const seen = new Set<number>();

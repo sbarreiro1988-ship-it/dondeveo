@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const res = await fetch(
-      `${TMDB_BASE}/${type}/${id}/similar?language=es-419`,
+      `${TMDB_BASE}/${type}/${id}/recommendations?language=es-419`,
       {
         headers: { Authorization: `Bearer ${TMDB_TOKEN}` },
         next: { revalidate: 86400 },

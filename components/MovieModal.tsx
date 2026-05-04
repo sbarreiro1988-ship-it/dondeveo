@@ -561,7 +561,7 @@ export default function MovieModal({ movie, onClose }: Props) {
                 <p className="text-white text-xs font-black uppercase tracking-widest">📖 Ficha técnica</p>
                 {/* Link SEO a página propia */}
                 <Link
-                  href={`/donde-ver/${encodeURIComponent(movie.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))}`}
+                  href={`/pelicula/${movie.tmdbId ?? movie.id}`}
                   onClick={onClose}
                   className="text-dv-accent text-[10px] font-semibold hover:underline flex items-center gap-1"
                 >
