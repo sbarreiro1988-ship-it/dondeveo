@@ -1,6 +1,6 @@
 import type { Movie, Platform } from '@/types';
 import { PLATFORMS } from './mockData';
-import { MANUAL_OVERRIDES } from './manualOverrides';
+import { MANUAL_OVERRIDES, getManualPlatforms } from './manualOverrides';
 
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 const TMDB_TOKEN = process.env.TMDB_ACCESS_TOKEN;
@@ -732,20 +732,18 @@ export async function searchWithPersons(query: string): Promise<{ movies: Movie[
 }
 
 // ─── Watch providers for a specific title ─────────────────────────────────────
-// Busca en múltiples regiones LATAM + US para máxima cobertura de proveedores
+// Combina TMDB (múltiples regiones) + manual overrides (Universal+, etc.)
+// Esta es la única fuente de verdad — todos los componentes usan esta función
 export async function fetchAllWatchProviders(
   tmdbId: number,
   type: 'movie' | 'tv',
 ): Promise<{ platform: Platform; link: string; logoPath: string | null }[]> {
+  const result: { platform: Platform; link: string; logoPath: string | null }[] = [];
+  const seen = new Set<string>(); // key: platform id string
+
   try {
     const data = await get<WatchProvidersResponse>(`/${type}/${tmdbId}/watch/providers`);
-
-    // Regiones en orden de prioridad: UY primero, luego LATAM, luego US
     const regionPriority = ['UY', 'AR', 'MX', 'CL', 'CO', 'BR', 'US'];
-    const seen = new Set<number>();
-    const result: { platform: Platform; link: string; logoPath: string | null }[] = [];
-
-    // Link UY/AR para mostrar al usuario
     const link = (data.results?.['UY'] as { link?: string })?.link
               ?? (data.results?.['AR'] as { link?: string })?.link ?? '';
 
@@ -758,18 +756,29 @@ export async function fetchAllWatchProviders(
         ...(reg.rent     ?? []),
       ];
       for (const p of providers) {
-        if (!seen.has(p.provider_id) && PROVIDER[p.provider_id]) {
-          seen.add(p.provider_id);
+        const platform = PROVIDER[p.provider_id];
+        if (platform && !seen.has(platform.id)) {
+          seen.add(platform.id);
           result.push({
-            platform: PROVIDER[p.provider_id],
+            platform,
             link,
             logoPath: p.logo_path ? `${IMAGE_BASE}/original${p.logo_path}` : null,
           });
         }
       }
     }
-    return result;
-  } catch { return []; }
+  } catch { /* TMDB falló, continuamos con overrides */ }
+
+  // ── Siempre agregar manual overrides si no están ya cubiertos por TMDB ──
+  const manualPlatforms = getManualPlatforms(tmdbId);
+  for (const pl of manualPlatforms) {
+    if (!seen.has(pl.id)) {
+      seen.add(pl.id);
+      result.push({ platform: pl, link: '', logoPath: null });
+    }
+  }
+
+  return result;
 }
 
 // ─── Movie/Series detail by TMDB ID ───────────────────────────────────────────

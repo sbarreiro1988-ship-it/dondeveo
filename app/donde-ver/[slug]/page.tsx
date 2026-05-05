@@ -4,7 +4,6 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ArrowLeft, Star } from 'lucide-react';
 import { searchByTitle, fetchAllWatchProviders, IMAGE_BASE } from '@/lib/tmdb';
-import { getManualPlatforms } from '@/lib/manualOverrides';
 
 const TMDB_BASE  = 'https://api.themoviedb.org/3';
 const TMDB_TOKEN = process.env.TMDB_ACCESS_TOKEN;
@@ -80,22 +79,12 @@ export default async function DondeVerPage({ params }: Props) {
   const type = main.type === 'series' ? 'tv' : 'movie';
   const tmdbId = main.tmdbId ?? main.id;
 
-  const [tmdbProviders, cast, similar] = await Promise.all([
+  // fetchAllWatchProviders ya incluye TMDB + manual overrides internamente
+  const [providers, cast, similar] = await Promise.all([
     fetchAllWatchProviders(tmdbId, type),
     fetchPageCast(tmdbId, type),
     fetchPageSimilar(tmdbId, type),
   ]);
-
-  // Merge TMDB + manual overrides (Universal+, etc.)
-  const manualPlatforms = getManualPlatforms(tmdbId);
-  const tmdbNames = tmdbProviders.map((p) => p.platform.name.toLowerCase().split(' ')[0]);
-  const extraManual = manualPlatforms.filter(
-    (pl) => !tmdbNames.some((n) => pl.name.toLowerCase().startsWith(n))
-  );
-  const providers = [
-    ...tmdbProviders,
-    ...extraManual.map((pl) => ({ platform: pl, link: '', logoPath: null as string | null })),
-  ];
 
   const jsonLd = {
     '@context': 'https://schema.org',
