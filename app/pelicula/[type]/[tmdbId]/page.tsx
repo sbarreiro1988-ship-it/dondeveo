@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ArrowLeft, Star, Clock, Tv } from 'lucide-react';
 import { fetchAllWatchProviders, IMAGE_BASE } from '@/lib/tmdb';
+import { getManualPlatforms } from '@/lib/manualOverrides';
 
 const TMDB_BASE  = 'https://api.themoviedb.org/3';
 const TMDB_TOKEN = process.env.TMDB_ACCESS_TOKEN;
@@ -109,11 +110,23 @@ export default async function PeliculaPage({ params }: Props) {
   const backdropUrl = detail.backdrop_path ? `${IMAGE_BASE}/w1280${detail.backdrop_path}` : '/placeholder-backdrop.jpg';
   const posterUrl   = detail.poster_path   ? `${IMAGE_BASE}/w500${detail.poster_path}`   : '/placeholder-poster.jpg';
 
-  const [providers, cast, recs] = await Promise.all([
+  const [tmdbProviders, cast, recs] = await Promise.all([
     fetchAllWatchProviders(detail.id, type),
     fetchCast(params.tmdbId, type),
     fetchRecs(params.tmdbId, type),
   ]);
+
+  // Merge: TMDB providers + manual overrides (Universal+, etc.) deduplicados
+  const manualPlatforms = getManualPlatforms(detail.id);
+  const tmdbPlatformNames = tmdbProviders.map((p) => p.platform.name.toLowerCase().split(' ')[0]);
+  const extraManual = manualPlatforms.filter(
+    (pl) => !tmdbPlatformNames.some((n) => pl.name.toLowerCase().startsWith(n))
+  );
+
+  const providers = [
+    ...tmdbProviders,
+    ...extraManual.map((pl) => ({ platform: pl, link: '', logoPath: pl.logoUrl ?? null })),
+  ];
 
   const jsonLd = {
     '@context': 'https://schema.org',

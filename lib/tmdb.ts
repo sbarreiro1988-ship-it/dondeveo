@@ -732,26 +732,40 @@ export async function searchWithPersons(query: string): Promise<{ movies: Movie[
 }
 
 // ─── Watch providers for a specific title ─────────────────────────────────────
+// Busca en múltiples regiones LATAM + US para máxima cobertura de proveedores
 export async function fetchAllWatchProviders(
   tmdbId: number,
   type: 'movie' | 'tv',
 ): Promise<{ platform: Platform; link: string; logoPath: string | null }[]> {
   try {
     const data = await get<WatchProvidersResponse>(`/${type}/${tmdbId}/watch/providers`);
-    const uy = data.results?.['UY'] ?? data.results?.['AR'] ?? {};
-    const all = [...(uy.flatrate ?? []), ...(uy.buy ?? []), ...(uy.rent ?? [])];
+
+    // Regiones en orden de prioridad: UY primero, luego LATAM, luego US
+    const regionPriority = ['UY', 'AR', 'MX', 'CL', 'CO', 'BR', 'US'];
     const seen = new Set<number>();
     const result: { platform: Platform; link: string; logoPath: string | null }[] = [];
+
+    // Link UY/AR para mostrar al usuario
     const link = (data.results?.['UY'] as { link?: string })?.link
               ?? (data.results?.['AR'] as { link?: string })?.link ?? '';
-    for (const p of all) {
-      if (!seen.has(p.provider_id) && PROVIDER[p.provider_id]) {
-        seen.add(p.provider_id);
-        result.push({
-          platform: PROVIDER[p.provider_id],
-          link,
-          logoPath: p.logo_path ? `${IMAGE_BASE}/original${p.logo_path}` : null,
-        });
+
+    for (const region of regionPriority) {
+      const reg = data.results?.[region] ?? {};
+      const providers = [
+        ...(reg.flatrate ?? []),
+        ...(reg.free     ?? []),
+        ...(reg.buy      ?? []),
+        ...(reg.rent     ?? []),
+      ];
+      for (const p of providers) {
+        if (!seen.has(p.provider_id) && PROVIDER[p.provider_id]) {
+          seen.add(p.provider_id);
+          result.push({
+            platform: PROVIDER[p.provider_id],
+            link,
+            logoPath: p.logo_path ? `${IMAGE_BASE}/original${p.logo_path}` : null,
+          });
+        }
       }
     }
     return result;

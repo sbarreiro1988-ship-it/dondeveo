@@ -62,3 +62,10 @@ export function getManualOverridesMap(): Map<number, Platform[]> {
   }
   return map;
 }
+
+/**
+ * Devuelve las plataformas manuales para un tmdbId específico (para páginas SSR)
+ */
+export function getManualPlatforms(tmdbId: number): Platform[] {
+  return MANUAL_OVERRIDES.find((o) => o.tmdbId === tmdbId)?.platforms ?? [];
+}
