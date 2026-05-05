@@ -117,15 +117,23 @@ export default async function PeliculaPage({ params }: Props) {
   ]);
 
   // Merge: TMDB providers + manual overrides (Universal+, etc.) deduplicados
-  const manualPlatforms = getManualPlatforms(detail.id);
+  // Usamos params.tmdbId (string→number) para evitar cualquier discrepancia con detail.id
+  const numericId = Number(params.tmdbId);
+  const manualPlatforms = getManualPlatforms(numericId);
   const tmdbPlatformNames = tmdbProviders.map((p) => p.platform.name.toLowerCase().split(' ')[0]);
   const extraManual = manualPlatforms.filter(
     (pl) => !tmdbPlatformNames.some((n) => pl.name.toLowerCase().startsWith(n))
   );
 
+  // Logos para manual platforms via providerLogos endpoint se gestiona client-side
+  // Aquí usamos shortName como fallback visible
   const providers = [
     ...tmdbProviders,
-    ...extraManual.map((pl) => ({ platform: pl, link: '', logoPath: pl.logoUrl ?? null })),
+    ...extraManual.map((pl) => ({
+      platform: pl,
+      link:     '',
+      logoPath: null as string | null,
+    })),
   ];
 
   const jsonLd = {
