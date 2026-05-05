@@ -164,14 +164,43 @@ export default function MovieModal({ movie, onClose }: Props) {
     fetch(`/api/watch-providers?id=${movie.tmdbId}&type=${type}`)
       .then((r) => r.json())
       .then((data: Record<string, RegionProviders>) => {
-        // Prefer UY, fall back to AR, then MX
-        const region = data['UY'] ?? data['AR'] ?? data['MX'] ?? null;
-        setProviders(region);
-        // Set best default tab
-        if (region?.flatrate?.length) setActiveTab('stream');
-        else if (region?.free?.length) setActiveTab('stream');
-        else if (region?.rent?.length) setActiveTab('rent');
-        else if (region?.buy?.length) setActiveTab('buy');
+        // Merge providers from ALL regions (same lógica que fetchAllWatchProviders server-side)
+        // Así el modal muestra lo mismo que la página completa
+        const REGION_PRIORITY = ['UY', 'AR', 'MX', 'CL', 'CO', 'BR', 'US'];
+        const flatrateSeen = new Set<number>();
+        const rentSeen     = new Set<number>();
+        const buySeen      = new Set<number>();
+        const mergedFlatrate: WatchProvider[] = [];
+        const mergedRent:     WatchProvider[] = [];
+        const mergedBuy:      WatchProvider[] = [];
+
+        for (const region of REGION_PRIORITY) {
+          const r = data[region];
+          if (!r) continue;
+          for (const p of [...(r.flatrate ?? []), ...(r.free ?? [])]) {
+            if (!flatrateSeen.has(p.provider_id)) {
+              flatrateSeen.add(p.provider_id);
+              mergedFlatrate.push(p);
+            }
+          }
+          for (const p of (r.rent ?? [])) {
+            if (!rentSeen.has(p.provider_id)) { rentSeen.add(p.provider_id); mergedRent.push(p); }
+          }
+          for (const p of (r.buy ?? [])) {
+            if (!buySeen.has(p.provider_id)) { buySeen.add(p.provider_id); mergedBuy.push(p); }
+          }
+        }
+
+        const merged: RegionProviders = {
+          flatrate: mergedFlatrate.length > 0 ? mergedFlatrate : undefined,
+          rent:     mergedRent.length > 0 ? mergedRent : undefined,
+          buy:      mergedBuy.length > 0 ? mergedBuy : undefined,
+        };
+
+        setProviders(merged);
+        if (merged.flatrate?.length) setActiveTab('stream');
+        else if (merged.rent?.length) setActiveTab('rent');
+        else if (merged.buy?.length) setActiveTab('buy');
         else setActiveTab('stream');
       })
       .catch(() => setProviders(null))
