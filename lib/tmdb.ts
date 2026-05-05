@@ -586,8 +586,10 @@ interface WatchProviderResult {
 interface WatchProvidersResponse {
   results?: Record<string, {
     flatrate?: WatchProviderResult[];
-    buy?: WatchProviderResult[];
-    rent?: WatchProviderResult[];
+    buy?:      WatchProviderResult[];
+    rent?:     WatchProviderResult[];
+    free?:     WatchProviderResult[];  // Pluto TV, Tubi, etc.
+    link?:     string;
   }>;
 }
 
@@ -744,8 +746,8 @@ export async function fetchAllWatchProviders(
   try {
     const data = await get<WatchProvidersResponse>(`/${type}/${tmdbId}/watch/providers`);
     const regionPriority = ['UY', 'AR', 'MX', 'CL', 'CO', 'BR', 'US'];
-    const link = (data.results?.['UY'] as { link?: string })?.link
-              ?? (data.results?.['AR'] as { link?: string })?.link ?? '';
+    const link = data.results?.['UY']?.link
+              ?? data.results?.['AR']?.link ?? '';
 
     for (const region of regionPriority) {
       const reg = data.results?.[region] ?? {};
