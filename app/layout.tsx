@@ -117,37 +117,77 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Navbar />
         </Suspense>
         {children}
-        <footer className="mt-16 border-t border-white/8 py-8 px-4 md:px-8 text-center">
-          <div className="max-w-4xl mx-auto">
-            <p className="text-white font-bold text-lg mb-1">
-              DondeVeo <span className="text-dv-accent">🇺🇾</span>
-            </p>
-            <p className="text-dv-muted text-sm mb-4">
-              Tu guía de streaming hecha en Uruguay.
-            </p>
-            <p className="text-dv-muted text-xs">
-              Los datos de disponibilidad son orientativos y se actualizan periódicamente desde TMDB.
-              Algunos títulos pueden variar según tu suscripción y región.
-            </p>
-            <p className="text-dv-muted text-xs mt-2">
-              Datos provistos por{' '}
-              <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer" className="text-dv-accent hover:underline">
-                The Movie Database (TMDB)
-              </a>
-              {' '}· watch_region=UY
-            </p>
-            <div className="flex items-center justify-center gap-4 mt-4">
-              <a href="/privacidad" className="text-dv-muted text-xs hover:text-white transition-colors">
-                Política de Privacidad
-              </a>
-              <span className="text-white/10">·</span>
-              <a href="/noticias" className="text-dv-muted text-xs hover:text-white transition-colors">
-                Noticias
-              </a>
-              <span className="text-white/10">·</span>
-              <a href="/novedades/netflix" className="text-dv-muted text-xs hover:text-white transition-colors">
-                Lo nuevo
-              </a>
+        <footer className="mt-16 border-t border-white/8 py-10 px-4 md:px-8">
+          <div className="max-w-5xl mx-auto">
+            {/* Top row */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+              {/* Brand */}
+              <div>
+                <p className="text-white font-black text-lg mb-2">
+                  Donde<span className="text-dv-accent">Veo</span> <span className="text-sm">🇺🇾</span>
+                </p>
+                <p className="text-dv-muted text-xs leading-relaxed">
+                  Tu guía de streaming hecha en Uruguay. Encontrá dónde ver tus películas y series favoritas.
+                </p>
+              </div>
+              {/* Plataformas */}
+              <div>
+                <p className="text-white font-bold text-sm mb-3">Plataformas</p>
+                <ul className="space-y-1.5">
+                  {['netflix','disneyplus','max','prime','paramountplus','appletv'].map((p) => (
+                    <li key={p}>
+                      <a href={`/novedades/${p}`} className="text-dv-muted text-xs hover:text-white transition-colors capitalize">
+                        {p === 'disneyplus' ? 'Disney+' : p === 'paramountplus' ? 'Paramount+' : p === 'appletv' ? 'Apple TV+' : p.charAt(0).toUpperCase() + p.slice(1)}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {/* Géneros */}
+              <div>
+                <p className="text-white font-bold text-sm mb-3">Géneros</p>
+                <ul className="space-y-1.5">
+                  {[['accion','Acción'],['comedia','Comedia'],['drama','Drama'],['terror','Terror'],['ciencia','Ciencia ficción'],['thriller','Thriller']].map(([slug,label]) => (
+                    <li key={slug}>
+                      <a href={`/genero/${slug}`} className="text-dv-muted text-xs hover:text-white transition-colors">{label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {/* DondeVeo */}
+              <div>
+                <p className="text-white font-bold text-sm mb-3">DondeVeo</p>
+                <ul className="space-y-1.5">
+                  {[
+                    ['/acerca', 'Acerca de'],
+                    ['/contacto', 'Contacto'],
+                    ['/noticias', 'Noticias'],
+                    ['/privacidad', 'Privacidad'],
+                    ['/terminos', 'Términos de uso'],
+                    ['/novedades/netflix', 'Lo nuevo'],
+                  ].map(([href, label]) => (
+                    <li key={href}>
+                      <a href={href} className="text-dv-muted text-xs hover:text-white transition-colors">{label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Bottom */}
+            <div className="border-t border-white/8 pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
+              <p className="text-dv-muted text-xs">
+                © 2026 DondeVeo Uruguay. Datos de{' '}
+                <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer" className="text-dv-accent hover:underline">TMDB</a>.
+                La disponibilidad puede variar según tu suscripción y región.
+              </p>
+              <div className="flex items-center gap-4">
+                <a href="/privacidad" className="text-dv-muted text-xs hover:text-white transition-colors">Privacidad</a>
+                <span className="text-white/10">·</span>
+                <a href="/terminos" className="text-dv-muted text-xs hover:text-white transition-colors">Términos</a>
+                <span className="text-white/10">·</span>
+                <a href="/contacto" className="text-dv-muted text-xs hover:text-white transition-colors">Contacto</a>
+              </div>
             </div>
           </div>
         </footer>

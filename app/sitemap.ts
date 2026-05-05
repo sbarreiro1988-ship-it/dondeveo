@@ -23,8 +23,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Páginas estáticas principales
   const staticPages: MetadataRoute.Sitemap = [
-    { url: BASE,              lastModified: now, changeFrequency: 'hourly',  priority: 1.0 },
-    { url: `${BASE}/noticias`, lastModified: now, changeFrequency: 'hourly',  priority: 0.9 },
+    { url: BASE,                 lastModified: now, changeFrequency: 'hourly',  priority: 1.0 },
+    { url: `${BASE}/noticias`,   lastModified: now, changeFrequency: 'hourly',  priority: 0.9 },
+    { url: `${BASE}/acerca`,     lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE}/contacto`,   lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${BASE}/privacidad`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${BASE}/terminos`,   lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
   ];
 
   // Páginas de novedades por plataforma

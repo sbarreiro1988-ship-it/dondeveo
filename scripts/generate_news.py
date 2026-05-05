@@ -115,26 +115,28 @@ def is_relevant(title: str) -> bool:
 # ─── Gemini ───────────────────────────────────────────────────────────────────
 
 def rewrite_with_groq(title: str, summary: str, source: str) -> dict:
-    """Llama a Groq API para reescribir el artículo de forma original."""
+    """Llama a Groq API para reescribir el artículo de forma original y extensa."""
     prompt = (
-        "Sos redactor de DondeVeo, una web de entretenimiento uruguaya sobre cine y streaming.\n\n"
+        "Sos redactor senior de DondeVeo, una web de entretenimiento uruguaya sobre cine y streaming.\n\n"
         "REGLAS ESTRICTAS — OBLIGATORIO CUMPLIR:\n"
         "1. NUNCA inventes datos, fechas, nacionalidades, nombres o hechos que no esten en el resumen.\n"
         "2. NUNCA cambies la nacionalidad de personas (ej: si es americano, es americano).\n"
-        "3. NUNCA agregues informacion que no este en el texto original.\n"
-        "4. Solo podes cambiar el estilo de escritura, NO los datos facticos.\n"
-        "5. Si el articulo esta en ingles, TRADUCILO completamente al espanol rioplatense.\n"
-        "6. Usa tuteo (vos, tenes, mira) — estilo argentino/uruguayo.\n"
-        "7. El tema debe ser sobre: actores, actrices, directores, peliculas, series, plataformas de streaming, estrenos, Oscar, festivales de cine.\n\n"
-        "TAREA: Reescribi (o traduce si esta en ingles) el siguiente articulo en espanol rioplatense, "
-        "manteniendo TODOS los datos originales sin modificarlos.\n\n"
+        "3. Si necesitas ampliar, usa contexto general conocido del tema (sin inventar datos especificos).\n"
+        "4. Si el articulo esta en ingles, TRADUCILO completamente al espanol rioplatense.\n"
+        "5. Usa tuteo (vos, tenes, mira) — estilo argentino/uruguayo, informal pero profesional.\n"
+        "6. El tema debe ser sobre: actores, directores, peliculas, series, plataformas de streaming, estrenos, premios, festivales.\n\n"
+        "TAREA: Escribi un articulo periodistico completo en espanol rioplatense sobre esta noticia.\n"
+        "El articulo debe tener MINIMO 500 palabras. Es para un sitio de entretenimiento, no una enciclopedia.\n\n"
         "Titulo original: " + title + "\n"
-        "Resumen: " + summary[:800] + "\n"
+        "Resumen: " + summary[:1200] + "\n"
         "Fuente: " + source + "\n\n"
         "Devolvé UNICAMENTE un objeto JSON valido (sin markdown, sin bloques de codigo) con esta estructura:\n"
-        '{"title":"titulo en espanol maximo 85 chars","intro":"2-3 oraciones de intro basadas SOLO en el resumen",'
-        '"body":"3-4 parrafos basados SOLO en los datos del resumen sin inventar nada","conclusion":"reflexion final para el lector uruguayo",'
-        '"tags":["tag1","tag2","tag3"],"category":"Cine"}'
+        '{"title":"titulo atractivo en espanol maximo 90 chars",'
+        '"intro":"parrafo de apertura engancha al lector (3-4 oraciones, 80-100 palabras)",'
+        '"body":"cuerpo del articulo con 4-6 parrafos extensos separados por doble salto de linea. '
+        'Desarrolla el tema, da contexto, explica el impacto para el espectador uruguayo. MINIMO 350 palabras.",'
+        '"conclusion":"cierre con reflexion o pregunta al lector (2-3 oraciones)",'
+        '"tags":["tag1","tag2","tag3","tag4"],"category":"Streaming"}'
     )
 
     try:
@@ -147,10 +149,10 @@ def rewrite_with_groq(title: str, summary: str, source: str) -> dict:
             json={
                 "model": "llama-3.1-8b-instant",
                 "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.3,
-                "max_tokens": 1024,
+                "temperature": 0.4,
+                "max_tokens": 2048,
             },
-            timeout=30,
+            timeout=45,
         )
         resp.raise_for_status()
         text = resp.json()["choices"][0]["message"]["content"].strip()

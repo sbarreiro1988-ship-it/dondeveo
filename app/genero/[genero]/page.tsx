@@ -9,22 +9,22 @@ export const revalidate   = 3600;
 export const dynamicParams = true;
 
 // Géneros soportados con sus nombres en español
-const GENEROS: Record<string, { tmdb: string; label: string; emoji: string }> = {
-  accion:       { tmdb: 'Acción',      label: 'Acción',        emoji: '💥' },
-  comedia:      { tmdb: 'Comedia',     label: 'Comedia',       emoji: '😂' },
-  drama:        { tmdb: 'Drama',       label: 'Drama',         emoji: '🎭' },
-  terror:       { tmdb: 'Terror',      label: 'Terror',        emoji: '👻' },
-  ciencia:      { tmdb: 'Ciencia ficción', label: 'Ciencia ficción', emoji: '🚀' },
-  thriller:     { tmdb: 'Suspense',    label: 'Thriller',      emoji: '🔪' },
-  animacion:    { tmdb: 'Animación',   label: 'Animación',     emoji: '🎨' },
-  documental:   { tmdb: 'Documental',  label: 'Documental',    emoji: '📽️' },
-  romance:      { tmdb: 'Romance',     label: 'Romance',       emoji: '❤️' },
-  aventura:     { tmdb: 'Aventura',    label: 'Aventura',      emoji: '🗺️' },
-  fantasia:     { tmdb: 'Fantasía',    label: 'Fantasía',      emoji: '🧙' },
-  crimen:       { tmdb: 'Crimen',      label: 'Crimen',        emoji: '🔫' },
-  historia:     { tmdb: 'Historia',    label: 'Historia',      emoji: '📜' },
-  musica:       { tmdb: 'Música',      label: 'Música',        emoji: '🎵' },
-  familia:      { tmdb: 'Familia',     label: 'Familia',       emoji: '👨‍👩‍👧' },
+const GENEROS: Record<string, { tmdb: string; label: string; emoji: string; desc: string }> = {
+  accion:       { tmdb: 'Acción',      label: 'Acción',        emoji: '💥', desc: 'Las mejores películas y series de acción disponibles en streaming en Uruguay. Desde thrillers de espionaje hasta películas de superhéroes, encontrá adrenalina pura en Netflix, Prime Video, Disney+ y más plataformas.' },
+  comedia:      { tmdb: 'Comedia',     label: 'Comedia',       emoji: '😂', desc: 'Las comedias más divertidas que podés ver hoy en streaming en Uruguay. Desde comedias románticas hasta humor negro, encontrá la carcajada perfecta en las principales plataformas.' },
+  drama:        { tmdb: 'Drama',       label: 'Drama',         emoji: '🎭', desc: 'El drama es el corazón del cine y las series. Encontrá los mejores dramas disponibles en Uruguay: historias humanas profundas, personajes complejos y narrativas que te dejarán pensando días.' },
+  terror:       { tmdb: 'Terror',      label: 'Terror',        emoji: '👻', desc: 'Las mejores películas de terror y suspenso disponibles en streaming en Uruguay. Desde el horror psicológico hasta el gore más intenso, todo lo que necesitás para pasar una noche de miedo.' },
+  ciencia:      { tmdb: 'Ciencia ficción', label: 'Ciencia ficción', emoji: '🚀', desc: 'Viajes al espacio, inteligencia artificial, viajes en el tiempo y futuros alternativos. Las mejores películas y series de ciencia ficción disponibles en plataformas de streaming en Uruguay.' },
+  thriller:     { tmdb: 'Suspense',    label: 'Thriller',      emoji: '🔪', desc: 'Tensión al máximo. Los mejores thrillers disponibles en streaming en Uruguay: conspiraciones, crímenes sin resolver, giros inesperados y finales que no verás venir.' },
+  animacion:    { tmdb: 'Animación',   label: 'Animación',     emoji: '🎨', desc: 'Animación para todas las edades. Desde los clásicos de Disney hasta anime japonés, encontrá las mejores películas y series animadas disponibles en Uruguay en Netflix, Disney+ y Crunchyroll.' },
+  documental:   { tmdb: 'Documental',  label: 'Documental',    emoji: '📽️', desc: 'Los mejores documentales disponibles en streaming en Uruguay. Naturaleza, crímenes reales, historia, ciencia y cultura: expande tu mente con las producciones documentales más aclamadas del mundo.' },
+  romance:      { tmdb: 'Romance',     label: 'Romance',       emoji: '❤️', desc: 'Las mejores películas y series románticas en streaming Uruguay. Historias de amor, comedias románticas y dramas del corazón disponibles en Netflix, Prime Video, Disney+ y más plataformas.' },
+  aventura:     { tmdb: 'Aventura',    label: 'Aventura',      emoji: '🗺️', desc: 'Exploraciones, mundos fantásticos y misiones épicas. Las mejores películas y series de aventura disponibles en streaming en Uruguay para toda la familia.' },
+  fantasia:     { tmdb: 'Fantasía',    label: 'Fantasía',      emoji: '🧙', desc: 'Mundos mágicos, criaturas míticas y héroes legendarios. Las mejores películas y series de fantasía disponibles en streaming en Uruguay, desde épica medieval hasta magia contemporánea.' },
+  crimen:       { tmdb: 'Crimen',      label: 'Crimen',        emoji: '🔫', desc: 'Policiales, mafias, detectives y crímenes sin resolver. Las mejores películas y series de crimen disponibles en streaming en Uruguay, desde clásicos del noir hasta series policiales modernas.' },
+  historia:     { tmdb: 'Historia',    label: 'Historia',      emoji: '📜', desc: 'El pasado cobra vida en pantalla. Las mejores películas y series históricas disponibles en streaming en Uruguay: guerras, imperios, figuras legendarias y momentos que cambiaron el mundo.' },
+  musica:       { tmdb: 'Música',      label: 'Música',        emoji: '🎵', desc: 'Biopics musicales, conciertos, documentales y musicales. Las mejores películas y series sobre música disponibles en streaming en Uruguay.' },
+  familia:      { tmdb: 'Familia',     label: 'Familia',       emoji: '👨‍👩‍👧', desc: 'Entretenimiento para toda la familia disponible en streaming en Uruguay. Películas y series que pueden disfrutar chicos y grandes juntos en Netflix, Disney+ y más plataformas.' },
 };
 
 interface Props { params: { genero: string } }
@@ -71,15 +71,16 @@ export default async function GeneroPage({ params }: Props) {
         <Link href="/" className="inline-flex items-center gap-1.5 text-dv-muted hover:text-white text-sm mb-5 transition-colors">
           <ArrowLeft size={14} /> Inicio
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-4">
           <span className="text-4xl">{g.emoji}</span>
           <div>
-            <h1 className="text-white text-3xl font-black">{g.label}</h1>
+            <h1 className="text-white text-3xl font-black">{g.label} en streaming Uruguay</h1>
             <p className="text-dv-muted text-sm mt-0.5">
-              {all.length} títulos disponibles en streaming Uruguay
+              {all.length} títulos disponibles en plataformas de streaming en Uruguay
             </p>
           </div>
         </div>
+        <p className="text-white/60 text-sm leading-relaxed max-w-3xl">{g.desc}</p>
       </div>
 
       {/* Géneros navegación */}
