@@ -246,9 +246,51 @@ export default async function PeliculaPage({ params }: Props) {
 
         {/* Sinopsis */}
         {detail.overview && (
-          <div className="mb-10">
+          <div className="mb-8">
             <h2 className="text-white text-lg font-bold mb-3">Sinopsis</h2>
             <p className="text-white/70 leading-relaxed">{detail.overview}</p>
+          </div>
+        )}
+
+        {/* ¿Por qué verla? — contexto editorial */}
+        {detail.genres && detail.genres.length > 0 && (
+          <div className="mb-10 bg-white/5 border border-white/10 rounded-xl p-5">
+            <h2 className="text-white text-lg font-bold mb-2">
+              ¿Por qué ver {title}?
+            </h2>
+            <p className="text-white/65 text-sm leading-relaxed">
+              {type === 'tv'
+                ? `${title} es una serie de ${detail.genres.map(g => g.name).join(', ').toLowerCase()} que podés ver en Uruguay en las plataformas indicadas arriba.`
+                : `${title} es una película de ${detail.genres.map(g => g.name).join(', ').toLowerCase()} del año ${year}.`
+              }
+              {detail.vote_average >= 7.5
+                ? ` Con una calificación de ${detail.vote_average.toFixed(1)}/10, es una de las producciones mejor valoradas por el público en su género.`
+                : detail.vote_average >= 6
+                ? ` Su calificación de ${detail.vote_average.toFixed(1)}/10 la posiciona como una opción sólida dentro de su género.`
+                : ''
+              }
+              {providers.length > 0
+                ? ` Actualmente disponible en ${providers.map(p => p.platform.name).join(' y ')} en Uruguay.`
+                : ' Verificá la disponibilidad en las plataformas de streaming en Uruguay.'
+              }
+            </p>
+            {detail.genres.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                <span className="text-white/40 text-xs">Explorar géneros similares:</span>
+                {detail.genres.slice(0, 3).map((g) => {
+                  const slug = g.name.toLowerCase()
+                    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+                    .replace('ciencia ficcion', 'ciencia')
+                    .replace(/\s+/g, '-');
+                  return (
+                    <a key={g.name} href={`/genero/${slug}`}
+                      className="text-xs text-dv-accent hover:underline">
+                      {g.name} →
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 

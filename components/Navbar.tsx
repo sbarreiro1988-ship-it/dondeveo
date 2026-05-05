@@ -38,6 +38,7 @@ const NAV_LINKS = [
   { label: 'Películas', href: '/?tipo=peliculas',      hash: null, tipo: 'peliculas' },
   { label: 'Series',    href: '/?tipo=series',         hash: null, tipo: 'series' },
   { label: 'Noticias',  href: '/noticias',             hash: null },
+  { label: 'Guías',     href: '/guias',               hash: null },
 ] as const;
 
 const linkClass = (active: boolean) =>

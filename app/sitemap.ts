@@ -29,6 +29,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/contacto`,   lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE}/privacidad`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE}/terminos`,   lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${BASE}/guias`,                                      lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE}/guias/plataformas-streaming-uruguay`,        lastModified: now, changeFrequency: 'monthly', priority: 0.85 },
+    { url: `${BASE}/guias/mejores-series-netflix-uruguay`,       lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${BASE}/guias/que-ver-este-finde`,                   lastModified: now, changeFrequency: 'weekly',  priority: 0.75 },
+    { url: `${BASE}/guias/streaming-gratuito-uruguay`,           lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
   ];
 
   // Páginas de novedades por plataforma

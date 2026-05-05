@@ -316,6 +316,43 @@ export default function HomeClient({
               onClear={() => setFilters(DEFAULT_FILTERS)} onMovieClick={handleMovieClick} />
           ) : (
             <>
+              {/* ── Editorial: valor del sitio ── */}
+              <div className="px-4 md:px-8 mb-8">
+                <div className="bg-gradient-to-r from-dv-accent/5 to-transparent border border-dv-accent/15 rounded-2xl p-6">
+                  <div className="flex flex-col md:flex-row md:items-center gap-4">
+                    <div className="flex-1">
+                      <h2 className="text-white text-lg font-black mb-2">
+                        ¿Dónde ver tus películas y series favoritas en Uruguay? 🇺🇾
+                      </h2>
+                      <p className="text-white/60 text-sm leading-relaxed">
+                        DondeVeo rastrea el catálogo completo de Netflix, Disney+, Max, Prime Video, Paramount+, Apple TV+,
+                        Pluto TV, Universal+ y más plataformas disponibles en Uruguay. Buscá cualquier título y te decimos
+                        exactamente dónde lo podés ver hoy, sin perder tiempo.
+                      </p>
+                    </div>
+                    <div className="flex gap-3 flex-shrink-0">
+                      <a href="/guias/plataformas-streaming-uruguay" className="text-xs bg-dv-accent text-[#111] font-bold px-4 py-2 rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap">
+                        Guía de plataformas →
+                      </a>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5 pt-4 border-t border-white/8">
+                    {[
+                      { icon: '🎬', label: 'Películas y series', desc: 'de todas las plataformas' },
+                      { icon: '🔍', label: 'Búsqueda instantánea', desc: 'encuentra en segundos' },
+                      { icon: '📰', label: 'Noticias de cine', desc: 'actualizadas cada día' },
+                      { icon: '🆓', label: '100% gratis', desc: 'sin registro requerido' },
+                    ].map((item) => (
+                      <div key={item.label} className="text-center">
+                        <div className="text-2xl mb-1">{item.icon}</div>
+                        <p className="text-white text-xs font-bold">{item.label}</p>
+                        <p className="text-white/40 text-[10px]">{item.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               {/* 🍿 Top 3 Finde */}
               {finde.length > 0 && (
                 <FindeSection movies={finde} onMovieClick={handleMovieClick} />

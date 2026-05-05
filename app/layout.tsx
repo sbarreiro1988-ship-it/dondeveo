@@ -159,6 +159,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <p className="text-white font-bold text-sm mb-3">DondeVeo</p>
                 <ul className="space-y-1.5">
                   {[
+                    ['/guias', 'Guías'],
                     ['/acerca', 'Acerca de'],
                     ['/contacto', 'Contacto'],
                     ['/noticias', 'Noticias'],

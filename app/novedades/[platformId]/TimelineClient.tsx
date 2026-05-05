@@ -8,6 +8,23 @@ import MovieModal from '@/components/MovieModal';
 import type { Movie, Platform } from '@/types';
 import { PLATFORMS } from '@/lib/mockData';
 
+// Texto editorial por plataforma — valor original para AdSense/SEO
+const PLATFORM_EDITORIAL: Record<string, string> = {
+  netflix:       'El catálogo de Netflix Uruguay se renueva constantemente. Acá encontrás las películas y series que acaban de llegar, ordenadas por fecha de estreno para que no te pierdas ninguna novedad.',
+  disneyplus:    'Disney+ trae a Uruguay lo mejor de Disney, Pixar, Marvel y Star Wars. Seguí de cerca los estrenos del Universo Marvel y las nuevas producciones de Star Wars que llegan al catálogo uruguayo.',
+  max:           'Max (ex HBO) es sinónimo de calidad televisiva premium. Acá te mostramos qué series y películas llegaron recientemente al catálogo de Max en Uruguay, desde dramas de autor hasta películas de Warner Bros.',
+  prime:         'Prime Video suma semana a semana nuevas películas y series a su catálogo en Uruguay. Encontrá los últimos estrenos de Amazon Originals y las incorporaciones más recientes al servicio.',
+  paramountplus: 'Paramount+ expande su catálogo en Uruguay con series originales, películas de Paramount y contenido de CBS y Nickelodeon. Seguí las novedades más recientes disponibles en Uruguay.',
+  appletv:       'Apple TV+ apuesta por la calidad sobre la cantidad. Cada estreno es un evento editorial. Acá te mostramos qué producciones originales de Apple llegaron recientemente al catálogo en Uruguay.',
+  plutotv:       'Pluto TV es la mejor opción gratuita de streaming en Uruguay. Nuevos canales temáticos y películas se agregan regularmente sin costo. Todo lo que llegó recientemente a la plataforma.',
+  directvgo:     'DIRECTV GO combina canales de televisión en vivo con contenido on demand para Uruguay. Acá te mostramos las incorporaciones más recientes a su catálogo de streaming.',
+  crunchyroll:   'Crunchyroll es la plataforma de anime por excelencia en Uruguay. Cada semana llegan nuevos episodios de temporadas en curso y series completas al catálogo disponible en Uruguay.',
+  mubi:          'MUBI es la plataforma para los verdaderos cinéfilos uruguayos. Su catálogo rotativo incluye lo mejor del cine de autor, festivales internacionales y joyas poco vistas. Novedades recientes.',
+  mercadoplay:   'Mercado Play ofrece películas y series gratis para usuarios de Mercado Libre en Uruguay. Acá encontrás lo que llegó recientemente a este servicio gratuito.',
+  universalplus: 'Universal+ trae a Uruguay series y películas del catálogo de NBCUniversal, incluyendo series de gran audiencia como The Rookie, Chicago PD y producciones originales.',
+  viki:          'Rakuten Viki es la plataforma de dramas asiáticos (K-dramas, C-dramas, J-dramas) disponible en Uruguay. Acá te mostramos las series coreanas y asiáticas que llegaron recientemente.',
+};
+
 // Platforms available in the selector strip (must match PLATFORM_PROVIDER_ID keys)
 const PLATFORM_NAV = [
   { id: 'netflix',       label: 'Netflix' },
@@ -173,11 +190,17 @@ export default function TimelineClient({ platform, movies, series, platformId }:
           <span className="text-2xl font-black" style={{ color: platform.color }}>
             {platform.name}
           </span>
-          <span className="text-[#8a8a9a] text-sm">— Lo nuevo</span>
+          <span className="text-[#8a8a9a] text-sm">— Lo nuevo en Uruguay</span>
         </div>
-        <p className="text-[#8a8a9a] text-sm">
-          {totalCount} títulos agregados recientemente · datos en tiempo real
+        <p className="text-[#8a8a9a] text-sm mb-3">
+          {totalCount} títulos agregados recientemente · actualizado diariamente
         </p>
+        {/* Editorial blurb por plataforma */}
+        {PLATFORM_EDITORIAL[platformId] && (
+          <p className="text-white/50 text-sm leading-relaxed max-w-2xl">
+            {PLATFORM_EDITORIAL[platformId]}
+          </p>
+        )}
       </div>
 
       {/* ── Platform selector strip ── */}
