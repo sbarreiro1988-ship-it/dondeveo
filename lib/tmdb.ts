@@ -733,33 +733,41 @@ export async function searchWithPersons(query: string): Promise<{ movies: Movie[
   } catch { return { movies: [], persons: [] }; }
 }
 
+// ─── Plataformas verificadas como disponibles en Uruguay ─────────────────────
+// Solo estas plataformas se muestran en el modal y páginas de detalle.
+// Google Play, Plex, MovistarTV etc. de otras regiones se excluyen porque
+// su catálogo para UY es diferente o no tienen streaming real en Uruguay.
+const STREAMING_PROVIDERS_UY = new Set([
+  'netflix', 'disneyplus', 'max', 'prime', 'paramountplus', 'appletv',
+  'plutotv', 'universalplus', 'crunchyroll', 'mubi', 'directvgo',
+  'mercadoplay', 'curiositystream', 'viki',
+]);
+
 // ─── Watch providers for a specific title ─────────────────────────────────────
-// Combina TMDB (múltiples regiones) + manual overrides (Universal+, etc.)
-// Esta es la única fuente de verdad — todos los componentes usan esta función
+// Solo UY + AR (mercados más precisos para Uruguay).
+// Incluye manual overrides (Universal+, etc.) como fuente complementaria.
 export async function fetchAllWatchProviders(
   tmdbId: number,
   type: 'movie' | 'tv',
 ): Promise<{ platform: Platform; link: string; logoPath: string | null }[]> {
   const result: { platform: Platform; link: string; logoPath: string | null }[] = [];
-  const seen = new Set<string>(); // key: platform id string
+  const seen = new Set<string>();
 
   try {
     const data = await get<WatchProvidersResponse>(`/${type}/${tmdbId}/watch/providers`);
-    const regionPriority = ['UY', 'AR', 'MX', 'CL', 'CO', 'BR', 'US'];
-    const link = data.results?.['UY']?.link
-              ?? data.results?.['AR']?.link ?? '';
+    const link = data.results?.['UY']?.link ?? data.results?.['AR']?.link ?? '';
 
-    for (const region of regionPriority) {
+    // Solo UY y AR — mercados con catálogo relevante para Uruguay
+    for (const region of ['UY', 'AR']) {
       const reg = data.results?.[region] ?? {};
-      const providers = [
+      // Solo flatrate (suscripción) y free (gratuito) — no rent/buy
+      const streamProviders = [
         ...(reg.flatrate ?? []),
         ...(reg.free     ?? []),
-        ...(reg.buy      ?? []),
-        ...(reg.rent     ?? []),
       ];
-      for (const p of providers) {
+      for (const p of streamProviders) {
         const platform = PROVIDER[p.provider_id];
-        if (platform && !seen.has(platform.id)) {
+        if (platform && !seen.has(platform.id) && STREAMING_PROVIDERS_UY.has(platform.id)) {
           seen.add(platform.id);
           result.push({
             platform,
@@ -769,12 +777,11 @@ export async function fetchAllWatchProviders(
         }
       }
     }
-  } catch { /* TMDB falló, continuamos con overrides */ }
+  } catch { /* continúa con overrides manuales */ }
 
-  // ── Siempre agregar manual overrides si no están ya cubiertos por TMDB ──
-  const manualPlatforms = getManualPlatforms(tmdbId);
-  for (const pl of manualPlatforms) {
-    if (!seen.has(pl.id)) {
+  // ── Manual overrides: Universal+, etc. (no están en TMDB para UY/AR) ──
+  for (const pl of getManualPlatforms(tmdbId)) {
+    if (!seen.has(pl.id) && STREAMING_PROVIDERS_UY.has(pl.id)) {
       seen.add(pl.id);
       result.push({ platform: pl, link: '', logoPath: null });
     }

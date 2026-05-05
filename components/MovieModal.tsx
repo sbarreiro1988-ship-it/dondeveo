@@ -164,9 +164,8 @@ export default function MovieModal({ movie, onClose }: Props) {
     fetch(`/api/watch-providers?id=${movie.tmdbId}&type=${type}`)
       .then((r) => r.json())
       .then((data: Record<string, RegionProviders>) => {
-        // Merge providers from ALL regions (same lógica que fetchAllWatchProviders server-side)
-        // Así el modal muestra lo mismo que la página completa
-        const REGION_PRIORITY = ['UY', 'AR', 'MX', 'CL', 'CO', 'BR', 'US'];
+        // Solo UY + AR — misma lógica que fetchAllWatchProviders (server-side)
+        // Solo flatrate+free para stream. rent/buy para sus tabs propias.
         const flatrateSeen = new Set<number>();
         const rentSeen     = new Set<number>();
         const buySeen      = new Set<number>();
@@ -174,13 +173,12 @@ export default function MovieModal({ movie, onClose }: Props) {
         const mergedRent:     WatchProvider[] = [];
         const mergedBuy:      WatchProvider[] = [];
 
-        for (const region of REGION_PRIORITY) {
+        for (const region of ['UY', 'AR']) {
           const r = data[region];
           if (!r) continue;
           for (const p of [...(r.flatrate ?? []), ...(r.free ?? [])]) {
             if (!flatrateSeen.has(p.provider_id)) {
-              flatrateSeen.add(p.provider_id);
-              mergedFlatrate.push(p);
+              flatrateSeen.add(p.provider_id); mergedFlatrate.push(p);
             }
           }
           for (const p of (r.rent ?? [])) {
