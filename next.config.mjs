@@ -11,6 +11,17 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
+  async redirects() {
+    return [
+      // Redirige URLs viejas sin /type/ al nuevo formato
+      // Google las tenía indexadas — redirect 301 permanente
+      {
+        source: '/pelicula/:id(\\d+)',
+        destination: '/pelicula/movie/:id',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
