@@ -220,7 +220,7 @@ export default async function CompararPage({ params }: Props) {
               <div className="grid grid-cols-3 gap-2">
                 {stats.topMovies.map((m) => (
                   <Link key={m.id}
-                    href={`/donde-ver/${encodeURIComponent(m.title.toLowerCase().replace(/\s+/g, '-'))}`}
+                    href={`/pelicula/${m.type === 'series' ? 'tv' : 'movie'}/${m.id}`}
                     className="group">
                     <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-1 bg-white/5">
                       <Image src={m.posterPath} alt={m.title} fill

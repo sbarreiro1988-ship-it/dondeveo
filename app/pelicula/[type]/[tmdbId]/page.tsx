@@ -70,7 +70,7 @@ async function fetchRecs(id: string, type: 'movie' | 'tv') {
       posterPath: `${IMAGE_BASE}/w342${m.poster_path}`,
       voteAverage: Math.round(m.vote_average * 10) / 10,
       // recommendations include media_type for mixed results
-      recType: m.title ? 'movie' : 'tv',
+      recType: (m.media_type === 'tv' || (!m.title && !!m.name)) ? 'tv' : 'movie',
     }));
   } catch { return []; }
 }

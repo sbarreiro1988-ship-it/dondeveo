@@ -118,7 +118,7 @@ export default async function MejoresPage({ params }: Props) {
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
               {movies.map((movie, i) => (
                 <Link key={movie.id}
-                  href={`/donde-ver/${encodeURIComponent(movie.title.toLowerCase().replace(/\s+/g, '-'))}`}
+                  href={`/pelicula/${movie.type === 'series' ? 'tv' : 'movie'}/${movie.id}`}
                   className="group">
                   <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-1.5 bg-white/5">
                     <Image src={movie.posterPath} alt={movie.title} fill
@@ -148,7 +148,7 @@ export default async function MejoresPage({ params }: Props) {
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
               {series.map((movie, i) => (
                 <Link key={movie.id}
-                  href={`/donde-ver/${encodeURIComponent(movie.title.toLowerCase().replace(/\s+/g, '-'))}`}
+                  href={`/pelicula/${movie.type === 'series' ? 'tv' : 'movie'}/${movie.id}`}
                   className="group">
                   <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-1.5 bg-white/5">
                     <Image src={movie.posterPath} alt={movie.title} fill
