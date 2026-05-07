@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Clock, Tag } from 'lucide-react';
@@ -98,7 +98,9 @@ function formatDate(dateStr: string): string {
 
 export default async function ArticlePage({ params }: { params: { slug: string } }) {
   const article = await fetchArticle(params.slug);
-  if (!article) notFound();
+  // Artículo no encontrado → redirect 308 permanente a /noticias
+  // Evita que Google acumule 404s de artículos viejos rotados del servidor
+  if (!article) permanentRedirect('/noticias');
 
   const articleJsonLd = {
     '@context': 'https://schema.org',
