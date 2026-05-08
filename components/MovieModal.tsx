@@ -89,7 +89,8 @@ export default function MovieModal({ movie, onClose }: Props) {
   const [trailerKey,     setTrailerKey]     = useState<string | null>(null);
   const [trailerLoading, setTrailerLoading] = useState(false);
   const [showTrailer,    setShowTrailer]    = useState(false);
-  const [providers,      setProviders]      = useState<RegionProviders | null>(null);
+  // Nueva API devuelve Platform[] directamente (con overrides manuales incluidos)
+  const [streamPlatforms,  setStreamPlatforms]  = useState<Platform[] | null>(null);
   const [providersLoading, setProvidersLoading] = useState(false);
   const [activeTab,      setActiveTab]      = useState<'stream' | 'cinema' | 'rent' | 'buy'>('stream');
   const [cast,           setCast]           = useState<CastMember[]>([]);
@@ -156,52 +157,18 @@ export default function MovieModal({ movie, onClose }: Props) {
       .finally(() => setCastLoading(false));
   }, [movie?.tmdbId, movie?.type]);
 
-  // Fetch watch providers
+  // Fetch watch providers — nueva API usa fetchAllWatchProviders con overrides manuales
   useEffect(() => {
-    if (!movie?.tmdbId) { setProviders(null); return; }
-    setProviders(null); setProvidersLoading(true);
+    if (!movie?.tmdbId) { setStreamPlatforms(null); return; }
+    setStreamPlatforms(null); setProvidersLoading(true);
     const type = movie.type === 'series' ? 'tv' : 'movie';
     fetch(`/api/watch-providers?id=${movie.tmdbId}&type=${type}`)
       .then((r) => r.json())
-      .then((data: Record<string, RegionProviders>) => {
-        // Solo UY + AR — misma lógica que fetchAllWatchProviders (server-side)
-        // Solo flatrate+free para stream. rent/buy para sus tabs propias.
-        const flatrateSeen = new Set<number>();
-        const rentSeen     = new Set<number>();
-        const buySeen      = new Set<number>();
-        const mergedFlatrate: WatchProvider[] = [];
-        const mergedRent:     WatchProvider[] = [];
-        const mergedBuy:      WatchProvider[] = [];
-
-        for (const region of ['UY', 'AR']) {
-          const r = data[region];
-          if (!r) continue;
-          for (const p of [...(r.flatrate ?? []), ...(r.free ?? [])]) {
-            if (!flatrateSeen.has(p.provider_id)) {
-              flatrateSeen.add(p.provider_id); mergedFlatrate.push(p);
-            }
-          }
-          for (const p of (r.rent ?? [])) {
-            if (!rentSeen.has(p.provider_id)) { rentSeen.add(p.provider_id); mergedRent.push(p); }
-          }
-          for (const p of (r.buy ?? [])) {
-            if (!buySeen.has(p.provider_id)) { buySeen.add(p.provider_id); mergedBuy.push(p); }
-          }
-        }
-
-        const merged: RegionProviders = {
-          flatrate: mergedFlatrate.length > 0 ? mergedFlatrate : undefined,
-          rent:     mergedRent.length > 0 ? mergedRent : undefined,
-          buy:      mergedBuy.length > 0 ? mergedBuy : undefined,
-        };
-
-        setProviders(merged);
-        if (merged.flatrate?.length) setActiveTab('stream');
-        else if (merged.rent?.length) setActiveTab('rent');
-        else if (merged.buy?.length) setActiveTab('buy');
-        else setActiveTab('stream');
+      .then((data: { platforms?: Platform[] }) => {
+        setStreamPlatforms(data.platforms ?? []);
+        setActiveTab('stream');
       })
-      .catch(() => setProviders(null))
+      .catch(() => setStreamPlatforms([]))
       .finally(() => setProvidersLoading(false));
   }, [movie?.tmdbId, movie?.type]);
 
@@ -248,51 +215,20 @@ export default function MovieModal({ movie, onClose }: Props) {
 
   const year = movie.releaseDate ? new Date(movie.releaseDate + 'T00:00:00').getFullYear() : '';
 
-  // Año para mostrar en la UI
-  const isRecentRelease = false; // ya no usamos lógica de "en cines" — era demasiado imprecisa
+  // Providers confirmados (vienen de fetchAllWatchProviders con overrides manuales)
+  const confirmedPlatforms = streamPlatforms ?? [];
+  const hasStream          = confirmedPlatforms.length > 0;
+  const effectiveHasStream = hasStream || (providersLoading && movie.platforms.length > 0);
 
-  // Merge flatrate + free for Stream tab
-  const streamProviders = [
-    ...(providers?.flatrate ?? []),
-    ...(providers?.free     ?? []),
-  ].filter((p, i, arr) => arr.findIndex(x => x.provider_id === p.provider_id) === i);
+  // En cines: película reciente (< 21 días) sin providers de streaming confirmados
+  const isRecentRelease = movie.releaseDate
+    ? new Date(movie.releaseDate) >= new Date(Date.now() - 21 * 86400000)
+    : false;
+  const inCinemas = !providersLoading && !hasStream && movie.type === 'movie' && isRecentRelease;
 
-  const rentProviders = providers?.rent ?? [];
-  const buyProviders  = providers?.buy  ?? [];
-
-  const hasStream = streamProviders.length > 0;
-  const hasRent   = rentProviders.length > 0;
-  const hasBuy    = buyProviders.length > 0;
-
-  // ESTRATEGIA MERGE: TMDB + carrusel combinados (no "uno u otro")
-  // TMDB cubre suscripciones (Netflix, Prime, etc.)
-  // Carrusel: plataformas que vienen del card (asignadas al descubrir el contenido por proveedor)
-  const curatedPlatforms = movie.platforms;
-
-  // Solo mostrar plataformas del carrusel si TMDB/overrides no devolvieron NADA confirmado.
-  // Si ya tenemos providers confirmados (Netflix, Paramount+, etc.), el carrusel puede estar
-  // equivocado (ej: la película aparece en el discover de Universal+ por error en TMDB).
-  const extraCurated = providersLoading ? [] :
-    streamProviders.length > 0 ? [] :   // ← si ya tenemos confirmados, no agregar del carrusel
-    curatedPlatforms.filter((pl) => {
-      const firstWord = pl.name.toLowerCase().split(/[\s+]/)[0];
-      return !streamProviders.some((p) =>
-        p.provider_name.toLowerCase().includes(firstWord) ||
-        firstWord.includes(p.provider_name.toLowerCase().split(' ')[0])
-      );
-    });
-
-  const totalStreamCount = streamProviders.length + extraCurated.length;
-  const effectiveHasStream = totalStreamCount > 0 || (providersLoading && curatedPlatforms.length > 0);
-
-  // inCinemas eliminado — era impreciso (TMDB tiene datos incompletos para UY)
-
-  const streamCount = totalStreamCount || curatedPlatforms.length;
   const tabs = [
-    { id: 'stream' as const, label: 'Stream',   count: streamCount,         show: true },
-    { id: 'rent'   as const, label: 'Alquilar', count: rentProviders.length, show: hasRent },
-    { id: 'buy'    as const, label: 'Comprar',  count: buyProviders.length,  show: hasBuy },
-  ].filter(t => t.show);
+    { id: 'stream' as const, label: 'Stream', count: confirmedPlatforms.length, show: true },
+  ];
 
   return (
     <div
@@ -352,7 +288,11 @@ export default function MovieModal({ movie, onClose }: Props) {
                 <span className="text-dv-accent text-[10px] font-bold uppercase tracking-widest">
                   {movie.type === 'series' ? 'Serie' : 'Película'}
                 </span>
-                {/* badge "En cines" eliminado — los datos de TMDB son demasiado imprecisos */}
+                {inCinemas && (
+                  <span className="bg-yellow-500 text-black text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
+                    🎬 En cines
+                  </span>
+                )}
               </div>
               <h2 className="text-white text-xl md:text-2xl font-black leading-tight drop-shadow-xl line-clamp-2">
                 {movie.title}
@@ -462,53 +402,39 @@ export default function MovieModal({ movie, onClose }: Props) {
                   </div>
                 )}
 
-                {/* Stream providers — TMDB + curated mezclados */}
+                {/* Stream providers — fuente única: fetchAllWatchProviders (overrides incluidos) */}
                 {activeTab === 'stream' && (
-                  effectiveHasStream && !providersLoading ? (
+                  providersLoading ? (
+                    <div className="flex gap-3 animate-pulse">
+                      {[1,2].map(i => <div key={i} className="w-12 h-12 rounded-xl bg-white/10" />)}
+                    </div>
+                  ) : effectiveHasStream ? (
                     <div className="flex flex-wrap gap-4">
-                      {/* TMDB: suscripciones (Netflix, Prime, Disney+, etc.) */}
-                      {streamProviders.map((p) => <ProviderLogo key={p.provider_id} p={p} />)}
-                      {/* Carrusel: gratis/regionales no cubiertos por TMDB (Pluto, Mercado Play…) */}
-                      {extraCurated.map((pl) => {
-                        const dynamicLogo = providerLogos[pl.id];
-                        const enriched = dynamicLogo ? { ...pl, logoUrl: dynamicLogo } : pl;
+                      {confirmedPlatforms.map((pl) => {
+                        const enriched = providerLogos[pl.id] ? { ...pl, logoUrl: providerLogos[pl.id] } : pl;
                         return <FallbackPlatformLogo key={pl.id} platform={enriched} />;
                       })}
+                    </div>
+                  ) : inCinemas ? (
+                    /* ── SOLO EN CINES ── */
+                    <div className="flex items-center gap-4 bg-[#111] border border-white/10 rounded-xl p-4">
+                      <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                        <span className="text-3xl">🎬</span>
+                      </div>
+                      <div>
+                        <span className="inline-block bg-yellow-500 text-black text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded mb-1">
+                          Solo en cines
+                        </span>
+                        <p className="text-white font-bold text-sm mb-0.5">Actualmente en cartelera</p>
+                        <p className="text-gray-500 text-xs">Disponible en cines. Aún no llega al streaming.</p>
+                      </div>
                     </div>
                   ) : (
                     <div className="text-center py-5">
                       <Film size={32} className="text-gray-700 mx-auto mb-2" />
-                      <p className="text-gray-400 text-sm font-semibold mb-1">
-                        No encontramos disponibilidad
-                      </p>
-                      <p className="text-gray-600 text-xs">
-                        {hasRent || hasBuy
-                          ? 'Podés alquilarla o comprarla →'
-                          : 'Puede estar en cines, próximamente en streaming, o no disponible aún en Uruguay.'}
-                      </p>
+                      <p className="text-gray-400 text-sm font-semibold mb-1">No encontramos disponibilidad</p>
+                      <p className="text-gray-600 text-xs">Puede que no esté en streaming en Uruguay todavía.</p>
                     </div>
-                  )
-                )}
-
-                {/* Rent providers */}
-                {activeTab === 'rent' && (
-                  hasRent ? (
-                    <div className="flex flex-wrap gap-4">
-                      {rentProviders.map((p) => <ProviderLogo key={p.provider_id} p={p} />)}
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 text-sm text-center py-4">No disponible para alquilar</p>
-                  )
-                )}
-
-                {/* Buy providers */}
-                {activeTab === 'buy' && (
-                  hasBuy ? (
-                    <div className="flex flex-wrap gap-4">
-                      {buyProviders.map((p) => <ProviderLogo key={p.provider_id} p={p} />)}
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 text-sm text-center py-4">No disponible para comprar</p>
                   )
                 )}
 
