@@ -695,15 +695,13 @@ export async function fetchFindeRecommendations(): Promise<Movie[]> {
     candidates = [...topMovies, ...topSeries].sort((a, b) => b.score - a.score).slice(0, 3);
   }
 
-  // Enriquecer con fetchAllWatchProviders (incluye overrides manuales — badges correctos)
+  // Enriquecer con plataforma real — lookup rápido en UY/AR/MX
   const enriched = await Promise.all(
     candidates.map(async ({ item, type }) => {
-      const genres    = type === 'movie' ? movieGenres : tvGenres;
-      const providers = await fetchAllWatchProviders(item.id, type);
-      const platform  = providers[0]?.platform ?? null;
-      const movie     = mapItem(item, genres, platform, type === 'movie' ? 'movie' : 'series');
-      movie.platforms = providers.map((p) => p.platform);
-      return movie;
+      const genres = type === 'movie' ? movieGenres : tvGenres;
+      // getUYProviders busca en UY primero, rápido (1 API call)
+      const platform = await getUYProviders(item.id, type);
+      return mapItem(item, genres, platform, type === 'movie' ? 'movie' : 'series');
     })
   );
 
