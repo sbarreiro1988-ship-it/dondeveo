@@ -130,8 +130,18 @@ export default function HomeClient({
   // Platform lookup for enriching Trending / Top 10
   const platformLookup = useMemo(() => {
     const map = new Map<number, Platform[]>();
+
+    // 1. Overrides manuales PRIMERO — tienen prioridad total
+    //    (evita que Universal+ u otras plataformas incorrectas de TMDB sobreescriban)
+    const manualMap = getManualOverridesMap();
+    manualMap.forEach((platforms, tmdbId) => {
+      map.set(tmdbId, platforms);
+    });
+
+    // 2. Asignar desde listas de plataformas — saltear si ya tiene override manual
     const assign = (movies: Movie[], pl: Platform) => {
       for (const m of movies) {
+        if (manualMap.has(m.id)) continue; // override manual tiene prioridad
         const prev = map.get(m.id) ?? [];
         if (!prev.find((p) => p.id === pl.id)) map.set(m.id, [...prev, pl]);
       }
@@ -158,17 +168,6 @@ export default function HomeClient({
     assign(paramountSeries, PLATFORMS.paramountplus);
     assign(appleTvSeries,   PLATFORMS.appletv);
     assign(crunchyrollSeries, PLATFORMS.crunchyroll);
-
-    // Manual overrides — plataformas asignadas a mano (ej: Universal+)
-    const manualMap = getManualOverridesMap();
-    manualMap.forEach((platforms, tmdbId) => {
-      const prev = map.get(tmdbId) ?? [];
-      const merged = [...prev];
-      for (const pl of platforms) {
-        if (!merged.find(p => p.id === pl.id)) merged.push(pl);
-      }
-      map.set(tmdbId, merged);
-    });
 
     return map;
   }, [netflix, disneyplus, max, prime, paramountplus, appleTv, pluto, directvgo, mubi,
