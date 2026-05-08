@@ -220,9 +220,10 @@ export default function MovieModal({ movie, onClose }: Props) {
   const hasStream          = confirmedPlatforms.length > 0;
   const effectiveHasStream = hasStream || (providersLoading && movie.platforms.length > 0);
 
-  // En cines: película reciente (< 21 días) sin providers de streaming confirmados
+  // En cines: película reciente (< 60 días) sin providers de streaming confirmados
+  // 60 días cubre la mayoría de las ventanas de exclusividad teatral
   const isRecentRelease = movie.releaseDate
-    ? new Date(movie.releaseDate) >= new Date(Date.now() - 21 * 86400000)
+    ? new Date(movie.releaseDate) >= new Date(Date.now() - 60 * 86400000)
     : false;
   const inCinemas = !providersLoading && !hasStream && movie.type === 'movie' && isRecentRelease;
 

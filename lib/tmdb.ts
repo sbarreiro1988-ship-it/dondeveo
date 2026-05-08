@@ -620,66 +620,90 @@ async function getUYProviders(id: number, type: 'movie' | 'tv'): Promise<Platfor
   } catch { return null; }
 }
 
+// IDs de plataformas de streaming disponibles en Uruguay (para filtrar discover)
+const STREAM_PROVIDERS_LATAM = '8|337|1899|384|119|9|531|67|350|300|283|11|2302|190|538';
+
 export async function fetchFindeRecommendations(): Promise<Movie[]> {
   const [movieGenres, tvGenres] = await Promise.all([getGenres('movie'), getGenres('tv')]);
 
   const today    = new Date();
-  // Ventana amplia: últimos 60 días para tener suficientes resultados en AR/UY
-  const fromDate = new Date(today.getTime() - 60 * 86400000).toISOString().split('T')[0];
+  // Últimos 30 días — más fresco y cambia más entre semanas
+  const fromDate = new Date(today.getTime() - 30 * 86400000).toISOString().split('T')[0];
   const toDate   = today.toISOString().split('T')[0];
 
-  // Usamos AR (mejor cobertura que UY en TMDB) — mismas plataformas disponibles
-  const [moviesData, seriesData] = await Promise.all([
+  // with_watch_providers filtra solo contenido disponible en streaming (NO en cines)
+  // Buscamos en MX + AR (mejor cobertura TMDB que UY) — mismas plataformas disponibles
+  const fetchRegion = async (region: string) => Promise.all([
     getFresh<TMDBListResponse>('/discover/movie', {
-      watch_region:               'AR',
+      watch_region:               region,
+      with_watch_providers:       STREAM_PROVIDERS_LATAM,
       'primary_release_date.gte': fromDate,
       'primary_release_date.lte': toDate,
       sort_by:                    'popularity.desc',
-      'vote_count.gte':           '20',
+      'vote_count.gte':           '10',
       page:                       '1',
     }).catch((): TMDBListResponse => ({ results: [] })),
     getFresh<TMDBListResponse>('/discover/tv', {
-      watch_region:           'AR',
-      'first_air_date.gte':   fromDate,
-      'first_air_date.lte':   toDate,
-      sort_by:                'popularity.desc',
-      'vote_count.gte':       '10',
-      page:                   '1',
+      watch_region:         region,
+      with_watch_providers: STREAM_PROVIDERS_LATAM,
+      'first_air_date.gte': fromDate,
+      'first_air_date.lte': toDate,
+      sort_by:              'popularity.desc',
+      'vote_count.gte':     '5',
+      page:                 '1',
     }).catch((): TMDBListResponse => ({ results: [] })),
   ]);
 
+  // Buscar en MX primero (más datos), luego AR como fallback
+  const [[movMX, serMX], [movAR, serAR]] = await Promise.all([
+    fetchRegion('MX'),
+    fetchRegion('AR'),
+  ]);
+
+  // Merge sin duplicados
+  const seenIds = new Set<number>();
+  const mergeResults = (a: TMDBItem[], b: TMDBItem[]) => {
+    const out: TMDBItem[] = [];
+    for (const i of [...a, ...b]) {
+      if (i.poster_path && i.backdrop_path && !seenIds.has(i.id)) {
+        seenIds.add(i.id);
+        out.push(i);
+      }
+    }
+    return out;
+  };
+
   type Candidate = { item: TMDBItem; type: 'movie' | 'tv'; score: number };
 
-  const topMovies: Candidate[] = (moviesData.results ?? [])
-    .filter((i) => i.poster_path && i.backdrop_path)
-    .slice(0, 4)
+  const topMovies: Candidate[] = mergeResults(movMX.results ?? [], movAR.results ?? [])
+    .slice(0, 6)
     .map((i) => ({ item: i, type: 'movie' as const, score: i.popularity ?? 0 }));
 
-  const topSeries: Candidate[] = (seriesData.results ?? [])
-    .filter((i) => i.poster_path && i.backdrop_path)
-    .slice(0, 4)
+  const topSeries: Candidate[] = mergeResults(serMX.results ?? [], serAR.results ?? [])
+    .slice(0, 6)
     .map((i) => ({ item: i, type: 'tv' as const, score: i.popularity ?? 0 }));
 
-  // Mix: asegurar al menos 1 película y 1 serie en el top 3
-  let candidates: Candidate[];
+  // Asegurar al menos 1 película Y 1 serie en el top 3
+  let candidates: Candidate[] = [];
   if (topMovies.length > 0 && topSeries.length > 0) {
-    candidates = [...topMovies.slice(0, 2), ...topSeries.slice(0, 2)]
+    // Tomar los 2 más populares de cada tipo, mezclar y elegir 3
+    candidates = [topMovies[0], topSeries[0], topMovies[1] ?? topSeries[1]]
+      .filter(Boolean)
       .sort((a, b) => b.score - a.score)
       .slice(0, 3);
-    const movieCount  = candidates.filter((c) => c.type === 'movie').length;
-    const seriesCount = candidates.filter((c) => c.type === 'tv').length;
-    if (movieCount === 0 && topMovies.length > 0) candidates[2] = topMovies[0];
-    else if (seriesCount === 0 && topSeries.length > 0) candidates[2] = topSeries[0];
   } else {
     candidates = [...topMovies, ...topSeries].sort((a, b) => b.score - a.score).slice(0, 3);
   }
 
-  // Enriquecer con plataforma real de UY
+  // Enriquecer con fetchAllWatchProviders (incluye overrides manuales — badges correctos)
   const enriched = await Promise.all(
     candidates.map(async ({ item, type }) => {
-      const genres   = type === 'movie' ? movieGenres : tvGenres;
-      const platform = await getUYProviders(item.id, type);
-      return mapItem(item, genres, platform, type === 'movie' ? 'movie' : 'series');
+      const genres    = type === 'movie' ? movieGenres : tvGenres;
+      const providers = await fetchAllWatchProviders(item.id, type);
+      const platform  = providers[0]?.platform ?? null;
+      const movie     = mapItem(item, genres, platform, type === 'movie' ? 'movie' : 'series');
+      movie.platforms = providers.map((p) => p.platform);
+      return movie;
     })
   );
 
