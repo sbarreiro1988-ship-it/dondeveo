@@ -26,6 +26,7 @@ export const MANUAL_OVERRIDES: ManualOverride[] = [
   { tmdbId: 262388,  title: 'M.I.A.',                  type: 'series', platforms: [P] },
   { tmdbId: 1330021, title: 'Criaturas luminosas',      type: 'movie',  platforms: [N] },
   { tmdbId: 314916,  title: 'Incondicional',            type: 'series', platforms: [A] },
+  { tmdbId: 1630423, title: 'Sangre asesina',           type: 'movie',  platforms: [N] },
 
   // ── SERIES en Universal+ ─────────────────────────────────────────────────
   // IDs verificados en themoviedb.org (buscar en inglés, tomar el número de la URL)

@@ -238,8 +238,8 @@ export default async function PeliculaPage({ params }: Props) {
             </div>
           ) : (
             <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
-              <p className="text-white/60">No disponible en streaming en Uruguay actualmente.</p>
-              <p className="text-dv-muted text-sm mt-1">Puede estar disponible en cines o próximamente.</p>
+              <p className="text-white/60">No encontramos disponibilidad en streaming para Uruguay.</p>
+              <p className="text-dv-muted text-sm mt-1">Puede que aún no esté en ninguna plataforma o que los datos no estén actualizados.</p>
             </div>
           )}
         </div>
