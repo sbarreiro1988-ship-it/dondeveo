@@ -32,7 +32,16 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "WebFetch(domain:www.justwatch.com)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(grep -rn \"recType\\\\|/pelicula/\\\\${m\\\\.\" app/ --include=\"*.tsx\")",
+      "Bash(cat app/robots.ts)",
+      "Bash(ls app/robots*)",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__computer",
+      "mcp__Claude_in_Chrome__browser_batch",
+      "mcp__Claude_in_Chrome__find",
+      "Bash(rm \"app/pelicula/[tmdbId]/page.tsx\")",
+      "Bash(rmdir \"app/pelicula/[tmdbId]\")"
     ]
   }
 }
