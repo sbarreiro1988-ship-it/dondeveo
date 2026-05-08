@@ -266,17 +266,21 @@ export default function MovieModal({ movie, onClose }: Props) {
 
   // ESTRATEGIA MERGE: TMDB + carrusel combinados (no "uno u otro")
   // TMDB cubre suscripciones (Netflix, Prime, etc.)
-  // Carrusel cubre servicios gratis/regionales (Pluto TV, Mercado Play, etc.) que TMDB no siempre registra
+  // Carrusel: plataformas que vienen del card (asignadas al descubrir el contenido por proveedor)
   const curatedPlatforms = movie.platforms;
 
-  // Plataformas curadas que NO aparecen ya en TMDB (evita duplicados)
-  const extraCurated = providersLoading ? [] : curatedPlatforms.filter((pl) => {
-    const firstWord = pl.name.toLowerCase().split(/[\s+]/)[0];
-    return !streamProviders.some((p) =>
-      p.provider_name.toLowerCase().includes(firstWord) ||
-      firstWord.includes(p.provider_name.toLowerCase().split(' ')[0])
-    );
-  });
+  // Solo mostrar plataformas del carrusel si TMDB/overrides no devolvieron NADA confirmado.
+  // Si ya tenemos providers confirmados (Netflix, Paramount+, etc.), el carrusel puede estar
+  // equivocado (ej: la película aparece en el discover de Universal+ por error en TMDB).
+  const extraCurated = providersLoading ? [] :
+    streamProviders.length > 0 ? [] :   // ← si ya tenemos confirmados, no agregar del carrusel
+    curatedPlatforms.filter((pl) => {
+      const firstWord = pl.name.toLowerCase().split(/[\s+]/)[0];
+      return !streamProviders.some((p) =>
+        p.provider_name.toLowerCase().includes(firstWord) ||
+        firstWord.includes(p.provider_name.toLowerCase().split(' ')[0])
+      );
+    });
 
   const totalStreamCount = streamProviders.length + extraCurated.length;
   const effectiveHasStream = totalStreamCount > 0 || (providersLoading && curatedPlatforms.length > 0);
