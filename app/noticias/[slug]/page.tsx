@@ -5,6 +5,7 @@ import { ArrowLeft, Clock, Tag } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getStaticArticleBySlug } from '@/lib/staticArticles';
 import AdSlot from '@/components/AdSlot';
+import TerraNewsAds from '@/components/TerraNewsAds';
 
 export const revalidate   = 3600;
 export const dynamicParams = true;
@@ -205,18 +206,14 @@ export default async function ArticlePage({ params }: { params: { slug: string }
           {article.intro}
         </p>
 
-        {/* 🔴 Anuncio AdSense — entre intro y primer párrafo */}
-        {/* Reemplazá "SLOT_ID_1" con el ID de tu primer bloque de anuncio en Google AdSense */}
-        <AdSlot slot="SLOT_ID_1" format="horizontal" />
+        {/* ── Terra Ads: Popunder + SocialBar + NativeBanner (solo en noticias) ── */}
+        <TerraNewsAds />
 
-        {/* Body paragraphs con anuncios intercalados cada 2 párrafos */}
+        {/* Body paragraphs */}
         <div className="space-y-5 mb-6">
           {paragraphs.map((p, i) => (
             <div key={i}>
               <p className="text-gray-300 text-base leading-relaxed">{p}</p>
-              {/* 🔴 Anuncio AdSense cada 2 párrafos */}
-              {/* Reemplazá "SLOT_ID_2" con el ID de tu segundo bloque en Google AdSense */}
-              {i === 1 && <AdSlot slot="SLOT_ID_2" format="rectangle" />}
             </div>
           ))}
         </div>
@@ -227,10 +224,6 @@ export default async function ArticlePage({ params }: { params: { slug: string }
             {article.conclusion}
           </p>
         </div>
-
-        {/* 🔴 Anuncio AdSense — al final del artículo */}
-        {/* Reemplazá "SLOT_ID_3" con el ID de tu tercer bloque de anuncio */}
-        <AdSlot slot="SLOT_ID_3" format="auto" />
 
         {/* Tags */}
         {article.tags?.length > 0 && (
