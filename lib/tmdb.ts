@@ -609,12 +609,21 @@ interface WatchProvidersResponse {
 }
 
 async function getUYProviders(id: number, type: 'movie' | 'tv'): Promise<Platform | null> {
+  // 1. Overrides manuales tienen prioridad — son confirmados por humano
+  const manual = getManualPlatforms(id);
+  if (manual.length > 0) return manual[0];
+
   try {
     const data = await getFresh<WatchProvidersResponse>(`/${type}/${id}/watch/providers`);
-    const uy = data.results?.['UY'];
-    const providers = [...(uy?.flatrate ?? []), ...(uy?.buy ?? []), ...(uy?.rent ?? [])];
-    for (const p of providers) {
-      if (PROVIDER[p.provider_id]) return PROVIDER[p.provider_id];
+    // 2. Buscar en UY → AR → MX → CL (más completo que solo UY)
+    // Solo flatrate+free, filtrado por STREAMING_PROVIDERS_UY whitelist
+    for (const region of ['UY', 'AR', 'MX', 'CL']) {
+      const reg = data.results?.[region];
+      if (!reg) continue;
+      for (const p of [...(reg.flatrate ?? []), ...(reg.free ?? [])]) {
+        const platform = PROVIDER[p.provider_id];
+        if (platform && STREAMING_PROVIDERS_UY.has(platform.id)) return platform;
+      }
     }
     return null;
   } catch { return null; }
