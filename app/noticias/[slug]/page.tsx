@@ -7,7 +7,7 @@ import { getStaticArticleBySlug } from '@/lib/staticArticles';
 import AdSlot from '@/components/AdSlot';
 import TerraNewsAds from '@/components/TerraNewsAds';
 
-export const revalidate   = 3600;
+export const revalidate    = 300; // 5 min — artículos se regeneran frecuente
 export const dynamicParams = true;
 
 interface ArticleData {
