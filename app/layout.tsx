@@ -111,6 +111,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
+        {/* Terra Ads — Popunder */}
+        <script src="https://pl29379690.profitablecpmratenetwork.com/47/a1/4a/47a14ae68c88186e1795f2c6459b2073.js" />
+        {/* Terra Ads — SocialBar */}
+        <script src="https://pl29379692.profitablecpmratenetwork.com/3b/ca/dc/3bcadc2c202da296c40b14ea10f47c0a.js" />
       </head>
       <body>
         <Suspense fallback={null}>

@@ -10,6 +10,7 @@ import FeaturedSpotlight from './FeaturedSpotlight';
 import NewSeriesCards from './NewSeriesCards';
 import NoticiasSection from './NoticiasSection';
 import FindeSection from './FindeSection';
+import TerraNativeBanner from './TerraNativeBanner';
 import FilterBar from './FilterBar';
 import MovieCard from './MovieCard';
 import MovieModal from './MovieModal';
@@ -356,6 +357,9 @@ export default function HomeClient({
               {finde.length > 0 && (
                 <FindeSection movies={finde} onMovieClick={handleMovieClick} />
               )}
+
+              {/* Terra NativeBanner — entre Finde y Cines */}
+              <TerraNativeBanner className="px-4 md:px-8 mb-8" />
 
               {/* ── Ahora en cines ── */}
               {nowPlaying.length > 0 && (
