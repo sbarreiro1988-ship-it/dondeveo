@@ -248,10 +248,8 @@ export default function MovieModal({ movie, onClose }: Props) {
 
   const year = movie.releaseDate ? new Date(movie.releaseDate + 'T00:00:00').getFullYear() : '';
 
-  // Is it a recent movie (last 120 days) with no streaming? → still in cinemas
-  const isRecentRelease = movie.releaseDate
-    ? new Date(movie.releaseDate) >= new Date(Date.now() - 120 * 86400000)
-    : false;
+  // Año para mostrar en la UI
+  const isRecentRelease = false; // ya no usamos lógica de "en cines" — era demasiado imprecisa
 
   // Merge flatrate + free for Stream tab
   const streamProviders = [
@@ -283,9 +281,7 @@ export default function MovieModal({ movie, onClose }: Props) {
   const totalStreamCount = streamProviders.length + extraCurated.length;
   const effectiveHasStream = totalStreamCount > 0 || (providersLoading && curatedPlatforms.length > 0);
 
-  // A movie is "in cinemas" if: no stream/rent/buy yet, it's a movie (not series), and released recently
-  const inCinemas = !providersLoading && !effectiveHasStream && !hasRent && !hasBuy
-    && movie.type === 'movie' && isRecentRelease;
+  // inCinemas eliminado — era impreciso (TMDB tiene datos incompletos para UY)
 
   const streamCount = totalStreamCount || curatedPlatforms.length;
   const tabs = [
@@ -352,11 +348,7 @@ export default function MovieModal({ movie, onClose }: Props) {
                 <span className="text-dv-accent text-[10px] font-bold uppercase tracking-widest">
                   {movie.type === 'series' ? 'Serie' : 'Película'}
                 </span>
-                {inCinemas && (
-                  <span className="bg-yellow-500 text-black text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
-                    🎬 En cines
-                  </span>
-                )}
+                {/* badge "En cines" eliminado — los datos de TMDB son demasiado imprecisos */}
               </div>
               <h2 className="text-white text-xl md:text-2xl font-black leading-tight drop-shadow-xl line-clamp-2">
                 {movie.title}
@@ -479,34 +471,16 @@ export default function MovieModal({ movie, onClose }: Props) {
                         return <FallbackPlatformLogo key={pl.id} platform={enriched} />;
                       })}
                     </div>
-                  ) : inCinemas ? (
-                    /* ── SOLO EN CINES ── */
-                    <div className="flex items-center gap-4 bg-[#111] border border-white/10 rounded-xl p-4">
-                      <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg">
-                        <span className="text-3xl">🎬</span>
-                      </div>
-                      <div>
-                        <span className="inline-block bg-yellow-500 text-black text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded mb-1">
-                          Solo en cines
-                        </span>
-                        <p className="text-white font-bold text-sm mb-0.5">
-                          Actualmente en cartelera
-                        </p>
-                        <p className="text-gray-500 text-xs">
-                          Disponible en cines de Uruguay. Aún no llega al streaming.
-                        </p>
-                      </div>
-                    </div>
                   ) : (
                     <div className="text-center py-5">
                       <Film size={32} className="text-gray-700 mx-auto mb-2" />
                       <p className="text-gray-400 text-sm font-semibold mb-1">
-                        No disponible en streaming
+                        No encontramos disponibilidad
                       </p>
                       <p className="text-gray-600 text-xs">
                         {hasRent || hasBuy
                           ? 'Podés alquilarla o comprarla →'
-                          : 'No está disponible en plataformas de Uruguay/Argentina.'}
+                          : 'Puede estar en cines, próximamente en streaming, o no disponible aún en Uruguay.'}
                       </p>
                     </div>
                   )

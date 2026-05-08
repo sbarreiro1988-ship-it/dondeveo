@@ -107,27 +107,42 @@ function mapItem(item: TMDBItem, genres: Record<number, string>, platform: Platf
   };
 }
 
-// Provider ID → Platform (verified via TMDB /watch/providers/movie?watch_region=AR)
+// Provider ID → Platform (verified via TMDB /watch/providers/movie?watch_region=AR,MX,CL)
 const PROVIDER: Record<number, Platform> = {
+  // Netflix
   8:    PLATFORMS.netflix,
+  // Disney+
   337:  PLATFORMS.disneyplus,
+  // Max (HBO Max / Max)
   1899: PLATFORMS.max,
   384:  PLATFORMS.max,
+  // Prime Video
   119:  PLATFORMS.prime,
   9:    PLATFORMS.prime,
+  // Paramount+
   531:  PLATFORMS.paramountplus,
   67:   PLATFORMS.paramountplus,
+  1853: PLATFORMS.paramountplus,  // Paramount+ Amazon Channel
+  // Apple TV+
   350:  PLATFORMS.appletv,
+  2552: PLATFORMS.appletv,        // Apple TV+ (US/algunas regiones)
+  // Pluto TV
   300:  PLATFORMS.plutotv,
-  467:  PLATFORMS.directvgo,    // DIRECTV GO (verified, available in UY)
-  11:   PLATFORMS.mubi,         // MUBI
-  339:  PLATFORMS.movistar,     // MovistarTV
-  283:  PLATFORMS.crunchyroll,    // Crunchyroll (anime)
-  3:    PLATFORMS.googleplay,     // Google Play Movies
-  2302: PLATFORMS.mercadoplay,   // Mercado Play (Mercado Libre)
-  190:  PLATFORMS.curiositystream,// Curiosity Stream
-  538:  PLATFORMS.plex,          // Plex (gratis)
-  344:  PLATFORMS.viki,          // Rakuten Viki (K-dramas, anime)
+  // DirectvGo
+  467:  PLATFORMS.directvgo,
+  // MUBI
+  11:   PLATFORMS.mubi,
+  // Crunchyroll
+  283:  PLATFORMS.crunchyroll,
+  1968: PLATFORMS.crunchyroll,    // Crunchyroll (región alternativa)
+  // Mercado Play
+  2302: PLATFORMS.mercadoplay,
+  // Curiosity Stream
+  190:  PLATFORMS.curiositystream,
+  // Plex
+  538:  PLATFORMS.plex,
+  // Viki
+  344:  PLATFORMS.viki,
 };
 
 // ─── Fetch with configurable regions ─────────────────────────────────────────
@@ -755,11 +770,22 @@ export async function fetchAllWatchProviders(
 
   try {
     const data = await get<WatchProvidersResponse>(`/${type}/${tmdbId}/watch/providers`);
-    const link = data.results?.['UY']?.link ?? data.results?.['AR']?.link ?? '';
+    // Preferir link de UY, luego AR, luego cualquier LatAm disponible
+    const link = data.results?.['UY']?.link
+      ?? data.results?.['AR']?.link
+      ?? data.results?.['MX']?.link
+      ?? '';
 
-    // Solo UY y AR — mercados con catálogo relevante para Uruguay
-    for (const region of ['UY', 'AR']) {
-      const reg = data.results?.[region] ?? {};
+    // Buscar en toda LatAm: el catálogo de Netflix, Prime, Apple TV+, Paramount+, Max
+    // es prácticamente idéntico en todos estos países. TMDB tiene datos incompletos
+    // para UY específicamente, pero MX/BR/CL suelen estar actualizados.
+    // El whitelist STREAMING_PROVIDERS_UY asegura que solo mostramos plataformas
+    // disponibles en Uruguay — no importa en qué región lo encontramos.
+    const LATAM_REGIONS = ['UY', 'AR', 'MX', 'CL', 'CO', 'PE', 'BR', 'EC', 'BO'];
+
+    for (const region of LATAM_REGIONS) {
+      const reg = data.results?.[region];
+      if (!reg) continue;
       // Solo flatrate (suscripción) y free (gratuito) — no rent/buy
       const streamProviders = [
         ...(reg.flatrate ?? []),

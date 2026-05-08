@@ -17,8 +17,16 @@ export interface ManualOverride {
 }
 
 const U = PLATFORMS.universalplus;
+const N = PLATFORMS.netflix;
+const P = PLATFORMS.paramountplus;
+const A = PLATFORMS.appletv;
 
 export const MANUAL_OVERRIDES: ManualOverride[] = [
+  // ── Confirmados por usuario — TMDB no tiene datos para LatAm ─────────────
+  { tmdbId: 262388,  title: 'M.I.A.',                  type: 'series', platforms: [P] },
+  { tmdbId: 1330021, title: 'Criaturas luminosas',      type: 'movie',  platforms: [N] },
+  { tmdbId: 314916,  title: 'Incondicional',            type: 'series', platforms: [A] },
+
   // ── SERIES en Universal+ ─────────────────────────────────────────────────
   // IDs verificados en themoviedb.org (buscar en inglés, tomar el número de la URL)
   { tmdbId: 124364, title: 'FROM',                    type: 'series', platforms: [U] },
