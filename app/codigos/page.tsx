@@ -8,7 +8,6 @@ export const metadata: Metadata = {
 };
 
 const PORTAL_URL = 'https://codigos.jp2000.xyz/jp-panel/';
-const ADMIN_URL  = 'https://codigos.jp2000.xyz/jp-mgr/';
 
 const PLATFORMS = [
   { name: 'Netflix',     color: '#E50914' },
@@ -34,7 +33,7 @@ export default function CodigosPage() {
         .role-card:hover .cta-arrow { transform: translateX(4px); }
         .icon-wrap { transition: transform .2s; }
         .role-card:hover .icon-wrap { transform: scale(1.1); }
-        @media (max-width: 640px) { .cards-grid { grid-template-columns: 1fr !important; } }
+        @media (max-width: 520px) { .cards-grid { grid-template-columns: 1fr !important; } }
       `}</style>
 
       <main className="min-h-screen flex flex-col items-center justify-center px-4 py-16 relative overflow-hidden"
@@ -82,7 +81,7 @@ export default function CodigosPage() {
           </div>
 
           {/* ── CARDS ── */}
-          <div className="cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+          <div className="cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', maxWidth: '680px', margin: '0 auto' }}>
 
             {/* Cliente */}
             <a href={PORTAL_URL} target="_blank" rel="noopener noreferrer"
@@ -134,34 +133,6 @@ export default function CodigosPage() {
               </div>
             </a>
 
-            {/* Administrador */}
-            <a href={ADMIN_URL} target="_blank" rel="noopener noreferrer"
-               className="role-card role-card-amber flex flex-col gap-5 p-7 rounded-2xl no-underline relative"
-               style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
-              <span className="absolute top-4 right-4 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                    style={{ background: '#f59e0b22', color: '#f59e0b', border: '1px solid #f59e0b44' }}>
-                Restringido
-              </span>
-              <div className="icon-wrap w-14 h-14 rounded-xl flex items-center justify-center"
-                   style={{ background: '#f59e0b18', color: '#f59e0b' }}>
-                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round"
-                    d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h2 className="text-lg font-bold text-white mb-2">Administrador</h2>
-                <p className="text-sm text-zinc-400 leading-relaxed">
-                  Acceso exclusivo para gestionar cuentas, plataformas y revendedores.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: '#f59e0b' }}>
-                Panel de administración
-                <svg className="cta-arrow w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
-                </svg>
-              </div>
-            </a>
 
           </div>
 
