@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 const PORTAL_URL = 'https://codigos.jp2000.xyz/jp-panel/';
-const ADMIN_URL  = 'https://codigos.jp2000.xyz/jp-admin/';
+const ADMIN_URL  = 'https://codigos.jp2000.xyz/jp-mgr/';
 
 const PLATFORMS = [
   { name: 'Netflix',     color: '#E50914' },

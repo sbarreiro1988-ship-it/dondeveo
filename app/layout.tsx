@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 import './globals.css';
 import Navbar from '@/components/Navbar';
-import TerraNativeBanner from '@/components/TerraNativeBanner';
 
 const BASE = 'https://www.uru2.com';
 
@@ -118,9 +117,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Navbar />
         </Suspense>
         {children}
-        {/* Terra NativeBanner — pie de página, todas las páginas */}
-        <TerraNativeBanner className="px-4 md:px-8 pt-8 max-w-5xl mx-auto" />
-
         <footer className="mt-4 border-t border-white/8 py-10 px-4 md:px-8">
           <div className="max-w-5xl mx-auto">
             {/* Top row */}
@@ -170,6 +166,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     ['/privacidad', 'Privacidad'],
                     ['/terminos', 'Términos de uso'],
                     ['/novedades/netflix', 'Lo nuevo'],
+                    ['/codigos', '⚡ Panel de Códigos'],
                   ].map(([href, label]) => (
                     <li key={href}>
                       <a href={href} className="text-dv-muted text-xs hover:text-white transition-colors">{label}</a>
@@ -197,7 +194,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </footer>
 
-        {/* Terra Ads — solo en noticias, ver app/noticias/[slug]/page.tsx */}
       </body>
     </html>
   );
