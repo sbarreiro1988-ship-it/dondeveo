@@ -100,6 +100,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           gtag('js', new Date());
           gtag('config', 'G-4CS9M4DMP0');
         `}} />
+        {/* Google AdSense */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4971004283595233"
+          crossOrigin="anonymous"
+        />
         {/* JSON-LD global */}
         <script
           type="application/ld+json"

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import AdSlot from '@/components/AdSlot';
 
 export const metadata: Metadata = {
   title: 'Panel de Códigos — Jupiter2000',
@@ -137,7 +138,14 @@ export default function CodigosPage() {
           </div>
 
           {/* ── FOOTER ── */}
-          <div className="text-center mt-12">
+          {/* Banner no invasivo — solo abre si lo tocás */}
+          {/* SLOT: crear en AdSense › Anuncios › Por unidad › "Codigos Footer" */}
+          <AdSlot
+            slot="6140708169"
+            format="auto"
+            className="mt-10 max-w-xl mx-auto"
+          />
+          <div className="text-center mt-6">
             <Link href="/" className="text-sm text-zinc-600 hover:text-zinc-400 transition-colors">
               ← Volver a DondeVeo Uruguay
             </Link>

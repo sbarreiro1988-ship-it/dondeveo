@@ -13,6 +13,7 @@ import FindeSection from './FindeSection';
 import FilterBar from './FilterBar';
 import MovieCard from './MovieCard';
 import MovieModal from './MovieModal';
+import AdSlot from './AdSlot';
 import { PLATFORMS } from '@/lib/mockData';
 import { getManualOverridesMap } from '@/lib/manualOverrides';
 import type { Movie, FilterState, Platform } from '@/types';
@@ -356,6 +357,10 @@ export default function HomeClient({
               {finde.length > 0 && (
                 <FindeSection movies={finde} onMovieClick={handleMovieClick} />
               )}
+
+              {/* ── Banner publicitario (1 único, no invasivo) ── */}
+              {/* SLOT: crear en AdSense › Anuncios › Por unidad › "Home Banner" y reemplazar el ID */}
+              <AdSlot slot="6140708169" format="auto" className="px-4 md:px-8 mb-4 max-w-5xl mx-auto" />
 
               {/* ── Ahora en cines ── */}
               {nowPlaying.length > 0 && (

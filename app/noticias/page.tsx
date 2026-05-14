@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { fetchInternalNews, fetchStreamingNews } from '@/lib/newsApi';
+import AdSlot from '@/components/AdSlot';
 
 export const revalidate = 3600;
 
@@ -54,6 +55,11 @@ export default async function NoticiasPage() {
         </div>
       </div>
 
+      {/* ── Banner superior — noticias ── */}
+      <div className="max-w-4xl mx-auto px-4 pt-6">
+        <AdSlot slot="6140708169" format="auto" />
+      </div>
+
       {/* ── Grid ── */}
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
         {news.length === 0 ? (
@@ -64,7 +70,8 @@ export default async function NoticiasPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {news.map((item) => {
+            {news.map((item, idx) => {
+              const showGridAd = idx > 0 && idx % 6 === 0;
               const hasThumbnail = item.thumbnail && item.thumbnail.startsWith('http');
               const isInternal   = !!item.slug;
 
@@ -117,12 +124,27 @@ export default async function NoticiasPage() {
                 </div>
               );
 
-              return isInternal
-                ? <Link key={item.id} href={item.link} className="flex flex-col">{cardContent}</Link>
-                : <a key={item.id} href={item.link} target="_blank" rel="noopener noreferrer" className="flex flex-col">{cardContent}</a>;
+              return (
+                <div key={item.id} className="contents">
+                  {/* Ad banner cada 6 artículos, ocupa todo el ancho del grid */}
+                  {showGridAd && (
+                    <div className="col-span-full my-2">
+                      <AdSlot slot="6140708169" format="auto" />
+                    </div>
+                  )}
+                  {isInternal
+                    ? <Link href={item.link} className="flex flex-col">{cardContent}</Link>
+                    : <a href={item.link} target="_blank" rel="noopener noreferrer" className="flex flex-col">{cardContent}</a>}
+                </div>
+              );
             })}
           </div>
         )}
+
+        {/* Banner inferior */}
+        <div className="mt-8">
+          <AdSlot slot="6140708169" format="auto" />
+        </div>
       </div>
     </div>
   );

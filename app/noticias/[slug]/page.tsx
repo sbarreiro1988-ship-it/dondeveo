@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { ArrowLeft, Clock, Tag } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getStaticArticleBySlug } from '@/lib/staticArticles';
+import AdSlot from '@/components/AdSlot';
+import ArticleAnchorAd from '@/components/ArticleAnchorAd';
 
 export const revalidate    = 300; // 5 min — artículos se regeneran frecuente
 export const dynamicParams = true;
@@ -208,11 +210,26 @@ export default async function ArticlePage({ params }: { params: { slug: string }
           {article.intro}
         </p>
 
-        {/* Body paragraphs */}
+        {/* ── Ad 1: debajo del intro ── */}
+        {/* SLOT: "Artículo - Superior" */}
+        <AdSlot slot="6140708169" format="auto" className="mb-6" />
+
+        {/* Body paragraphs — ad cada 3 párrafos */}
         <div className="space-y-5 mb-6">
           {paragraphs.map((p, i) => (
             <div key={i}>
               <p className="text-gray-300 text-base leading-relaxed">{p}</p>
+              {/* ── Ad 2: in-article cada 3 párrafos ── */}
+              {/* SLOT: "Artículo - Medio" */}
+              {(i + 1) % 3 === 0 && paragraphs.length > 3 && (
+                <AdSlot
+                  slot="6140708169"
+                  format="fluid"
+                  layout="in-article"
+                  className="my-4"
+                  fullWidth={false}
+                />
+              )}
             </div>
           ))}
         </div>
@@ -223,6 +240,10 @@ export default async function ArticlePage({ params }: { params: { slug: string }
             {article.conclusion}
           </p>
         </div>
+
+        {/* ── Ad 3: debajo de la conclusión ── */}
+        {/* SLOT: "Artículo - Inferior" */}
+        <AdSlot slot="6140708169" format="auto" className="mb-6" />
 
         {/* Tags */}
         {article.tags?.length > 0 && (
@@ -239,7 +260,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
         <div className="h-px bg-white/10 mb-6" />
 
         {/* Footer */}
-        <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center justify-between flex-wrap gap-3 pb-24">
           <p className="text-dv-muted text-xs">
             Contenido editorial de DondeVeo para Uruguay.
           </p>
@@ -249,6 +270,11 @@ export default async function ArticlePage({ params }: { params: { slug: string }
         </div>
 
       </article>
+
+      {/* ── Ad 4: Sticky anchor inferior — aparece 2s después, se puede cerrar ── */}
+      {/* SLOT: "Artículo - Anchor" */}
+      <ArticleAnchorAd />
+
     </div>
   );
 }
