@@ -57,7 +57,7 @@ export default async function NoticiasPage() {
 
       {/* ── Banner superior — noticias ── */}
       <div className="max-w-4xl mx-auto px-4 pt-6">
-        <AdSlot slot="6140708169" format="auto" />
+        <AdSlot slot="1612024208" format="auto" />
       </div>
 
       {/* ── Grid ── */}
@@ -129,7 +129,7 @@ export default async function NoticiasPage() {
                   {/* Ad banner cada 6 artículos, ocupa todo el ancho del grid */}
                   {showGridAd && (
                     <div className="col-span-full my-2">
-                      <AdSlot slot="6140708169" format="auto" />
+                      <AdSlot slot="1612024208" format="auto" />
                     </div>
                   )}
                   {isInternal
@@ -143,7 +143,7 @@ export default async function NoticiasPage() {
 
         {/* Banner inferior */}
         <div className="mt-8">
-          <AdSlot slot="6140708169" format="auto" />
+          <AdSlot slot="1612024208" format="auto" />
         </div>
       </div>
     </div>

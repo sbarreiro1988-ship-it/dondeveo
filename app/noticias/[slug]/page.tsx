@@ -211,8 +211,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
         </p>
 
         {/* ── Ad 1: debajo del intro ── */}
-        {/* SLOT: "Artículo - Superior" */}
-        <AdSlot slot="6140708169" format="auto" className="mb-6" />
+        <AdSlot slot="1612024208" format="auto" className="mb-6" />
 
         {/* Body paragraphs — ad cada 3 párrafos */}
         <div className="space-y-5 mb-6">
@@ -220,10 +219,9 @@ export default async function ArticlePage({ params }: { params: { slug: string }
             <div key={i}>
               <p className="text-gray-300 text-base leading-relaxed">{p}</p>
               {/* ── Ad 2: in-article cada 3 párrafos ── */}
-              {/* SLOT: "Artículo - Medio" */}
               {(i + 1) % 3 === 0 && paragraphs.length > 3 && (
                 <AdSlot
-                  slot="6140708169"
+                  slot="8582573929"
                   format="fluid"
                   layout="in-article"
                   className="my-4"
@@ -242,8 +240,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
         </div>
 
         {/* ── Ad 3: debajo de la conclusión ── */}
-        {/* SLOT: "Artículo - Inferior" */}
-        <AdSlot slot="6140708169" format="auto" className="mb-6" />
+        <AdSlot slot="1612024208" format="auto" className="mb-6" />
 
         {/* Tags */}
         {article.tags?.length > 0 && (

@@ -141,7 +141,7 @@ export default function CodigosPage() {
           {/* Banner no invasivo — solo abre si lo tocás */}
           {/* SLOT: crear en AdSense › Anuncios › Por unidad › "Codigos Footer" */}
           <AdSlot
-            slot="6140708169"
+            slot="4890740929"
             format="auto"
             className="mt-10 max-w-xl mx-auto"
           />

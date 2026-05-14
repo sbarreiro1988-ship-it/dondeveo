@@ -7,7 +7,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 const PUB  = 'ca-pub-4971004283595233';
-const SLOT = '6140708169'; // ← reemplazar con ID real del ad unit "Anchor"
+const SLOT = '7273361680'; // Articulo - Anchor Sticky
 
 export default function ArticleAnchorAd() {
   const [visible, setVisible] = useState(false);

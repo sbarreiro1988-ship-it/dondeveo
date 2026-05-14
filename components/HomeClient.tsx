@@ -360,7 +360,7 @@ export default function HomeClient({
 
               {/* ── Banner publicitario (1 único, no invasivo) ── */}
               {/* SLOT: crear en AdSense › Anuncios › Por unidad › "Home Banner" y reemplazar el ID */}
-              <AdSlot slot="6140708169" format="auto" className="px-4 md:px-8 mb-4 max-w-5xl mx-auto" />
+              <AdSlot slot="4890740929" format="auto" className="px-4 md:px-8 mb-4 max-w-5xl mx-auto" />
 
               {/* ── Ahora en cines ── */}
               {nowPlaying.length > 0 && (
