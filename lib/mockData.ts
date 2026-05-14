@@ -114,6 +114,16 @@ export const PLATFORMS: Record<string, Platform> = {
     url: 'https://crunchyroll.com',
     type: 'flatrate',
   },
+  vix: {
+    id: 'vix',
+    name: 'ViX',
+    shortName: 'VIX',
+    color: '#E5002B',
+    bgColor: '#E5002B',
+    textColor: '#ffffff',
+    url: 'https://www.vix.com',
+    type: 'flatrate',
+  },
   clarovideo: {
     id: 'clarovideo',
     name: 'Claro Video',

@@ -1,4 +1,4 @@
-import { notFound, permanentRedirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Clock, Tag } from 'lucide-react';
@@ -55,7 +55,11 @@ export async function generateMetadata(
   { params }: { params: { slug: string } }
 ): Promise<Metadata> {
   const article = await fetchArticle(params.slug);
-  if (!article) return { title: 'Artículo no encontrado' };
+  // Artículo inexistente → noindex + 404 (no redirect para no contaminar /noticias)
+  if (!article) return {
+    title: 'Artículo no encontrado | DondeVeo',
+    robots: { index: false, follow: false },
+  };
 
   const url    = `${BASE}/noticias/${article.slug}`;
   const image  = article.thumbnail ?? `${BASE}/favicon.svg`;
@@ -97,9 +101,9 @@ function formatDate(dateStr: string): string {
 
 export default async function ArticlePage({ params }: { params: { slug: string } }) {
   const article = await fetchArticle(params.slug);
-  // Artículo no encontrado → redirect 308 permanente a /noticias
-  // Evita que Google acumule 404s de artículos viejos rotados del servidor
-  if (!article) permanentRedirect('/noticias');
+  // Artículo inexistente → 404 limpio. No redirigir a /noticias (eso genera
+  // "Página con redirección" en Search Console y mezcla señales de indexación).
+  if (!article) notFound();
 
   const articleJsonLd = {
     '@context': 'https://schema.org',
