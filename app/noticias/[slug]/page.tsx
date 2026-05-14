@@ -4,8 +4,6 @@ import Link from 'next/link';
 import { ArrowLeft, Clock, Tag } from 'lucide-react';
 import type { Metadata } from 'next';
 import { getStaticArticleBySlug } from '@/lib/staticArticles';
-import AdSlot from '@/components/AdSlot';
-import TerraNewsAds from '@/components/TerraNewsAds';
 
 export const revalidate    = 300; // 5 min — artículos se regeneran frecuente
 export const dynamicParams = true;
@@ -205,9 +203,6 @@ export default async function ArticlePage({ params }: { params: { slug: string }
         <p className="text-white/90 text-lg leading-relaxed mb-6 font-medium">
           {article.intro}
         </p>
-
-        {/* ── Terra Ads: Popunder + SocialBar + NativeBanner (solo en noticias) ── */}
-        <TerraNewsAds />
 
         {/* Body paragraphs */}
         <div className="space-y-5 mb-6">

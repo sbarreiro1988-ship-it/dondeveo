@@ -10,7 +10,6 @@ import FeaturedSpotlight from './FeaturedSpotlight';
 import NewSeriesCards from './NewSeriesCards';
 import NoticiasSection from './NoticiasSection';
 import FindeSection from './FindeSection';
-import TerraNativeBanner from './TerraNativeBanner';
 import FilterBar from './FilterBar';
 import MovieCard from './MovieCard';
 import MovieModal from './MovieModal';
@@ -358,9 +357,6 @@ export default function HomeClient({
                 <FindeSection movies={finde} onMovieClick={handleMovieClick} />
               )}
 
-              {/* Terra NativeBanner — entre Finde y Cines */}
-              <TerraNativeBanner className="px-4 md:px-8 mb-8" />
-
               {/* ── Ahora en cines ── */}
               {nowPlaying.length > 0 && (
                 <ContentCarousel title="🍿 Ahora en cines" movies={nowPlaying} cinemaOnly
@@ -519,14 +515,21 @@ export default function HomeClient({
                   layout="sidebar" onMovieClick={handleMovieClick} />
               )}
 
-              {/* ── Universal+ ── */}
-              {universalplus.length > 0 && (
-                <ContentCarousel title="Universal+" movies={universalplus}
-                  platformBadge={PLATFORMS.universalplus} platformId="universalplus"
-                  layout="sidebar"
-                  description="Series y películas exclusivas de Universal: FROM, Ted, The Rookie, House, Chicago PD, Interstellar y más."
-                  onMovieClick={handleMovieClick} />
-              )}
+              {/* ── Universal+ ── (excluye títulos con override en otra plataforma) */}
+              {(() => {
+                const overrideMap = getManualOverridesMap();
+                const filtered = universalplus.filter(m => {
+                  const ov = overrideMap.get(m.id);
+                  return !ov || ov.some(p => p.id === 'universalplus');
+                });
+                return filtered.length > 0 ? (
+                  <ContentCarousel title="Universal+" movies={filtered}
+                    platformBadge={PLATFORMS.universalplus} platformId="universalplus"
+                    layout="sidebar"
+                    description="Series y películas exclusivas de Universal: FROM, Ted, The Rookie, House, Chicago PD, Interstellar y más."
+                    onMovieClick={handleMovieClick} />
+                ) : null;
+              })()}
 
               {/* ── Ciencia Ficción ── */}
               {top10Scifi.length > 0 && (
