@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { NextResponse } from 'next/server';
 
 const TMDB_BASE  = 'https://api.themoviedb.org/3';

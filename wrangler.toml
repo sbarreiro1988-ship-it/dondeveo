@@ -1,0 +1,6 @@
+name = "donde22"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Las variables de entorno se configuran en el dashboard de Cloudflare Pages
