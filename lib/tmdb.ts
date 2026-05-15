@@ -3,7 +3,8 @@ import { PLATFORMS } from './mockData';
 import { MANUAL_OVERRIDES, getManualPlatforms } from './manualOverrides';
 
 const TMDB_BASE = 'https://api.themoviedb.org/3';
-const TMDB_TOKEN = process.env.TMDB_ACCESS_TOKEN;
+// Read at request time (not module load time) so Cloudflare Workers env patching works
+function getTmdbToken() { return process.env.TMDB_ACCESS_TOKEN; }
 export const IMAGE_BASE = 'https://image.tmdb.org/t/p';
 const WATCH_REGION = 'UY';
 
@@ -24,7 +25,7 @@ async function get<T>(endpoint: string, params: Record<string, string> = {}): Pr
 
   const res = await fetch(url.toString(), {
     headers: {
-      Authorization: `Bearer ${TMDB_TOKEN}`,
+      Authorization: `Bearer ${getTmdbToken()}`,
       'Content-Type': 'application/json',
     },
     next: { revalidate: 1800 },
@@ -42,7 +43,7 @@ async function getFresh<T>(endpoint: string, params: Record<string, string> = {}
 
   const res = await fetch(url.toString(), {
     headers: {
-      Authorization: `Bearer ${TMDB_TOKEN}`,
+      Authorization: `Bearer ${getTmdbToken()}`,
       'Content-Type': 'application/json',
     },
     cache: 'no-store',  // ← siempre va a TMDB, sin caché de Next.js
