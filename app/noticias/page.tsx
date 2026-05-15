@@ -2,10 +2,13 @@ import { ArrowLeft, Newspaper } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { fetchInternalNews, fetchStreamingNews } from '@/lib/newsApi';
+import { fetchInternalNews, fetchStreamingNews, type NewsItem } from '@/lib/newsApi';
+import * as fs from 'fs';
 import AdSlot from '@/components/AdSlot';
 
-export const revalidate = 3600;
+export const dynamic   = 'force-dynamic';
+export const revalidate = 0;
+export const runtime   = 'nodejs';
 
 export const metadata: Metadata = {
   title: 'Noticias de cine y streaming en Uruguay',
@@ -32,8 +35,25 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('es-UY', { day: 'numeric', month: 'short' });
 }
 
+function readNewsFromFile(): NewsItem[] {
+  const filePath = process.env.NEWS_FILE_PATH;
+  if (!filePath) return [];
+  try {
+    const raw  = fs.readFileSync(`${filePath}/index.json`, 'utf8');
+    const data = JSON.parse(raw) as { articles: Array<{ uid: string; slug: string; title: string; intro: string; category: string; thumbnail?: string | null; source: string; publishedAt: string }> };
+    return (data.articles ?? []).slice(0, 20).map(a => ({
+      id: a.uid, title: a.title, excerpt: a.intro,
+      link: `/noticias/${a.slug}`, slug: a.slug,
+      pubDate: a.publishedAt, thumbnail: a.thumbnail ?? null,
+      source: a.source, sourceLang: 'es' as const, category: a.category ?? 'Streaming',
+    }));
+  } catch { return []; }
+}
+
 export default async function NoticiasPage() {
-  const internal = await fetchInternalNews();
+  // Prioridad: filesystem (cPanel sin DNS) → HTTP (Vercel) → RSS fallback
+  const fromFile = readNewsFromFile();
+  const internal = fromFile.length > 0 ? fromFile : await fetchInternalNews();
   const news     = internal.length > 0 ? internal : await fetchStreamingNews();
 
   return (

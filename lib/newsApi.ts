@@ -215,6 +215,7 @@ export async function fetchInternalNews(): Promise<NewsItem[]> {
   } catch {
     return [];
   }
+
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
