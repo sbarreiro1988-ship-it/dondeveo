@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 /**
  * /donde-ver/[slug] — Redirect page (legacy URL format)
  *
