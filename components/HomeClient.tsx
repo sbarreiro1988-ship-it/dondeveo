@@ -9,6 +9,7 @@ import ContentCarousel from './ContentCarousel';
 import FeaturedSpotlight from './FeaturedSpotlight';
 import NewSeriesCards from './NewSeriesCards';
 import NoticiasSection from './NoticiasSection';
+import TrendingSection from './TrendingSection';
 import FindeSection from './FindeSection';
 import FilterBar from './FilterBar';
 import MovieCard from './MovieCard';
@@ -654,6 +655,9 @@ export default function HomeClient({
                   description="Películas y series que se estrenan próximamente en cines y plataformas."
                   onMovieClick={handleMovieClick} />
               )}
+
+              {/* ── ⚡ Lo que no te podés perder — Trending editorial para Google Discover ── */}
+              <TrendingSection news={news} />
 
               {/* ── Noticias de streaming y cine ── anchor always in DOM ── */}
               <div id="noticias">
