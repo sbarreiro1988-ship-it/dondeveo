@@ -126,6 +126,20 @@ export default async function ArticlePage({ params }: { params: { slug: string }
     keywords: (article.tags ?? []).join(', '),
     articleSection: article.category,
     inLanguage: 'es-UY',
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['h1', 'p:first-of-type'],
+    },
+  };
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: BASE },
+      { '@type': 'ListItem', position: 2, name: 'Noticias', item: `${BASE}/noticias` },
+      { '@type': 'ListItem', position: 3, name: article.title, item: `${BASE}/noticias/${article.slug}` },
+    ],
   };
 
   const paragraphs = article.body
@@ -138,6 +152,10 @@ export default async function ArticlePage({ params }: { params: { slug: string }
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       {/* ── Back nav ── */}

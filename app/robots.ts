@@ -9,7 +9,10 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/_next/'],
       },
     ],
-    sitemap: 'https://www.uru2.com/sitemap.xml',
+    sitemap: [
+      'https://www.uru2.com/sitemap.xml',
+      'https://www.uru2.com/news-sitemap.xml',
+    ],
     host: 'https://www.uru2.com',
   };
 }

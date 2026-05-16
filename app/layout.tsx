@@ -55,7 +55,7 @@ export const metadata: Metadata = {
   },
 };
 
-// JSON-LD global — WebSite + Organization
+// JSON-LD global — WebSite + NewsMediaOrganization
 const websiteJsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -64,7 +64,7 @@ const websiteJsonLd = {
       '@id': `${BASE}/#website`,
       url: BASE,
       name: 'DondeVeo Uruguay',
-      description: 'Guía de streaming en Uruguay',
+      description: 'Guía de streaming en Uruguay. Encontrá dónde ver películas y series en Netflix, Disney+, Max, Prime Video y más.',
       inLanguage: 'es-UY',
       potentialAction: {
         '@type': 'SearchAction',
@@ -73,17 +73,32 @@ const websiteJsonLd = {
       },
     },
     {
-      '@type': 'Organization',
+      '@type': 'NewsMediaOrganization',
       '@id': `${BASE}/#organization`,
       name: 'DondeVeo Uruguay',
+      alternateName: 'DondeVeo',
       url: BASE,
+      description: 'Guía independiente de streaming y cine para Uruguay. Noticias, reseñas y dónde ver cada película y serie.',
+      foundingDate: '2024',
+      knowsAbout: ['streaming', 'cine', 'series de televisión', 'plataformas digitales', 'Netflix Uruguay', 'Disney Plus Uruguay'],
+      areaServed: {
+        '@type': 'Country',
+        name: 'Uruguay',
+        '@id': 'https://www.wikidata.org/wiki/Q77',
+      },
       logo: {
         '@type': 'ImageObject',
         url: `${BASE}/favicon.svg`,
-        width: 32,
-        height: 32,
+        width: 512,
+        height: 512,
       },
-      sameAs: [],
+      sameAs: [
+        'https://www.uru2.com',
+      ],
+      publishingPrinciples: `${BASE}/acerca`,
+      diversityPolicy: `${BASE}/acerca`,
+      ethicsPolicy: `${BASE}/acerca`,
+      masthead: `${BASE}/acerca`,
     },
   ],
 };
