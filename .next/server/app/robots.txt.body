@@ -1,0 +1,7 @@
+User-Agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+
+Host: https://www.uru2.com
+Sitemap: https://www.uru2.com/sitemap.xml
