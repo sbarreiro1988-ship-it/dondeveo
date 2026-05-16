@@ -18,12 +18,36 @@ const GUIAS = [
     tiempo: '10 min de lectura',
   },
   {
+    slug: 'precio-streaming-uruguay',
+    titulo: 'Precios de streaming en Uruguay 2026: cuánto cuesta cada plataforma',
+    desc: 'Todos los precios actualizados de Netflix, Disney+, Max, Prime Video y Paramount+ en Uruguay en pesos. Qué incluye cada plan y cuál conviene más.',
+    emoji: '💰',
+    categoria: 'Comparación',
+    tiempo: '8 min de lectura',
+  },
+  {
+    slug: 'mejores-peliculas-streaming-uruguay',
+    titulo: 'Las mejores películas en streaming Uruguay 2026',
+    desc: 'Selección editorial de las películas imprescindibles disponibles en Netflix, Disney+, Max, Prime y Mubi en Uruguay. Clásicos, estrenos y cine latinoamericano.',
+    emoji: '🎬',
+    categoria: 'Recomendaciones',
+    tiempo: '12 min de lectura',
+  },
+  {
     slug: 'mejores-series-netflix-uruguay',
     titulo: 'Las mejores series de Netflix Uruguay en 2026',
     desc: 'Nuestra selección editorial de las series imprescindibles del catálogo de Netflix en Uruguay. Breaking Bad, Stranger Things, Ozark y más.',
     emoji: '🏆',
     categoria: 'Recomendaciones',
     tiempo: '8 min de lectura',
+  },
+  {
+    slug: 'streaming-para-ninos-uruguay',
+    titulo: 'Streaming para niños en Uruguay: guía para padres 2026',
+    desc: 'Disney+, Netflix Kids, Paramount+ y Pluto TV analizados desde la perspectiva de los padres. Controles parentales, contenido por edad y cuál plataforma conviene.',
+    emoji: '👶',
+    categoria: 'Familias',
+    tiempo: '10 min de lectura',
   },
   {
     slug: 'que-ver-este-finde',
@@ -43,7 +67,7 @@ const GUIAS = [
   },
 ];
 
-const CATEGORIAS = ['Todas', 'Comparación', 'Recomendaciones', 'Ahorro'];
+const CATEGORIAS = ['Todas', 'Comparación', 'Recomendaciones', 'Familias', 'Ahorro'];
 
 export default function GuiasPage() {
   return (

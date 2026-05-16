@@ -117,26 +117,31 @@ def is_relevant(title: str) -> bool:
 def rewrite_with_groq(title: str, summary: str, source: str) -> dict:
     """Llama a Groq API para reescribir el artículo de forma original y extensa."""
     prompt = (
-        "Sos redactor senior de DondeVeo, una web de entretenimiento uruguaya sobre cine y streaming.\n\n"
+        "Sos redactor senior de DondeVeo, una guia de streaming y cine independiente de Uruguay.\n\n"
         "REGLAS ESTRICTAS — OBLIGATORIO CUMPLIR:\n"
         "1. NUNCA inventes datos, fechas, nacionalidades, nombres o hechos que no esten en el resumen.\n"
-        "2. NUNCA cambies la nacionalidad de personas (ej: si es americano, es americano).\n"
-        "3. Si necesitas ampliar, usa contexto general conocido del tema (sin inventar datos especificos).\n"
-        "4. Si el articulo esta en ingles, TRADUCILO completamente al espanol rioplatense.\n"
-        "5. Usa tuteo (vos, tenes, mira) — estilo argentino/uruguayo, informal pero profesional.\n"
-        "6. El tema debe ser sobre: actores, directores, peliculas, series, plataformas de streaming, estrenos, premios, festivales.\n\n"
-        "TAREA: Escribi un articulo periodistico completo en espanol rioplatense sobre esta noticia.\n"
-        "El articulo debe tener MINIMO 500 palabras. Es para un sitio de entretenimiento, no una enciclopedia.\n\n"
+        "2. NUNCA cambies la nacionalidad de personas.\n"
+        "3. Si el articulo esta en ingles, TRADUCILO completamente al espanol rioplatense.\n"
+        "4. Usa tuteo rioplatense (vos, tenes, mira) — informal pero profesional.\n"
+        "5. Da OPINION editorial: que significa esta noticia para el espectador uruguayo, contexto de la industria.\n"
+        "6. NO repitas ideas. Cada parrafo debe agregar informacion NUEVA y especifica.\n\n"
+        "TAREA: Articulo periodistico con voz editorial en espanol rioplatense. MINIMO 700 palabras.\n"
+        "El body debe tener 5-7 parrafos DISTINTOS:\n"
+        "  P1: contexto del tema (quien es, por que importa en la industria)\n"
+        "  P2: desarrollo de la noticia con todos los detalles disponibles\n"
+        "  P3: impacto en el mercado de streaming o cine\n"
+        "  P4: perspectiva especifica para el espectador de Uruguay/Argentina\n"
+        "  P5+: antecedentes, trabajos anteriores, opinion editorial, que esperar\n\n"
         "Titulo original: " + title + "\n"
-        "Resumen: " + summary[:1200] + "\n"
+        "Resumen: " + summary[:1500] + "\n"
         "Fuente: " + source + "\n\n"
         "Devolvé UNICAMENTE un objeto JSON valido (sin markdown, sin bloques de codigo) con esta estructura:\n"
-        '{"title":"titulo atractivo en espanol maximo 90 chars",'
-        '"intro":"parrafo de apertura engancha al lector (3-4 oraciones, 80-100 palabras)",'
-        '"body":"cuerpo del articulo con 4-6 parrafos extensos separados por doble salto de linea. '
-        'Desarrolla el tema, da contexto, explica el impacto para el espectador uruguayo. MINIMO 350 palabras.",'
-        '"conclusion":"cierre con reflexion o pregunta al lector (2-3 oraciones)",'
-        '"tags":["tag1","tag2","tag3","tag4"],"category":"Streaming"}'
+        '{"title":"titulo periodistico atractivo en espanol maximo 90 chars",'
+        '"intro":"parrafo introductorio con contexto y datos clave (100-120 palabras)",'
+        '"body":"5-7 parrafos extensos y DISTINTOS separados por \\n\\n. Minimo 80 palabras por parrafo. Total MINIMO 500 palabras.",'
+        '"conclusion":"reflexion editorial o pregunta que invita al lector (40-60 palabras)",'
+        '"tags":["tag1","tag2","tag3","tag4","tag5"],'
+        '"category":"Streaming o Cine o Estrenos segun corresponda"}'
     )
 
     try:
