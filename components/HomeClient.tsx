@@ -354,14 +354,6 @@ export default function HomeClient({
                 </div>
               </div>
 
-              {/* ── ⚡ Lo que no te podés perder — Trending editorial para Google Discover ── */}
-              <TrendingSection news={news} />
-
-              {/* ── Noticias de streaming y cine ── anchor always in DOM ── */}
-              <div id="noticias">
-                <NoticiasSection news={news} />
-              </div>
-
               {/* 🍿 Top 3 Finde */}
               {finde.length > 0 && (
                 <FindeSection movies={finde} onMovieClick={handleMovieClick} />
@@ -663,6 +655,14 @@ export default function HomeClient({
                   description="Películas y series que se estrenan próximamente en cines y plataformas."
                   onMovieClick={handleMovieClick} />
               )}
+
+              {/* ── ⚡ Lo que no te podés perder — Trending editorial para Google Discover ── */}
+              <TrendingSection news={news} />
+
+              {/* ── Noticias de streaming y cine ── */}
+              <div id="noticias">
+                <NoticiasSection news={news} />
+              </div>
 
             </>
           )}
