@@ -129,10 +129,10 @@ function TrendCard({ item, rank }: { item: NewsItem; rank?: number }) {
 
 /* ─── Main export ─────────────────────────────────────────────── */
 export default function TrendingSection({ news }: Props) {
-  // Solo artículos internos con imagen (que tienen la experiencia completa)
-  const internal = (news || []).filter(n => !!n.slug && n.thumbnail?.startsWith('http'));
+  // Solo artículos marcados como isTrending (editoriales/clickbait generados por IA)
+  const internal = (news || []).filter(n => n.isTrending && !!n.slug && n.thumbnail?.startsWith('http'));
 
-  if (internal.length < 2) return null;
+  if (internal.length < 1) return null;
 
   const [hero, ...rest] = internal;
   const cards = rest.slice(0, 4);

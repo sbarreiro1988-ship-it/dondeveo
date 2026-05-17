@@ -14,6 +14,7 @@ export interface NewsItem {
   source:     string;
   sourceLang: 'es' | 'en';
   category:   string;
+  isTrending?: boolean;     // artículos editoriales para la sección ⚡ Trending
 }
 
 // ─── RSS sources — Spanish only ──────────────────────────────────────────────
@@ -180,6 +181,22 @@ async function parseFeed(feed: typeof FEEDS[number]): Promise<NewsItem[]> {
 // porque son genéricos y sin imagen — eso se ve poco profesional.
 // En la home solo aparecen noticias reales (RSS) o artículos Gemini (NEWS_DATA_URL).
 
+// ─── Detecta si un título es "editorial/clickbait" (apto para TrendingSection) ──
+// Marcamos como isTrending los artículos tipo: finales explicados, joyas ocultas,
+// listicles ("10 series..."), cancelaciones, drama/gossip, recomendaciones del finde.
+function detectTrending(title: string, serverFlag?: boolean): boolean {
+  if (serverFlag) return true; // el servidor ya lo marcó explícitamente
+  const t = title.toLowerCase();
+  return (
+    /^\d+\s+(series|películas|razones|cosas|motivos|títulos|estrenos)/.test(t) || // listicle
+    /explicad[ao]|el giro|el final|por qué cancel|por qué tod[ao]/.test(t) ||      // explainer
+    /oculta[s]?|escondida[s]?|joya|joyas|secreta[s]?|no sabías/.test(t) ||        // hidden gem
+    /este finde|este fin de semana|no te podés perder|te dejará/.test(t) ||        // recomendación
+    /separación|polémica|drama entre|pelea|conflicto|escándalo/.test(t) ||         // gossip
+    /terror.*max|netflix.*cancel|cancelaron|te va a enganchar/.test(t)             // viralizable
+  );
+}
+
 // ─── Noticias internas (generadas por Gemini + script Python) ─────────────────
 // Lee el index.json guardado por el script en el servidor cPanel.
 // NEWS_DATA_URL debe apuntar a la carpeta pública, ej:
@@ -200,17 +217,23 @@ export async function fetchInternalNews(): Promise<NewsItem[]> {
     }> };
 
     // Solo los últimos 20 para la home — el resto vive en /noticias y sitemap
-    return (data.articles ?? []).slice(0, 20).map((a) => ({
+    return (data.articles ?? []).slice(0, 40).map((a: {
+      uid: string; slug: string; title: string; intro: string;
+      category: string; thumbnail?: string | null; source: string;
+      publishedAt: string; isTrending?: boolean;
+    }) => ({
       id:         a.uid,
       title:      a.title,
       excerpt:    a.intro,
-      link:       `/noticias/${a.slug}`,   // URL interna ← clave para AdSense
+      link:       `/noticias/${a.slug}`,
       slug:       a.slug,
       pubDate:    a.publishedAt,
       thumbnail:  a.thumbnail ?? null,
       source:     a.source,
       sourceLang: 'es' as const,
       category:   a.category ?? 'Streaming',
+      // Trending: lo marca el servidor O lo detectamos por el título
+      isTrending: detectTrending(a.title, a.isTrending),
     }));
   } catch {
     return [];

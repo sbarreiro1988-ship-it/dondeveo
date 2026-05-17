@@ -177,9 +177,10 @@ function FeaturedCard({ item }: { item: NewsItem }) {
 }
 
 export default function NoticiasSection({ news }: Props) {
-  // Solo mostrar si hay noticias reales (con imagen o de fuente externa)
+  // Excluir artículos marcados como isTrending (esos van en la sección ⚡ de arriba)
+  // y solo mostrar noticias con imagen o de fuente externa
   const realNews = (news || []).filter(
-    (n) => n.source !== 'DondeVeo' || n.thumbnail
+    (n) => !n.isTrending && (n.source !== 'DondeVeo' || n.thumbnail)
   );
   if (realNews.length === 0) return null;
 
