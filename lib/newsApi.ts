@@ -188,12 +188,12 @@ function detectTrending(title: string, serverFlag?: boolean): boolean {
   if (serverFlag) return true; // el servidor ya lo marcó explícitamente
   const t = title.toLowerCase();
   return (
-    /^\d+\s+(series|películas|razones|cosas|motivos|títulos|estrenos)/.test(t) || // listicle
-    /explicad[ao]|el giro|el final|por qué cancel|por qué tod[ao]/.test(t) ||      // explainer
-    /oculta[s]?|escondida[s]?|joya|joyas|secreta[s]?|no sabías/.test(t) ||        // hidden gem
-    /este finde|este fin de semana|no te podés perder|te dejará/.test(t) ||        // recomendación
-    /separación|polémica|drama entre|pelea|conflicto|escándalo/.test(t) ||         // gossip
-    /terror.*max|netflix.*cancel|cancelaron|te va a enganchar/.test(t)             // viralizable
+    /^\d+\s+(series|películas|razones|cosas|motivos|títulos|estrenos|animes?)/.test(t) || // listicle
+    /explicad[ao]|el giro|el final|por qué|la razón|la verdad detrás/.test(t) ||          // explainer
+    /oculta[s]?|escondida[s]?|joya|joyas|secreta[s]?|no sabías|ignorando/.test(t) ||     // hidden gem
+    /este finde|fin de semana|no te pod[eé]s perder|te dejará|te har[aá]/.test(t) ||     // recomendación
+    /olvidar a|reemplaza[rá]|mejor que|supera a|te engancha/.test(t) ||                  // comparación
+    /separación|polémica|drama|pelea|conflicto|escándalo|cancelaron|cancelada/.test(t)    // gossip/cancel
   );
 }
 
