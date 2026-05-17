@@ -217,7 +217,7 @@ export async function fetchInternalNews(): Promise<NewsItem[]> {
     }> };
 
     // Solo los últimos 20 para la home — el resto vive en /noticias y sitemap
-    return (data.articles ?? []).slice(0, 40).map((a: {
+    return (data.articles ?? []).slice(0, 50).map((a: {
       uid: string; slug: string; title: string; intro: string;
       category: string; thumbnail?: string | null; source: string;
       publishedAt: string; isTrending?: boolean;

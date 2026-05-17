@@ -178,42 +178,56 @@ function FeaturedCard({ item }: { item: NewsItem }) {
 
 export default function NoticiasSection({ news }: Props) {
   // Excluir artículos marcados como isTrending (esos van en la sección ⚡ de arriba)
-  // y solo mostrar noticias con imagen o de fuente externa
   const realNews = (news || []).filter(
     (n) => !n.isTrending && (n.source !== 'DondeVeo' || n.thumbnail)
   );
   if (realNews.length === 0) return null;
 
   const [featured, ...rest] = realNews;
-  const secondary = rest.slice(0, 5);
+  // Mostrar hasta 11 artículos secundarios — más artículos = más SEO
+  const secondary = rest.slice(0, 11);
 
   return (
     <section id="noticias" className="mb-10 px-4 md:px-8">
-      {/* Header */}
+      {/* Header con Ver todo */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
           <Newspaper size={18} className="text-dv-accent" />
           <h2 className="text-white text-lg font-bold">Noticias de streaming y cine</h2>
+          <span className="text-dv-muted text-xs hidden sm:inline">· Actualizado cada hora</span>
         </div>
-        <span className="text-dv-muted text-xs">Actualizado cada hora</span>
+        <Link
+          href="/noticias"
+          className="text-dv-accent text-xs font-bold border border-dv-accent/30 px-3 py-1.5 rounded-lg hover:bg-dv-accent/10 transition-colors"
+        >
+          Ver todo →
+        </Link>
       </div>
 
-      {/* Main grid: 1 featured (2 cols) + small cards */}
+      {/* Featured + primer secundario */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
         {featured && <FeaturedCard item={featured} />}
         {secondary[0] && <NewsCard item={secondary[0]} />}
       </div>
 
-      {/* Row of smaller cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {secondary.slice(1).map((item) => (
-          <NewsCard key={item.id} item={item} />
-        ))}
-      </div>
+      {/* Grilla de artículos restantes — todos visibles para SEO */}
+      {secondary.length > 1 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {secondary.slice(1).map((item) => (
+            <NewsCard key={item.id} item={item} />
+          ))}
+        </div>
+      )}
 
-      {/* Ver todas */}
-      <div className="mt-4 text-center">
-        <Link href="/noticias" className="inline-flex items-center gap-2 text-dv-accent text-sm font-bold hover:underline">
+      {/* CTA a página completa */}
+      <div className="mt-5 flex items-center justify-between border-t border-white/8 pt-4">
+        <p className="text-dv-muted text-xs">
+          Más de 100 artículos de cine y streaming para Uruguay
+        </p>
+        <Link
+          href="/noticias"
+          className="inline-flex items-center gap-2 text-dv-accent text-sm font-bold hover:underline"
+        >
           Ver todas las noticias →
         </Link>
       </div>

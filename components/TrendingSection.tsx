@@ -135,7 +135,7 @@ export default function TrendingSection({ news }: Props) {
   if (internal.length < 1) return null;
 
   const [hero, ...rest] = internal;
-  const cards = rest.slice(0, 4);
+  const cards = rest.slice(0, 6); // hasta 6 cards secundarias
 
   return (
     <section className="mb-12 px-4 md:px-8">
@@ -163,9 +163,9 @@ export default function TrendingSection({ news }: Props) {
         <HeroTrendCard item={hero} />
       </div>
 
-      {/* Secondary grid */}
+      {/* Secondary grid — hasta 6 cards para más contenido indexable */}
       {cards.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {cards.map((item, i) => (
             <TrendCard key={item.id} item={item} rank={i + 2} />
           ))}
