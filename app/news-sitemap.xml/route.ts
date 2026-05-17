@@ -51,10 +51,17 @@ export async function GET() {
     })
     .slice(0, 1000); // Google News acepta máximo 1000 URLs por sitemap
 
+  function escapeXml(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  }
+
   const items = recent.map(a => {
-    const title = a.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const pubDate = new Date(a.publishedAt).toISOString();
-    const keywords = (a.tags ?? []).slice(0, 10).join(', ');
+    const title    = escapeXml(a.title);
+    const keywords = escapeXml((a.tags ?? []).slice(0, 10).join(', '));
+    let pubDate: string;
+    try { pubDate = new Date(a.publishedAt).toISOString(); }
+    catch { pubDate = new Date().toISOString(); }
 
     return `  <url>
     <loc>${BASE}/noticias/${a.slug}</loc>
