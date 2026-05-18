@@ -63,8 +63,16 @@ export default async function HomePage() {
     fetchTopByGenre(GENRE_IDS.scifi,   'movie', 10),
     fetchTopByGenre(GENRE_IDS.accion,  'tv',    10),
     fetchTopByGenre(GENRE_IDS.drama,   'tv',    10),
-    // Noticias: internas Gemini primero → RSS externo
-    fetchInternalNews().then((gemini) => gemini.length > 0 ? gemini : fetchStreamingNews()),
+    // Noticias: mezcla artículos internos (Groq) + RSS frescos, siempre actualizados
+    Promise.all([fetchInternalNews(), fetchStreamingNews()]).then(([internal, rss]) => {
+      // Artículos internos recientes (primeros 20)
+      const internalTop = internal.slice(0, 20);
+      // RSS frescos que no dupliquen título con los internos
+      const internalTitles = new Set(internalTop.map(a => a.title.toLowerCase().slice(0, 40)));
+      const freshRss = rss.filter(r => !internalTitles.has(r.title.toLowerCase().slice(0, 40))).slice(0, 15);
+      // Mezclar: primero los internos, luego los RSS frescos
+      return [...internalTop, ...freshRss];
+    }),
     // Top 3 Finde — contenido trending en streaming UY últimos 20 días
     fetchFindeRecommendations().catch(() => []),
   ]);
