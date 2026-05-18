@@ -1,4 +1,3 @@
-export const runtime = 'edge';
 import { Suspense } from 'react';
 import {
   fetchByProvider, fetchTrending, fetchTopRated,
@@ -8,9 +7,10 @@ import {
 } from '@/lib/tmdb';
 import { fetchCinemaUY } from '@/lib/cinemaUY';
 import { fetchStreamingNews, fetchInternalNews } from '@/lib/newsApi';
+import { fetchLeavingSoon } from '@/lib/streamingAvailability';
 import HomeClient from '@/components/HomeClient';
 
-export const revalidate = 300; // 5 minutos — suficiente cache sin datos viejos
+export const revalidate = 7200; // 2h — reduce CPU en cPanel
 
 export default async function HomePage() {
   const [
@@ -25,7 +25,7 @@ export default async function HomePage() {
     viki,
     top10Accion, top10Comedia, top10Drama, top10Terror, top10Scifi,
     top10AccionSeries, top10DramaSeries,
-    news, finde,
+    news, finde, leavingSoon,
   ] = await Promise.all([
     fetchHeroContent(),
     fetchTrending(),
@@ -75,6 +75,8 @@ export default async function HomePage() {
     }),
     // Top 3 Finde — contenido trending en streaming UY últimos 20 días
     fetchFindeRecommendations().catch(() => []),
+    // Última Oportunidad — sale pronto del catálogo (24h cache, no quema cuota RapidAPI)
+    fetchLeavingSoon().catch(() => []),
   ]);
 
   return (
@@ -98,6 +100,7 @@ export default async function HomePage() {
         top10Drama={top10Drama} top10Terror={top10Terror} top10Scifi={top10Scifi}
         top10AccionSeries={top10AccionSeries} top10DramaSeries={top10DramaSeries}
         news={news} finde={finde}
+        leavingSoon={leavingSoon}
       />
     </Suspense>
   );

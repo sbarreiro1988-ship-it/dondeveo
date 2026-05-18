@@ -6,9 +6,12 @@ import type { Metadata } from 'next';
 import { getStaticArticleBySlug } from '@/lib/staticArticles';
 import AdSlot from '@/components/AdSlot';
 import ArticleAnchorAd from '@/components/ArticleAnchorAd';
+import ArticleHeroFallback from '@/components/ArticleHeroFallback';
 
-export const revalidate    = 300; // 5 min — artículos se regeneran frecuente
+export const revalidate    = 7200; // 2h — reducir CPU en cPanel
 export const dynamicParams = true;
+
+const BASE = 'https://www.uru2.com';
 
 interface ArticleData {
   uid:         string;
@@ -16,6 +19,7 @@ interface ArticleData {
   title:       string;
   intro:       string;
   body:        string;
+  content?:    string;  // campo HTML/markdown largo, tiene prioridad sobre body
   conclusion:  string;
   tags:        string[];
   category:    string;
@@ -26,19 +30,19 @@ interface ArticleData {
 }
 
 async function fetchArticle(slug: string): Promise<ArticleData | null> {
-  // 1️⃣ Primero: artículos del script Gemini (cPanel via NEWS_DATA_URL)
+  // 1. Artículos del script Gemini (cPanel via NEWS_DATA_URL)
   const baseUrl = process.env.NEWS_DATA_URL;
   if (baseUrl) {
     try {
       const res = await fetch(`${baseUrl}/articles/${slug}.json`, {
-        next: { revalidate: 3600 },
+        next: { revalidate: 7200 },
         signal: AbortSignal.timeout(5000),
       });
       if (res.ok) return res.json() as Promise<ArticleData>;
     } catch { /* seguir al fallback */ }
   }
 
-  // 2️⃣ Fallback: artículos estáticos propios de DondeVeo
+  // 2. Fallback: artículos estáticos propios de DondeVeo
   const staticArt = getStaticArticleBySlug(slug);
   if (staticArt) return staticArt as ArticleData;
 
@@ -46,43 +50,51 @@ async function fetchArticle(slug: string): Promise<ArticleData | null> {
 }
 
 export async function generateStaticParams() {
-  // Pre-generar los artículos estáticos conocidos
   const { STATIC_ARTICLES } = await import('@/lib/staticArticles');
   return STATIC_ARTICLES.map((a) => ({ slug: a.slug }));
 }
-
-const BASE = 'https://www.uru2.com';
 
 export async function generateMetadata(
   { params }: { params: { slug: string } }
 ): Promise<Metadata> {
   const article = await fetchArticle(params.slug);
-  // Artículo inexistente → noindex + 404 (no redirect para no contaminar /noticias)
   if (!article) return {
     title: 'Artículo no encontrado | DondeVeo',
     robots: { index: false, follow: false },
   };
 
-  const url    = `${BASE}/noticias/${article.slug}`;
-  const image  = article.thumbnail ?? `${BASE}/favicon.svg`;
-  const desc   = article.intro.slice(0, 160);
+  const url   = `${BASE}/noticias/${article.slug}`;
+  const image = article.thumbnail ?? `${BASE}/favicon.svg`;
+  const desc  = article.intro.slice(0, 160);
 
   return {
     title:       article.title,
     description: desc,
     keywords:    [...(article.tags ?? []), 'streaming Uruguay', 'cine Uruguay', 'DondeVeo'],
     alternates:  { canonical: url },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    authors: [{ name: article.source, url: BASE }],
     openGraph: {
-      title:           article.title,
-      description:     desc,
+      title:         article.title,
+      description:   desc,
       url,
-      type:            'article',
-      locale:          'es_UY',
-      siteName:        'DondeVeo Uruguay',
-      images:          [{ url: image, width: 1200, height: 630, alt: article.title }],
-      publishedTime:   article.publishedAt,
-      authors:         ['DondeVeo Uruguay'],
-      tags:            article.tags ?? [],
+      type:          'article',
+      locale:        'es_UY',
+      siteName:      'DondeVeo Uruguay',
+      images:        [{ url: image, width: 1200, height: 630, alt: article.title }],
+      publishedTime: article.publishedAt,
+      authors:       ['DondeVeo Uruguay'],
+      tags:          article.tags ?? [],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...(article.category ? { section: article.category } as any : {}),
     },
     twitter: {
       card:        'summary_large_image',
@@ -101,10 +113,55 @@ function formatDate(dateStr: string): string {
   } catch { return ''; }
 }
 
+/**
+ * Parsea el campo `content` del artículo.
+ * Si contiene etiquetas HTML, las deja pasar como HTML seguro (se renderiza con
+ * dangerouslySetInnerHTML sólo en el servidor — no llega JS al cliente).
+ * Si es markdown plano lo divide en párrafos igualmente.
+ */
+function isHtml(str: string): boolean {
+  return /<[a-z][\s\S]*>/i.test(str);
+}
+
+function htmlToParagraphs(html: string): string[] {
+  // Divide el HTML en bloques visuales separados por bloques de bloque
+  return html
+    .split(/<\/?(p|h[1-6]|blockquote|li|div|br\s*\/?)[^>]*>/i)
+    .map(s => s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+}
+
+function getParagraphs(article: ArticleData): { type: 'html' | 'text'; content: string }[] {
+  const source = article.content || article.body;
+  if (!source?.trim()) return [];
+
+  if (isHtml(source)) {
+    // Intentamos extraer secciones: h2/h3 + párrafos
+    const blocks = source
+      .split(/(<h[1-6][^>]*>.*?<\/h[1-6]>|<p[^>]*>.*?<\/p>|<blockquote[^>]*>[\s\S]*?<\/blockquote>)/i)
+      .filter(Boolean);
+
+    if (blocks.length > 1) {
+      return blocks
+        .map(b => b.trim())
+        .filter(Boolean)
+        .map(b => ({ type: 'html' as const, content: b }));
+    }
+
+    // Fallback: extraer texto limpio en párrafos
+    return htmlToParagraphs(source).map(p => ({ type: 'text' as const, content: p }));
+  }
+
+  // Markdown / texto plano — dividir por doble salto
+  return source
+    .split(/\n{2,}/)
+    .map(p => p.trim())
+    .filter(Boolean)
+    .map(p => ({ type: 'text' as const, content: p }));
+}
+
 export default async function ArticlePage({ params }: { params: { slug: string } }) {
   const article = await fetchArticle(params.slug);
-  // Artículo inexistente → 404 limpio. No redirigir a /noticias (eso genera
-  // "Página con redirección" en Search Console y mezcla señales de indexación).
   if (!article) notFound();
 
   const articleJsonLd = {
@@ -112,10 +169,16 @@ export default async function ArticlePage({ params }: { params: { slug: string }
     '@type': 'NewsArticle',
     headline: article.title,
     description: article.intro,
-    image: article.thumbnail ? [article.thumbnail] : [],
+    image: article.thumbnail
+      ? [{ '@type': 'ImageObject', url: article.thumbnail, width: 1200, height: 630 }]
+      : [{ '@type': 'ImageObject', url: `${BASE}/favicon.svg`, width: 48, height: 48 }],
     datePublished: article.publishedAt,
     dateModified: article.publishedAt,
-    author: [{ '@type': 'Organization', name: 'DondeVeo Uruguay', url: BASE }],
+    author: [{
+      '@type': 'Organization',
+      name: article.source || 'DondeVeo Uruguay',
+      url: BASE,
+    }],
     publisher: {
       '@type': 'Organization',
       name: 'DondeVeo Uruguay',
@@ -126,6 +189,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
     keywords: (article.tags ?? []).join(', '),
     articleSection: article.category,
     inLanguage: 'es-UY',
+    url: `${BASE}/noticias/${article.slug}`,
     speakable: {
       '@type': 'SpeakableSpecification',
       cssSelector: ['h1', 'p:first-of-type'],
@@ -142,10 +206,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
     ],
   };
 
-  const paragraphs = article.body
-    .split(/\n{2,}/)
-    .map(p => p.trim())
-    .filter(Boolean);
+  const paragraphs = getParagraphs(article);
 
   return (
     <div className="min-h-screen bg-dv-bg">
@@ -168,7 +229,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
         </Link>
       </div>
 
-      {/* ── Hero thumbnail o placeholder DondeVeo ── */}
+      {/* ── Hero thumbnail o fallback cinematográfico ── */}
       <div className="max-w-3xl mx-auto px-4 mb-2">
         {article.thumbnail ? (
           <div className="relative w-full h-56 md:h-80 rounded-xl overflow-hidden">
@@ -184,17 +245,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
             <div className="absolute inset-0 bg-gradient-to-t from-dv-bg via-transparent to-transparent" />
           </div>
         ) : (
-          /* Placeholder con branding DondeVeo cuando no hay imagen */
-          <div className="relative w-full h-44 md:h-64 rounded-xl overflow-hidden bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] flex flex-col items-center justify-center gap-3 border border-white/8">
-            <div className="flex items-center gap-2">
-              <span className="text-dv-accent text-4xl font-black">▶</span>
-              <span className="text-4xl font-black text-white tracking-tight">
-                Donde<span className="text-dv-accent">Veo</span>
-              </span>
-              <span className="text-2xl">🇺🇾</span>
-            </div>
-            <span className="text-dv-muted text-sm font-medium">Tu guía de streaming en Uruguay</span>
-          </div>
+          <ArticleHeroFallback category={article.category} />
         )}
       </div>
 
@@ -231,11 +282,18 @@ export default async function ArticlePage({ params }: { params: { slug: string }
         {/* ── Ad 1: debajo del intro ── */}
         <AdSlot slot="1612024208" format="auto" className="mb-6" />
 
-        {/* Body paragraphs — ad cada 3 párrafos */}
+        {/* Body — ad cada 3 párrafos */}
         <div className="space-y-5 mb-6">
-          {paragraphs.map((p, i) => (
+          {paragraphs.map((para, i) => (
             <div key={i}>
-              <p className="text-gray-300 text-base leading-relaxed">{p}</p>
+              {para.type === 'html' ? (
+                <div
+                  className="text-gray-200 text-lg leading-relaxed [&_h1]:text-white [&_h1]:font-bold [&_h1]:text-2xl [&_h2]:text-white [&_h2]:font-bold [&_h2]:text-xl [&_h3]:text-white [&_h3]:font-bold [&_h3]:text-lg [&_blockquote]:border-l-4 [&_blockquote]:border-dv-accent [&_blockquote]:italic [&_blockquote]:pl-4 [&_blockquote]:text-white/70 [&_a]:text-dv-accent [&_a]:hover:underline [&_strong]:text-white [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                  dangerouslySetInnerHTML={{ __html: para.content }}
+                />
+              ) : (
+                <p className="text-gray-200 text-lg leading-relaxed">{para.content}</p>
+              )}
               {/* ── Ad 2: in-article cada 3 párrafos ── */}
               {(i + 1) % 3 === 0 && paragraphs.length > 3 && (
                 <AdSlot
@@ -251,11 +309,13 @@ export default async function ArticlePage({ params }: { params: { slug: string }
         </div>
 
         {/* Conclusion */}
-        <div className="border-l-4 border-dv-accent pl-4 py-1 mb-6">
-          <p className="text-white/80 text-base leading-relaxed italic">
-            {article.conclusion}
-          </p>
-        </div>
+        {article.conclusion && (
+          <div className="border-l-4 border-dv-accent pl-4 py-1 mb-6">
+            <p className="text-white/80 text-base leading-relaxed italic">
+              {article.conclusion}
+            </p>
+          </div>
+        )}
 
         {/* ── Ad 3: debajo de la conclusión ── */}
         <AdSlot slot="1612024208" format="auto" className="mb-6" />
@@ -286,8 +346,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
 
       </article>
 
-      {/* ── Ad 4: Sticky anchor inferior — aparece 2s después, se puede cerrar ── */}
-      {/* SLOT: "Artículo - Anchor" */}
+      {/* ── Ad 4: Sticky anchor inferior ── */}
       <ArticleAnchorAd />
 
     </div>

@@ -11,6 +11,7 @@ import NewSeriesCards from './NewSeriesCards';
 import NoticiasSection from './NoticiasSection';
 import TrendingSection from './TrendingSection';
 import FindeSection from './FindeSection';
+import UltimaOportunidad from './UltimaOportunidad';
 import FilterBar from './FilterBar';
 import MovieCard from './MovieCard';
 import MovieModal from './MovieModal';
@@ -32,6 +33,7 @@ function enrichAndFilter(movies: Movie[], lookup: Map<number, Platform[]>): Movi
     .filter((m) => m.platforms.length > 0 || !hasNonLatinTitle(m.title));
 }
 import type { NewsItem } from '@/lib/newsApi';
+import type { StreamingRemoval } from '@/lib/streamingAvailability';
 
 interface Props {
   heroMovies: Movie[];
@@ -53,6 +55,7 @@ interface Props {
   top10AccionSeries: Movie[]; top10DramaSeries: Movie[];
   news: NewsItem[];
   finde: Movie[];
+  leavingSoon: StreamingRemoval[];
 }
 
 const DEFAULT_FILTERS: FilterState = { platformIds: [], genres: [], contentType: 'all', query: '' };
@@ -68,7 +71,7 @@ export default function HomeClient({
   universalplus, viki,
   top10Accion, top10Comedia, top10Drama, top10Terror, top10Scifi,
   top10AccionSeries, top10DramaSeries,
-  news, finde,
+  news, finde, leavingSoon,
 }: Props) {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
@@ -362,6 +365,9 @@ export default function HomeClient({
               {/* ── Banner publicitario (1 único, no invasivo) ── */}
               {/* SLOT: crear en AdSense › Anuncios › Por unidad › "Home Banner" y reemplazar el ID */}
               <AdSlot slot="4890740929" format="auto" className="px-4 md:px-8 mb-4 max-w-5xl mx-auto" />
+
+              {/* ── Última Oportunidad — películas/series que salen pronto del catálogo ── */}
+              <UltimaOportunidad items={leavingSoon} />
 
               {/* ── Ahora en cines ── */}
               {nowPlaying.length > 0 && (
