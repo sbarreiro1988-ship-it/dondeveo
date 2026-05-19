@@ -18,6 +18,13 @@ const nextConfig = {
   output: 'standalone',
   async redirects() {
     return [
+      // Redirige non-www a www — evita contenido duplicado para SEO
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'uru2.com' }],
+        destination: 'https://www.uru2.com/:path*',
+        permanent: true,
+      },
       // Redirige URLs viejas sin /type/ al nuevo formato
       // Google las tenía indexadas — redirect 301 permanente
       {
