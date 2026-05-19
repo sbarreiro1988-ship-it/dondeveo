@@ -168,6 +168,7 @@ async function parseFeed(feed: typeof FEEDS[number]): Promise<NewsItem[]> {
           source:     feed.source,
           sourceLang: feed.lang,
           category:   feed.category,
+          isTrending: detectTrending(item.title),
         } satisfies NewsItem;
       })
     );
