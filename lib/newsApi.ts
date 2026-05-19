@@ -17,19 +17,13 @@ export interface NewsItem {
   isTrending?: boolean;     // artículos editoriales para la sección ⚡ Trending
 }
 
-// ─── RSS sources — Spanish only ──────────────────────────────────────────────
+// ─── RSS sources — Spanish only (feeds verificados que responden sin bloqueo) ─
 const FEEDS = [
-  // Argentina (same culture as Uruguay, great streaming/cinema coverage)
-  { url: 'https://www.infobae.com/feeds/rss/entretenimiento/',      source: 'Infobae',      lang: 'es' as const, category: 'Entretenimiento' },
-  { url: 'https://www.clarin.com/rss/espectaculos/',                source: 'Clarín',       lang: 'es' as const, category: 'Streaming' },
-  { url: 'https://www.lanacion.com.ar/rss/secciones/espectaculos.xml', source: 'La Nación AR', lang: 'es' as const, category: 'Cine' },
-  // Spain — best Spanish-language cinema journalism
-  { url: 'https://www.espinof.com/rss',                            source: 'Espinof',      lang: 'es' as const, category: 'Cine' },
-  { url: 'https://www.fotogramas.es/feed/',                        source: 'Fotogramas',   lang: 'es' as const, category: 'Cine' },
-  { url: 'https://www.sensacine.com/rss/noticias-cine.xml',        source: 'SensaCine',    lang: 'es' as const, category: 'Cine' },
-  { url: 'https://www.20minutos.es/rss/cine/',                     source: '20minutos',    lang: 'es' as const, category: 'Cine' },
-  // Uruguay
-  { url: 'https://www.elobservador.com.uy/rss/cultura',            source: 'El Observador',lang: 'es' as const, category: 'Cultura' },
+  // Verificados OK desde servidor:
+  { url: 'https://www.sensacine.com/rss/noticias-cine.xml',   source: 'SensaCine',     lang: 'es' as const, category: 'Cine' },
+  { url: 'https://www.sensacine.com/rss/noticias-series.xml', source: 'SensaCine',     lang: 'es' as const, category: 'Series' },
+  { url: 'https://www.lavanguardia.com/rss/television.xml',   source: 'La Vanguardia', lang: 'es' as const, category: 'Streaming' },
+  { url: 'https://www.elespanol.com/rss/cultura/',            source: 'El Español',    lang: 'es' as const, category: 'Entretenimiento' },
 ];
 
 // ─── XML helpers ──────────────────────────────────────────────────────────────
