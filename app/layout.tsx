@@ -107,7 +107,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es-UY">
       <head>
-        {/* Google Analytics — debe estar en <head> para verificación Search Console */}
+        {/* Ezoic — Privacy scripts (deben ir primero) */}
+        <script data-cfasync="false" src="https://cmp.gatekeeperconsent.com/min.js" />
+        <script data-cfasync="false" src="https://the.gatekeeperconsent.com/cmp.min.js" />
+        {/* Ezoic — Header script */}
+        <script async src="//www.ezojs.com/ezoic/sa.min.js" />
+        <script dangerouslySetInnerHTML={{ __html: `
+          window.ezstandalone = window.ezstandalone || {};
+          ezstandalone.cmd = ezstandalone.cmd || [];
+        `}} />
+        <script src="//ezoicanalytics.com/analytics.js" />
+        {/* Google Analytics */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-4CS9M4DMP0" />
         <script dangerouslySetInnerHTML={{ __html: `
           window.dataLayer = window.dataLayer || [];
@@ -115,12 +125,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           gtag('js', new Date());
           gtag('config', 'G-4CS9M4DMP0');
         `}} />
-        {/* Google AdSense */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4971004283595233"
-          crossOrigin="anonymous"
-        />
         {/* JSON-LD global */}
         <script
           type="application/ld+json"
