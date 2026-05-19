@@ -8,6 +8,7 @@ import {
 import { fetchCinemaUY } from '@/lib/cinemaUY';
 import { fetchStreamingNews, fetchInternalNews } from '@/lib/newsApi';
 import { fetchLeavingSoon } from '@/lib/streamingAvailability';
+import { fetchGHNews } from '@/lib/ghApi';
 import HomeClient from '@/components/HomeClient';
 
 export const revalidate = 1800; // 30min — noticias frescas
@@ -25,7 +26,7 @@ export default async function HomePage() {
     viki,
     top10Accion, top10Comedia, top10Drama, top10Terror, top10Scifi,
     top10AccionSeries, top10DramaSeries,
-    news, finde, leavingSoon,
+    news, finde, leavingSoon, ghNews,
   ] = await Promise.all([
     fetchHeroContent(),
     fetchTrending(),
@@ -77,6 +78,8 @@ export default async function HomePage() {
     fetchFindeRecommendations().catch(() => []),
     // Última Oportunidad — sale pronto del catálogo (24h cache, no quema cuota RapidAPI)
     fetchLeavingSoon().catch(() => []),
+    // Gran Hermano Argentina 2026 — Google News RSS
+    fetchGHNews().catch(() => []),
   ]);
 
   return (
@@ -101,6 +104,7 @@ export default async function HomePage() {
         top10AccionSeries={top10AccionSeries} top10DramaSeries={top10DramaSeries}
         news={news} finde={finde}
         leavingSoon={leavingSoon}
+        ghNews={ghNews}
       />
     </Suspense>
   );
