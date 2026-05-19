@@ -10,7 +10,7 @@ import { fetchStreamingNews, fetchInternalNews } from '@/lib/newsApi';
 import { fetchLeavingSoon } from '@/lib/streamingAvailability';
 import HomeClient from '@/components/HomeClient';
 
-export const revalidate = 7200; // 2h — reduce CPU en cPanel
+export const revalidate = 1800; // 30min — noticias frescas
 
 export default async function HomePage() {
   const [
