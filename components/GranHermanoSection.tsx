@@ -8,10 +8,8 @@ interface Props { items: GHItem[] }
 
 function GHCard({ item }: { item: GHItem }) {
   return (
-    <a
-      href={item.link}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      href={`/gran-hermano/${item.slug}`}
       className="group flex flex-col rounded-xl overflow-hidden bg-[#1a0a2e] border border-purple-900/40 hover:border-purple-500/60 transition-all hover:shadow-xl hover:shadow-purple-900/40 hover:-translate-y-0.5"
     >
       {/* Thumbnail o placeholder */}
@@ -47,16 +45,14 @@ function GHCard({ item }: { item: GHItem }) {
           )}
         </div>
       </div>
-    </a>
+    </Link>
   );
 }
 
 function GHFeatured({ item }: { item: GHItem }) {
   return (
-    <a
-      href={item.link}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      href={`/gran-hermano/${item.slug}`}
       className="group relative rounded-xl overflow-hidden col-span-2 block bg-[#1a0a2e] border border-purple-800/50 hover:border-purple-400/60 transition-all hover:shadow-2xl hover:shadow-purple-900/50"
     >
       {item.thumbnail ? (
@@ -85,7 +81,7 @@ function GHFeatured({ item }: { item: GHItem }) {
           </h3>
         </div>
       )}
-    </a>
+    </Link>
   );
 }
 
@@ -111,14 +107,12 @@ export default function GranHermanoSection({ items }: Props) {
             <p className="text-purple-400 text-xs mt-0.5">Chismes, eliminados, escándalos y todo el drama 🇦🇷</p>
           </div>
         </div>
-        <a
-          href="https://news.google.com/search?q=Gran+Hermano+Argentina+2026&hl=es-419"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          href="/gran-hermano"
           className="text-purple-400 text-xs font-bold border border-purple-700/50 px-3 py-1.5 rounded-lg hover:bg-purple-900/30 transition-colors hidden sm:inline-flex"
         >
           Ver todo →
-        </a>
+        </Link>
       </div>
 
       {/* Featured + 1 card */}

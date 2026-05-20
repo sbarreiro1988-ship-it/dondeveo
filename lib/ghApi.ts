@@ -5,12 +5,26 @@
 
 export interface GHItem {
   id:        string;
+  slug:      string;   // ruta interna: /gran-hermano/[slug]
   title:     string;
-  link:      string;
+  link:      string;   // URL original (para "leer más" en la nota interna)
   source:    string;
   pubDate:   string;
   thumbnail: string | null;
   excerpt:   string;
+}
+
+/** Genera slug URL-safe a partir del título */
+export function ghSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .slice(0, 80);
 }
 
 function stripHtml(s: string): string {
@@ -82,8 +96,10 @@ export async function fetchGHNews(): Promise<GHItem[]> {
         if (seen.has(key)) continue;
         seen.add(key);
 
+        const slug = ghSlug(title);
         results.push({
           id: `gh-${link}`,
+          slug,
           title,
           link,
           source: stripHtml(source).slice(0, 30),
