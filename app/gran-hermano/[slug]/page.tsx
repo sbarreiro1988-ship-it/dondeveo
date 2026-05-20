@@ -51,7 +51,6 @@ export async function generateMetadata(
 }
 
 export async function generateStaticParams() {
-  // Pre-render los primeros 12 artículos al build; el resto se generan on-demand
   const items = await fetchGHNews().catch(() => []);
   return items.map(i => ({ slug: i.slug }));
 }
@@ -70,7 +69,7 @@ export default async function GHArticlePage({ params }: { params: { slug: string
       : [],
     datePublished: item.pubDate,
     dateModified: item.pubDate,
-    author: [{ '@type': 'Organization', name: item.source }],
+    author: [{ '@type': 'Organization', name: item.isInternal ? 'DondeVeo Uruguay' : item.source }],
     publisher: {
       '@type': 'Organization',
       name: 'DondeVeo Uruguay',
@@ -135,40 +134,66 @@ export default async function GHArticlePage({ params }: { params: { slug: string
             </span>
           )}
           <span className="text-purple-400/80">
-            Fuente: <span className="text-purple-300 font-semibold">{item.source}</span>
+            {item.isInternal
+              ? <span className="text-purple-300 font-semibold">DondeVeo Uruguay</span>
+              : <>Fuente: <span className="text-purple-300 font-semibold">{item.source}</span></>
+            }
           </span>
         </div>
 
         <div className="h-px bg-purple-900/40 mb-6" />
 
-        {/* Excerpt / intro */}
-        {item.excerpt && (
-          <p className="text-white/85 text-lg leading-relaxed mb-8">
-            {item.excerpt}
-          </p>
+        {/* Intro / excerpt */}
+        <p className="text-white/90 text-lg leading-relaxed mb-6 font-medium">
+          {item.excerpt}
+        </p>
+
+        {/* Full body — only for internal Groq articles */}
+        {item.body && (
+          <div className="prose prose-invert prose-purple max-w-none mb-6">
+            {item.body.split(/\n{2,}/).map((paragraph, idx) => (
+              <p key={idx} className="text-white/80 text-base leading-relaxed mb-4">
+                {paragraph.trim()}
+              </p>
+            ))}
+          </div>
         )}
 
-        {/* CTA — leer nota completa */}
-        <div className="bg-purple-950/50 border border-purple-700/40 rounded-xl p-5 mb-8 text-center">
-          <p className="text-purple-300 text-sm mb-3">
-            Para leer la nota completa, visitá la fuente original:
-          </p>
-          <a
-            href={item.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-3 rounded-lg transition-colors text-sm"
-          >
-            Leer en {item.source} →
-          </a>
-        </div>
+        {/* Conclusion — only for internal Groq articles */}
+        {item.conclusion && (
+          <div className="bg-purple-950/40 border-l-4 border-purple-500 rounded-r-lg p-4 mb-8">
+            <p className="text-purple-200 text-base leading-relaxed italic">
+              {item.conclusion}
+            </p>
+          </div>
+        )}
+
+        {/* CTA — only for RSS (external) articles */}
+        {!item.isInternal && (
+          <div className="bg-purple-950/50 border border-purple-700/40 rounded-xl p-5 mb-8 text-center">
+            <p className="text-purple-300 text-sm mb-3">
+              Para leer la nota completa, visitá la fuente original:
+            </p>
+            <a
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-3 rounded-lg transition-colors text-sm"
+            >
+              Leer en {item.source} →
+            </a>
+          </div>
+        )}
 
         <div className="h-px bg-purple-900/40 mb-6" />
 
         {/* Footer */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <p className="text-purple-400/60 text-xs">
-            Contenido de Gran Hermano Argentina 2026 en DondeVeo Uruguay.
+            {item.isInternal
+              ? 'Artículo de elaboración propia — DondeVeo Uruguay.'
+              : 'Contenido de Gran Hermano Argentina 2026 en DondeVeo Uruguay.'
+            }
           </p>
           <Link href="/gran-hermano" className="text-purple-400 text-sm font-bold hover:text-purple-300 transition-colors">
             ← Más noticias GH

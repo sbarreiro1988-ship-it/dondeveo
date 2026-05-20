@@ -1,17 +1,37 @@
 /**
  * ghApi.ts — Gran Hermano Argentina 2026
- * Usa Google News RSS para noticias y chismes en tiempo real
+ * Usa artículos internos generados por Groq (gh-index.json) con fallback a Google News RSS
  */
 
 export interface GHItem {
-  id:        string;
-  slug:      string;   // ruta interna: /gran-hermano/[slug]
-  title:     string;
-  link:      string;   // URL original (para "leer más" en la nota interna)
-  source:    string;
-  pubDate:   string;
-  thumbnail: string | null;
-  excerpt:   string;
+  id:          string;
+  slug:        string;      // ruta interna: /gran-hermano/[slug]
+  title:       string;
+  link:        string;      // URL original (para "leer más" en la nota)
+  source:      string;
+  pubDate:     string;
+  thumbnail:   string | null;
+  excerpt:     string;
+  body?:       string;      // Cuerpo completo (solo artículos internos Groq)
+  conclusion?: string;      // Conclusión (solo artículos internos Groq)
+  isInternal?: boolean;     // true = artículo generado por Groq
+}
+
+// Shape del gh-index.json generado por generate_gh_news.py
+interface GHInternalArticle {
+  uid:         string;
+  slug:        string;
+  title:       string;
+  intro:       string;
+  body:        string;
+  conclusion:  string;
+  tags:        string[];
+  category:    string;
+  thumbnail:   string | null;
+  source:      string;
+  originalUrl: string;
+  publishedAt: string;
+  isTrending:  boolean;
 }
 
 /** Genera slug URL-safe a partir del título */
@@ -59,7 +79,35 @@ function timeAgo(dateStr: string): string {
 }
 export { timeAgo as ghTimeAgo };
 
-export async function fetchGHNews(): Promise<GHItem[]> {
+/** Lee artículos internos generados por Groq desde gh-index.json */
+async function fetchInternalGHNews(): Promise<GHItem[]> {
+  const baseUrl = process.env.NEWS_DATA_URL;
+  if (!baseUrl) return [];
+  try {
+    const res = await fetch(`${baseUrl}/gh-index.json`, {
+      next: { revalidate: 900 },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json() as { articles: GHInternalArticle[] };
+    return (data.articles ?? []).slice(0, 20).map((a: GHInternalArticle) => ({
+      id:         a.uid,
+      slug:       a.slug,
+      title:      a.title,
+      link:       a.originalUrl ?? '',
+      source:     'DondeVeo Uruguay',
+      pubDate:    a.publishedAt,
+      thumbnail:  a.thumbnail ?? null,
+      excerpt:    a.intro,
+      body:       a.body,
+      conclusion: a.conclusion,
+      isInternal: true,
+    }));
+  } catch { return []; }
+}
+
+/** Lee noticias de GH desde Google News RSS (fallback) */
+async function fetchGHRSS(): Promise<GHItem[]> {
   const QUERIES = [
     'Gran+Hermano+Argentina+2026',
     'GH+2026+Argentina+participantes',
@@ -81,14 +129,14 @@ export async function fetchGHNews(): Promise<GHItem[]> {
       let m: RegExpExecArray | null;
 
       while ((m = itemRe.exec(xml)) !== null && results.length < 20) {
-        const block = m[1];
-        const rawTitle = stripHtml(extractTag(block, 'title'));
-        const title    = cleanTitle(rawTitle);
-        const link     = extractTag(block, 'link') || extractTag(block, 'guid');
-        const pubDate  = extractTag(block, 'pubDate');
-        const desc     = extractTag(block, 'description');
-        const source   = extractTag(block, 'source') || 'GH 2026';
-        const excerpt  = stripHtml(desc).slice(0, 200);
+        const block     = m[1];
+        const rawTitle  = stripHtml(extractTag(block, 'title'));
+        const title     = cleanTitle(rawTitle);
+        const link      = extractTag(block, 'link') || extractTag(block, 'guid');
+        const pubDate   = extractTag(block, 'pubDate');
+        const desc      = extractTag(block, 'description');
+        const source    = extractTag(block, 'source') || 'GH 2026';
+        const excerpt   = stripHtml(desc).slice(0, 200);
         const thumbnail = findImageInDesc(desc);
 
         if (!title || title.length < 5 || !link) continue;
@@ -98,18 +146,44 @@ export async function fetchGHNews(): Promise<GHItem[]> {
 
         const slug = ghSlug(title);
         results.push({
-          id: `gh-${link}`,
+          id:        `gh-${link}`,
           slug,
           title,
           link,
-          source: stripHtml(source).slice(0, 30),
+          source:    stripHtml(source).slice(0, 30),
           pubDate,
           thumbnail,
           excerpt,
+          isInternal: false,
         });
       }
     } catch { /* never break the home */ }
   }
 
   return results.slice(0, 12);
+}
+
+/**
+ * fetchGHNews — punto de entrada principal.
+ * Intenta artículos internos (Groq) primero; si hay ≥3, los usa.
+ * Siempre complementa con RSS para tener artículos recientes.
+ */
+export async function fetchGHNews(): Promise<GHItem[]> {
+  const [internal, rss] = await Promise.allSettled([
+    fetchInternalGHNews(),
+    fetchGHRSS(),
+  ]);
+
+  const internalItems = internal.status === 'fulfilled' ? internal.value : [];
+  const rssItems      = rss.status === 'fulfilled'      ? rss.value      : [];
+
+  if (internalItems.length >= 3) {
+    // Mezclar: internos primero, luego RSS fresco que no esté duplicado
+    const internalIds = new Set(internalItems.map(i => i.id));
+    const freshRss    = rssItems.filter(r => !internalIds.has(r.id));
+    return [...internalItems, ...freshRss].slice(0, 12);
+  }
+
+  // Fallback: solo RSS
+  return rssItems;
 }
