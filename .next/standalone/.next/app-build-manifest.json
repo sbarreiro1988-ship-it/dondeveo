@@ -6,7 +6,7 @@
       "static/chunks/526-f00e6198df38c54c.js",
       "static/chunks/main-app-0ca516287a705181.js",
       "static/chunks/231-21c44b54ffaf1be4.js",
-      "static/chunks/app/not-found-bd205ab0779ffe1d.js"
+      "static/chunks/app/not-found-ebcf50f3c134da50.js"
     ],
     "/_not-found/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
@@ -20,7 +20,7 @@
       "static/chunks/fd9d1056-2245c12966832080.js",
       "static/chunks/526-f00e6198df38c54c.js",
       "static/chunks/main-app-0ca516287a705181.js",
-      "static/css/776f534714aa8c30.css",
+      "static/css/8750188409ee0d98.css",
       "static/chunks/231-21c44b54ffaf1be4.js",
       "static/chunks/app/layout-fbbd0e28a6608ee5.js"
     ],
@@ -30,15 +30,7 @@
       "static/chunks/526-f00e6198df38c54c.js",
       "static/chunks/main-app-0ca516287a705181.js",
       "static/chunks/231-21c44b54ffaf1be4.js",
-      "static/chunks/app/acerca/page-695b1b82fd8f3383.js"
-    ],
-    "/codigos/page": [
-      "static/chunks/webpack-cb86a99cd2f791d1.js",
-      "static/chunks/fd9d1056-2245c12966832080.js",
-      "static/chunks/526-f00e6198df38c54c.js",
-      "static/chunks/main-app-0ca516287a705181.js",
-      "static/chunks/231-21c44b54ffaf1be4.js",
-      "static/chunks/app/codigos/page-f37e63cf773dc4a6.js"
+      "static/chunks/app/acerca/page-725a151edbc32aff.js"
     ],
     "/contacto/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
@@ -46,7 +38,15 @@
       "static/chunks/526-f00e6198df38c54c.js",
       "static/chunks/main-app-0ca516287a705181.js",
       "static/chunks/231-21c44b54ffaf1be4.js",
-      "static/chunks/app/contacto/page-3b47ce7def0403e3.js"
+      "static/chunks/app/contacto/page-9fd69f93c2d761bf.js"
+    ],
+    "/codigos/page": [
+      "static/chunks/webpack-cb86a99cd2f791d1.js",
+      "static/chunks/fd9d1056-2245c12966832080.js",
+      "static/chunks/526-f00e6198df38c54c.js",
+      "static/chunks/main-app-0ca516287a705181.js",
+      "static/chunks/231-21c44b54ffaf1be4.js",
+      "static/chunks/app/codigos/page-cc7786947d83dd5d.js"
     ],
     "/guias/mejores-series-netflix-uruguay/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
@@ -54,7 +54,7 @@
       "static/chunks/526-f00e6198df38c54c.js",
       "static/chunks/main-app-0ca516287a705181.js",
       "static/chunks/231-21c44b54ffaf1be4.js",
-      "static/chunks/app/guias/mejores-series-netflix-uruguay/page-309d3e8fb25afe8f.js"
+      "static/chunks/app/guias/mejores-series-netflix-uruguay/page-cc7c67354bf2683a.js"
     ],
     "/guias/mejores-peliculas-streaming-uruguay/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
@@ -62,7 +62,7 @@
       "static/chunks/526-f00e6198df38c54c.js",
       "static/chunks/main-app-0ca516287a705181.js",
       "static/chunks/231-21c44b54ffaf1be4.js",
-      "static/chunks/app/guias/mejores-peliculas-streaming-uruguay/page-cc9181e9f8c9d87e.js"
+      "static/chunks/app/guias/mejores-peliculas-streaming-uruguay/page-4662da91ef0961bb.js"
     ],
     "/guias/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
@@ -70,7 +70,31 @@
       "static/chunks/526-f00e6198df38c54c.js",
       "static/chunks/main-app-0ca516287a705181.js",
       "static/chunks/231-21c44b54ffaf1be4.js",
-      "static/chunks/app/guias/page-c3bc6bcd66688a04.js"
+      "static/chunks/app/guias/page-b105bdb2deb7f0d8.js"
+    ],
+    "/guias/streaming-gratuito-uruguay/page": [
+      "static/chunks/webpack-cb86a99cd2f791d1.js",
+      "static/chunks/fd9d1056-2245c12966832080.js",
+      "static/chunks/526-f00e6198df38c54c.js",
+      "static/chunks/main-app-0ca516287a705181.js",
+      "static/chunks/231-21c44b54ffaf1be4.js",
+      "static/chunks/app/guias/streaming-gratuito-uruguay/page-1773e6b9f86e0603.js"
+    ],
+    "/guias/que-ver-este-finde/page": [
+      "static/chunks/webpack-cb86a99cd2f791d1.js",
+      "static/chunks/fd9d1056-2245c12966832080.js",
+      "static/chunks/526-f00e6198df38c54c.js",
+      "static/chunks/main-app-0ca516287a705181.js",
+      "static/chunks/231-21c44b54ffaf1be4.js",
+      "static/chunks/app/guias/que-ver-este-finde/page-f91d03e64d0d45ec.js"
+    ],
+    "/guias/plataformas-streaming-uruguay/page": [
+      "static/chunks/webpack-cb86a99cd2f791d1.js",
+      "static/chunks/fd9d1056-2245c12966832080.js",
+      "static/chunks/526-f00e6198df38c54c.js",
+      "static/chunks/main-app-0ca516287a705181.js",
+      "static/chunks/231-21c44b54ffaf1be4.js",
+      "static/chunks/app/guias/plataformas-streaming-uruguay/page-f669f814075dbafe.js"
     ],
     "/guias/precio-streaming-uruguay/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
@@ -80,32 +104,22 @@
       "static/chunks/231-21c44b54ffaf1be4.js",
       "static/chunks/app/guias/precio-streaming-uruguay/page-fff8e17deffdb142.js"
     ],
-    "/guias/streaming-gratuito-uruguay/page": [
+    "/guias/streaming-para-ninos-uruguay/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
       "static/chunks/fd9d1056-2245c12966832080.js",
       "static/chunks/526-f00e6198df38c54c.js",
       "static/chunks/main-app-0ca516287a705181.js",
       "static/chunks/231-21c44b54ffaf1be4.js",
-      "static/chunks/app/guias/streaming-gratuito-uruguay/page-e59a43f472c14fc7.js"
+      "static/chunks/app/guias/streaming-para-ninos-uruguay/page-ec41978699b36b9b.js"
     ],
-    "/page": [
+    "/noticias/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
       "static/chunks/fd9d1056-2245c12966832080.js",
       "static/chunks/526-f00e6198df38c54c.js",
       "static/chunks/main-app-0ca516287a705181.js",
       "static/chunks/231-21c44b54ffaf1be4.js",
       "static/chunks/173-5dc6bdb83723b41b.js",
-      "static/chunks/79-fbc2a60b8efb5ad3.js",
-      "static/chunks/924-5b92e0b0899d3c15.js",
-      "static/chunks/app/page-d71363807dfcd3e6.js"
-    ],
-    "/guias/que-ver-este-finde/page": [
-      "static/chunks/webpack-cb86a99cd2f791d1.js",
-      "static/chunks/fd9d1056-2245c12966832080.js",
-      "static/chunks/526-f00e6198df38c54c.js",
-      "static/chunks/main-app-0ca516287a705181.js",
-      "static/chunks/231-21c44b54ffaf1be4.js",
-      "static/chunks/app/guias/que-ver-este-finde/page-82c8df6c296f64bd.js"
+      "static/chunks/app/noticias/page-a0dff55c5b4e3dce.js"
     ],
     "/plataforma/[id]/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
@@ -117,30 +131,16 @@
       "static/chunks/79-fbc2a60b8efb5ad3.js",
       "static/chunks/app/plataforma/[id]/page-ce9d184474d469dc.js"
     ],
-    "/guias/plataformas-streaming-uruguay/page": [
-      "static/chunks/webpack-cb86a99cd2f791d1.js",
-      "static/chunks/fd9d1056-2245c12966832080.js",
-      "static/chunks/526-f00e6198df38c54c.js",
-      "static/chunks/main-app-0ca516287a705181.js",
-      "static/chunks/231-21c44b54ffaf1be4.js",
-      "static/chunks/app/guias/plataformas-streaming-uruguay/page-82d8af27d9cef145.js"
-    ],
-    "/guias/streaming-para-ninos-uruguay/page": [
-      "static/chunks/webpack-cb86a99cd2f791d1.js",
-      "static/chunks/fd9d1056-2245c12966832080.js",
-      "static/chunks/526-f00e6198df38c54c.js",
-      "static/chunks/main-app-0ca516287a705181.js",
-      "static/chunks/231-21c44b54ffaf1be4.js",
-      "static/chunks/app/guias/streaming-para-ninos-uruguay/page-92e07bfd1a20d625.js"
-    ],
-    "/noticias/page": [
+    "/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
       "static/chunks/fd9d1056-2245c12966832080.js",
       "static/chunks/526-f00e6198df38c54c.js",
       "static/chunks/main-app-0ca516287a705181.js",
       "static/chunks/231-21c44b54ffaf1be4.js",
       "static/chunks/173-5dc6bdb83723b41b.js",
-      "static/chunks/app/noticias/page-d7af4dd6d8f10b66.js"
+      "static/chunks/79-fbc2a60b8efb5ad3.js",
+      "static/chunks/924-5b92e0b0899d3c15.js",
+      "static/chunks/app/page-7bf5ae7afaa3de0e.js"
     ],
     "/terminos/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
@@ -148,7 +148,7 @@
       "static/chunks/526-f00e6198df38c54c.js",
       "static/chunks/main-app-0ca516287a705181.js",
       "static/chunks/231-21c44b54ffaf1be4.js",
-      "static/chunks/app/terminos/page-96403f6ea3d989c7.js"
+      "static/chunks/app/terminos/page-16ee682edf2272ef.js"
     ],
     "/privacidad/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
@@ -156,7 +156,7 @@
       "static/chunks/526-f00e6198df38c54c.js",
       "static/chunks/main-app-0ca516287a705181.js",
       "static/chunks/231-21c44b54ffaf1be4.js",
-      "static/chunks/app/privacidad/page-c3332117e69d36af.js"
+      "static/chunks/app/privacidad/page-7af900854da0d767.js"
     ],
     "/noticias/[slug]/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
@@ -165,7 +165,7 @@
       "static/chunks/main-app-0ca516287a705181.js",
       "static/chunks/231-21c44b54ffaf1be4.js",
       "static/chunks/173-5dc6bdb83723b41b.js",
-      "static/chunks/app/noticias/[slug]/page-edcb14206a19ffe8.js"
+      "static/chunks/app/noticias/[slug]/page-20bddf29d04d0809.js"
     ],
     "/actor/[id]/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
@@ -201,15 +201,6 @@
       "static/chunks/173-5dc6bdb83723b41b.js",
       "static/chunks/app/comparar/[slug]/page-d006e41903478c55.js"
     ],
-    "/mejores/[genero]/[plataforma]/page": [
-      "static/chunks/webpack-cb86a99cd2f791d1.js",
-      "static/chunks/fd9d1056-2245c12966832080.js",
-      "static/chunks/526-f00e6198df38c54c.js",
-      "static/chunks/main-app-0ca516287a705181.js",
-      "static/chunks/231-21c44b54ffaf1be4.js",
-      "static/chunks/173-5dc6bdb83723b41b.js",
-      "static/chunks/app/mejores/[genero]/[plataforma]/page-d40db67bec283dd3.js"
-    ],
     "/novedades/[platformId]/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
       "static/chunks/fd9d1056-2245c12966832080.js",
@@ -220,6 +211,15 @@
       "static/chunks/79-fbc2a60b8efb5ad3.js",
       "static/chunks/924-5b92e0b0899d3c15.js",
       "static/chunks/app/novedades/[platformId]/page-9727890c0107f0a1.js"
+    ],
+    "/mejores/[genero]/[plataforma]/page": [
+      "static/chunks/webpack-cb86a99cd2f791d1.js",
+      "static/chunks/fd9d1056-2245c12966832080.js",
+      "static/chunks/526-f00e6198df38c54c.js",
+      "static/chunks/main-app-0ca516287a705181.js",
+      "static/chunks/231-21c44b54ffaf1be4.js",
+      "static/chunks/173-5dc6bdb83723b41b.js",
+      "static/chunks/app/mejores/[genero]/[plataforma]/page-d40db67bec283dd3.js"
     ],
     "/pelicula/[type]/[tmdbId]/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
