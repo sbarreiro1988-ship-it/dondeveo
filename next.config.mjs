@@ -72,6 +72,18 @@ const nextConfig = {
         destination: '/pelicula/movie/:id',
         permanent: true,
       },
+      // Redirige sección Gran Hermano eliminada → Noticias
+      // Google tenía ~300 URLs indexadas de /gran-hermano/
+      {
+        source: '/gran-hermano',
+        destination: '/noticias',
+        permanent: true,
+      },
+      {
+        source: '/gran-hermano/:slug*',
+        destination: '/noticias',
+        permanent: true,
+      },
     ];
   },
 };
