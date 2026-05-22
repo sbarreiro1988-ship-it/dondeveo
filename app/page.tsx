@@ -6,9 +6,8 @@ import {
   fetchFindeRecommendations,
 } from '@/lib/tmdb';
 import { fetchCinemaUY } from '@/lib/cinemaUY';
-import { fetchStreamingNews, fetchInternalNews } from '@/lib/newsApi';
+import { fetchInternalNews } from '@/lib/newsApi';
 import { fetchLeavingSoon } from '@/lib/streamingAvailability';
-import { fetchGHNews } from '@/lib/ghApi';
 import HomeClient from '@/components/HomeClient';
 
 export const revalidate = 1800; // 30min — noticias frescas
@@ -26,7 +25,7 @@ export default async function HomePage() {
     viki,
     top10Accion, top10Comedia, top10Drama, top10Terror, top10Scifi,
     top10AccionSeries, top10DramaSeries,
-    news, finde, leavingSoon, ghNews,
+    news, finde, leavingSoon,
   ] = await Promise.all([
     fetchHeroContent(),
     fetchTrending(),
@@ -64,22 +63,12 @@ export default async function HomePage() {
     fetchTopByGenre(GENRE_IDS.scifi,   'movie', 10),
     fetchTopByGenre(GENRE_IDS.accion,  'tv',    10),
     fetchTopByGenre(GENRE_IDS.drama,   'tv',    10),
-    // Noticias: mezcla artículos internos (Groq) + RSS frescos, siempre actualizados
-    Promise.all([fetchInternalNews(), fetchStreamingNews()]).then(([internal, rss]) => {
-      // Artículos internos recientes (primeros 20)
-      const internalTop = internal.slice(0, 20);
-      // RSS frescos que no dupliquen título con los internos
-      const internalTitles = new Set(internalTop.map(a => a.title.toLowerCase().slice(0, 40)));
-      const freshRss = rss.filter(r => !internalTitles.has(r.title.toLowerCase().slice(0, 40))).slice(0, 15);
-      // Mezclar: primero los internos, luego los RSS frescos
-      return [...internalTop, ...freshRss];
-    }),
+    // Noticias: solo artículos internos generados por Groq (links a /noticias/[slug])
+    fetchInternalNews(),
     // Top 3 Finde — contenido trending en streaming UY últimos 20 días
     fetchFindeRecommendations().catch(() => []),
     // Última Oportunidad — sale pronto del catálogo (24h cache, no quema cuota RapidAPI)
     fetchLeavingSoon().catch(() => []),
-    // Gran Hermano Argentina 2026 — Google News RSS
-    fetchGHNews().catch(() => []),
   ]);
 
   return (
@@ -104,7 +93,6 @@ export default async function HomePage() {
         top10AccionSeries={top10AccionSeries} top10DramaSeries={top10DramaSeries}
         news={news} finde={finde}
         leavingSoon={leavingSoon}
-        ghNews={ghNews}
       />
     </Suspense>
   );

@@ -12,7 +12,6 @@ import NoticiasSection from './NoticiasSection';
 import TrendingSection from './TrendingSection';
 import FindeSection from './FindeSection';
 import UltimaOportunidad from './UltimaOportunidad';
-import GranHermanoSection from './GranHermanoSection';
 import FilterBar from './FilterBar';
 import MovieCard from './MovieCard';
 import MovieModal from './MovieModal';
@@ -35,7 +34,6 @@ function enrichAndFilter(movies: Movie[], lookup: Map<number, Platform[]>): Movi
 }
 import type { NewsItem } from '@/lib/newsApi';
 import type { StreamingRemoval } from '@/lib/streamingAvailability';
-import type { GHItem } from '@/lib/ghApi';
 
 interface Props {
   heroMovies: Movie[];
@@ -58,7 +56,6 @@ interface Props {
   news: NewsItem[];
   finde: Movie[];
   leavingSoon: StreamingRemoval[];
-  ghNews: GHItem[];
 }
 
 const DEFAULT_FILTERS: FilterState = { platformIds: [], genres: [], contentType: 'all', query: '' };
@@ -74,7 +71,7 @@ export default function HomeClient({
   universalplus, viki,
   top10Accion, top10Comedia, top10Drama, top10Terror, top10Scifi,
   top10AccionSeries, top10DramaSeries,
-  news, finde, leavingSoon, ghNews,
+  news, finde, leavingSoon,
 }: Props) {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
@@ -664,9 +661,6 @@ export default function HomeClient({
                   description="Películas y series que se estrenan próximamente en cines y plataformas."
                   onMovieClick={handleMovieClick} />
               )}
-
-              {/* ── 🏠 Gran Hermano Argentina 2026 ── */}
-              <GranHermanoSection items={ghNews} />
 
               {/* ── ⚡ Lo que no te podés perder — Trending editorial para Google Discover ── */}
               <TrendingSection news={news} />
