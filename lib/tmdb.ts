@@ -636,9 +636,31 @@ const STREAM_PROVIDERS_LATAM = '8|337|1899|384|119|9|531|67|350|300|283|11|2302|
 export async function fetchFindeRecommendations(): Promise<Movie[]> {
   const [movieGenres, tvGenres] = await Promise.all([getGenres('movie'), getGenres('tv')]);
 
-  const today    = new Date();
-  // Últimos 30 días — más fresco y cambia más entre semanas
-  const fromDate = new Date(today.getTime() - 30 * 86400000).toISOString().split('T')[0];
+  const today = new Date();
+
+  // ── Semilla semanal: cambia cada viernes al mediodía en Uruguay (UTC-3) ────────
+  // Así los 3 recomendados se renuevan cada viernes a las 12:00 hs UY.
+  const uyNow  = new Date(today.getTime() - 3 * 3_600_000); // desplazar a UTC-3
+  const dow    = uyNow.getDay();   // 0=dom … 5=vie … 6=sáb
+  const hour   = uyNow.getHours();
+
+  // Días transcurridos desde el viernes-mediodía más reciente
+  const daysBack =
+    dow === 5 && hour >= 12 ? 0 : // hoy viernes después del mediodía
+    dow === 6                ? 1 : // sábado
+    dow === 0                ? 2 : // domingo
+    dow === 1                ? 3 : // lunes
+    dow === 2                ? 4 : // martes
+    dow === 3                ? 5 : // miércoles
+    dow === 4                ? 6 : // jueves
+                               7;  // viernes antes del mediodía
+
+  // Número de semana entero (cambia cada viernes al mediodía)
+  const lastFriMs = uyNow.getTime() - daysBack * 86_400_000;
+  const weekN     = Math.floor(lastFriMs / (7 * 86_400_000));
+
+  // Pool amplio: 60 días para tener suficiente variedad para rotar
+  const fromDate = new Date(today.getTime() - 60 * 86_400_000).toISOString().split('T')[0];
   const toDate   = today.toISOString().split('T')[0];
 
   // with_watch_providers filtra solo contenido disponible en streaming (NO en cines)
@@ -685,31 +707,47 @@ export async function fetchFindeRecommendations(): Promise<Movie[]> {
 
   type Candidate = { item: TMDBItem; type: 'movie' | 'tv'; score: number };
 
+  // Pool amplio: top 10 de cada tipo para tener variedad en la rotación
   const topMovies: Candidate[] = mergeResults(movMX.results ?? [], movAR.results ?? [])
-    .slice(0, 6)
+    .slice(0, 10)
     .map((i) => ({ item: i, type: 'movie' as const, score: i.popularity ?? 0 }));
 
   const topSeries: Candidate[] = mergeResults(serMX.results ?? [], serAR.results ?? [])
-    .slice(0, 6)
+    .slice(0, 10)
     .map((i) => ({ item: i, type: 'tv' as const, score: i.popularity ?? 0 }));
 
-  // Asegurar al menos 1 película Y 1 serie en el top 3
+  // ── Selección semanal rotativa ────────────────────────────────────────────────
+  // Rotar dentro del top-6 de cada tipo (los 6 más populares cada semana)
+  // para garantizar calidad y variedad al mismo tiempo.
   let candidates: Candidate[] = [];
-  if (topMovies.length > 0 && topSeries.length > 0) {
-    // Tomar los 2 más populares de cada tipo, mezclar y elegir 3
-    candidates = [topMovies[0], topSeries[0], topMovies[1] ?? topSeries[1]]
-      .filter(Boolean)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3);
+
+  if (topMovies.length >= 2 && topSeries.length >= 2) {
+    const mPool = Math.min(topMovies.length, 6); // rota entre los mejores 6 películas
+    const sPool = Math.min(topSeries.length, 6); // rota entre las mejores 6 series
+
+    const mi  = weekN % mPool;           // película principal esta semana
+    const si  = weekN % sPool;           // serie principal esta semana
+    const mi2 = (weekN + 2) % mPool;    // película de refuerzo (offset distinto)
+    const si2 = (weekN + 2) % sPool;    // serie de refuerzo
+
+    // El 3er slot alterna entre película y serie semana a semana
+    const tercero: Candidate = weekN % 2 === 0
+      ? (topMovies[mi2]  ?? topSeries[si2])
+      : (topSeries[si2]  ?? topMovies[mi2]);
+
+    candidates = [topMovies[mi], topSeries[si], tercero].filter(Boolean);
   } else {
-    candidates = [...topMovies, ...topSeries].sort((a, b) => b.score - a.score).slice(0, 3);
+    // Fallback si hay poco contenido
+    const pool = [...topMovies, ...topSeries].sort((a, b) => b.score - a.score);
+    const offset = weekN % Math.max(pool.length - 2, 1);
+    candidates = pool.slice(offset, offset + 3);
+    if (candidates.length < 3) candidates = pool.slice(0, 3);
   }
 
   // Enriquecer con plataforma real — lookup rápido en UY/AR/MX
   const enriched = await Promise.all(
     candidates.map(async ({ item, type }) => {
       const genres = type === 'movie' ? movieGenres : tvGenres;
-      // getUYProviders busca en UY primero, rápido (1 API call)
       const platform = await getUYProviders(item.id, type);
       return mapItem(item, genres, platform, type === 'movie' ? 'movie' : 'series');
     })
