@@ -109,16 +109,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es-UY">
       <head>
-        {/* Ezoic — Privacy scripts (deben ir primero) */}
-        <script data-cfasync="false" src="https://cmp.gatekeeperconsent.com/min.js" />
-        <script data-cfasync="false" src="https://the.gatekeeperconsent.com/cmp.min.js" />
-        {/* Ezoic — Header script */}
-        <script async src="//www.ezojs.com/ezoic/sa.min.js" />
-        <script dangerouslySetInnerHTML={{ __html: `
-          window.ezstandalone = window.ezstandalone || {};
-          ezstandalone.cmd = ezstandalone.cmd || [];
-        `}} />
-        <script src="//ezoicanalytics.com/analytics.js" />
         {/* Google Analytics */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-4CS9M4DMP0" />
         <script dangerouslySetInnerHTML={{ __html: `
