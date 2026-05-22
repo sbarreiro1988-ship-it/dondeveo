@@ -29,7 +29,7 @@ async function fetchDetail(id: string, type: 'movie' | 'tv') {
     const d = await res.json() as {
       id: number; title?: string; name?: string; overview: string;
       poster_path: string | null; backdrop_path: string | null;
-      vote_average: number; release_date?: string; first_air_date?: string;
+      vote_average: number; vote_count?: number; release_date?: string; first_air_date?: string;
       runtime?: number; number_of_seasons?: number;
       genres?: { name: string }[];
       tagline?: string; status?: string;
@@ -125,8 +125,16 @@ export default async function PeliculaPage({ params }: Props) {
     image: posterUrl,
     datePublished: detail.release_date ?? detail.first_air_date,
     aggregateRating: detail.vote_average > 0 ? {
-      '@type': 'AggregateRating', ratingValue: detail.vote_average, bestRating: 10,
+      '@type': 'AggregateRating',
+      ratingValue: Math.round(detail.vote_average * 10) / 10,
+      bestRating: 10,
+      worstRating: 1,
+      ratingCount: detail.vote_count ?? 0,
     } : undefined,
+    inLanguage: 'es',
+    ...(detail.genres?.length ? {
+      genre: detail.genres.map((g: { name: string }) => g.name),
+    } : {}),
   };
 
   return (

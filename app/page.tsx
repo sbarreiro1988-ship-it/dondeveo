@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import {
   fetchByProvider, fetchTrending, fetchTopRated,
   fetchUpcoming, fetchHeroContent, fetchTopByGenre, GENRE_IDS,
@@ -11,6 +12,36 @@ import { fetchLeavingSoon } from '@/lib/streamingAvailability';
 import HomeClient from '@/components/HomeClient';
 
 export const revalidate = 1800; // 30min — noticias frescas
+
+const BASE = 'https://www.uru2.com';
+
+export const metadata: Metadata = {
+  title: 'DondeVeo Uruguay — Dónde ver películas y series en streaming',
+  description: 'Encontrá dónde ver películas, series y documentales en Uruguay. Netflix, Disney+, Max, Prime Video, Paramount+, Apple TV+ y más plataformas de streaming. Actualizado a diario.',
+  keywords: [
+    'streaming Uruguay', 'donde ver películas Uruguay', 'Netflix Uruguay',
+    'Disney Plus Uruguay', 'Max Uruguay', 'Prime Video Uruguay',
+    'series streaming Uruguay', 'películas online Uruguay', 'estrenos streaming',
+    'novedades Netflix Uruguay', 'catalogo streaming UY', 'ver series online',
+    'guia streaming Uruguay', 'que ver hoy Uruguay',
+  ],
+  alternates: { canonical: BASE },
+  openGraph: {
+    type: 'website',
+    locale: 'es_UY',
+    url: BASE,
+    siteName: 'DondeVeo Uruguay',
+    title: 'DondeVeo Uruguay — Dónde ver películas y series en streaming',
+    description: 'Tu guía de streaming en Uruguay. Encontrá dónde ver tus películas y series favoritas en Netflix, Disney+, Max, Prime Video y más.',
+    images: [{ url: `${BASE}/opengraph-image`, width: 1200, height: 630, alt: 'DondeVeo Uruguay — Guía de Streaming' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'DondeVeo Uruguay — Tu guía de streaming',
+    description: 'Encontrá dónde ver películas y series en Uruguay. Netflix, Disney+, Max y más.',
+    images: [`${BASE}/opengraph-image`],
+  },
+};
 
 export default async function HomePage() {
   const [

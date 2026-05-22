@@ -64,7 +64,7 @@ export async function generateMetadata(
   };
 
   const url   = `${BASE}/noticias/${article.slug}`;
-  const image = article.thumbnail ?? `${BASE}/favicon.svg`;
+  const image = article.thumbnail ?? `${BASE}/opengraph-image`;
   const desc  = article.intro.slice(0, 160);
 
   return {

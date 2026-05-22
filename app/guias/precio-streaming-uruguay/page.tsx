@@ -101,11 +101,22 @@ const PREGUNTAS = [
   },
 ];
 
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: PREGUNTAS.map(({ q, a }) => ({
+    '@type': 'Question',
+    name: q,
+    acceptedAnswer: { '@type': 'Answer', text: a },
+  })),
+};
+
 export default function PrecioStreamingPage() {
   const totalMinimo = PLANES.reduce((acc, p) => acc + Math.min(...p.planes.map(pl => pl.precio)), 0);
 
   return (
     <div className="min-h-screen bg-dv-bg pt-20">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <div className="max-w-4xl mx-auto px-4 md:px-8 py-10">
         <Link href="/guias" className="inline-flex items-center gap-1.5 text-dv-muted hover:text-white text-sm mb-6 transition-colors">
           <ArrowLeft size={14} /> Todas las guías
