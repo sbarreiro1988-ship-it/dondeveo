@@ -633,127 +633,78 @@ async function getUYProviders(id: number, type: 'movie' | 'tv'): Promise<Platfor
 // IDs de plataformas de streaming disponibles en Uruguay (para filtrar discover)
 const STREAM_PROVIDERS_LATAM = '8|337|1899|384|119|9|531|67|350|300|283|11|2302|190|538';
 
+// Tríos de plataformas para el Finde — 6 combinaciones distintas, siempre 3 plataformas diferentes
+// provider IDs: 8=Netflix 337=Disney+ 1899=Max 119=Prime 531=Paramount+ 350=AppleTV+
+const FINDE_TRIOS: [number, number, number][] = [
+  [8,    337,  1899], // Netflix · Disney+ · Max
+  [119,  531,  350],  // Prime · Paramount+ · Apple TV+
+  [8,    1899, 119],  // Netflix · Max · Prime
+  [337,  119,  531],  // Disney+ · Prime · Paramount+
+  [8,    337,  350],  // Netflix · Disney+ · Apple TV+
+  [1899, 531,  350],  // Max · Paramount+ · Apple TV+
+];
+
 export async function fetchFindeRecommendations(): Promise<Movie[]> {
   const [movieGenres, tvGenres] = await Promise.all([getGenres('movie'), getGenres('tv')]);
 
-  const today = new Date();
-
   // ── Semilla semanal: cambia cada viernes al mediodía en Uruguay (UTC-3) ────────
-  // Así los 3 recomendados se renuevan cada viernes a las 12:00 hs UY.
-  const uyNow  = new Date(today.getTime() - 3 * 3_600_000); // desplazar a UTC-3
-  const dow    = uyNow.getDay();   // 0=dom … 5=vie … 6=sáb
+  const today  = new Date();
+  const uyNow  = new Date(today.getTime() - 3 * 3_600_000);
+  const dow    = uyNow.getDay();
   const hour   = uyNow.getHours();
-
-  // Días transcurridos desde el viernes-mediodía más reciente
   const daysBack =
-    dow === 5 && hour >= 12 ? 0 : // hoy viernes después del mediodía
-    dow === 6                ? 1 : // sábado
-    dow === 0                ? 2 : // domingo
-    dow === 1                ? 3 : // lunes
-    dow === 2                ? 4 : // martes
-    dow === 3                ? 5 : // miércoles
-    dow === 4                ? 6 : // jueves
-                               7;  // viernes antes del mediodía
-
-  // Número de semana entero (cambia cada viernes al mediodía)
+    dow === 5 && hour >= 12 ? 0 : dow === 6 ? 1 : dow === 0 ? 2 :
+    dow === 1 ? 3 : dow === 2 ? 4 : dow === 3 ? 5 : dow === 4 ? 6 : 7;
   const lastFriMs = uyNow.getTime() - daysBack * 86_400_000;
   const weekN     = Math.floor(lastFriMs / (7 * 86_400_000));
 
-  // Pool amplio: 60 días para tener suficiente variedad para rotar
-  const fromDate = new Date(today.getTime() - 60 * 86_400_000).toISOString().split('T')[0];
-  const toDate   = today.toISOString().split('T')[0];
+  // ── Trio de plataformas de esta semana ───────────────────────────────────────
+  const trio = FINDE_TRIOS[weekN % FINDE_TRIOS.length];
 
-  // with_watch_providers filtra solo contenido disponible en streaming (NO en cines)
-  // Buscamos en MX + AR (mejor cobertura TMDB que UY) — mismas plataformas disponibles
-  const fetchRegion = async (region: string) => Promise.all([
-    getFresh<TMDBListResponse>('/discover/movie', {
-      watch_region:               region,
-      with_watch_providers:       STREAM_PROVIDERS_LATAM,
-      'primary_release_date.gte': fromDate,
-      'primary_release_date.lte': toDate,
-      sort_by:                    'popularity.desc',
-      'vote_count.gte':           '10',
-      page:                       '1',
-    }).catch((): TMDBListResponse => ({ results: [] })),
-    getFresh<TMDBListResponse>('/discover/tv', {
-      watch_region:         region,
-      with_watch_providers: STREAM_PROVIDERS_LATAM,
-      'first_air_date.gte': fromDate,
-      'first_air_date.lte': toDate,
+  // ── Fetch top contenido por plataforma, tipo alterna por slot ────────────────
+  const fetchTop = async (providerId: number, type: 'movie' | 'tv') =>
+    getFresh<TMDBListResponse>(`/discover/${type}`, {
+      watch_region:         'AR',
+      with_watch_providers: String(providerId),
       sort_by:              'popularity.desc',
-      'vote_count.gte':     '5',
+      'vote_count.gte':     type === 'movie' ? '30' : '15',
       page:                 '1',
-    }).catch((): TMDBListResponse => ({ results: [] })),
-  ]);
+    }).catch((): TMDBListResponse => ({ results: [] }));
 
-  // Buscar en MX primero (más datos), luego AR como fallback
-  const [[movMX, serMX], [movAR, serAR]] = await Promise.all([
-    fetchRegion('MX'),
-    fetchRegion('AR'),
-  ]);
+  const results = await Promise.all(
+    trio.map(async (providerId, slotIdx) => {
+      const platform = PROVIDER[providerId];
+      if (!platform) return null;
 
-  // Merge sin duplicados
-  const seenIds = new Set<number>();
-  const mergeResults = (a: TMDBItem[], b: TMDBItem[]) => {
-    const out: TMDBItem[] = [];
-    for (const i of [...a, ...b]) {
-      if (i.poster_path && i.backdrop_path && !seenIds.has(i.id)) {
-        seenIds.add(i.id);
-        out.push(i);
+      // slot 0 → película, slot 1 → serie, slot 2 alterna cada semana
+      const preferMovie = slotIdx === 0 ? true : slotIdx === 1 ? false : weekN % 2 === 0;
+      const type     = preferMovie ? 'movie' : 'tv';
+      const altType  = preferMovie ? 'tv'    : 'movie';
+      const genres    = preferMovie ? movieGenres : tvGenres;
+      const altGenres = preferMovie ? tvGenres    : movieGenres;
+
+      const data  = await fetchTop(providerId, type);
+      const items = (data.results ?? []).filter(i => i.poster_path && i.backdrop_path);
+
+      if (items.length > 0) {
+        // Rotar cuál ítem mostrar semana a semana (entre los top 5)
+        const idx = weekN % Math.min(items.length, 5);
+        return mapItem(items[idx], genres, platform, preferMovie ? 'movie' : 'series');
       }
-    }
-    return out;
-  };
 
-  type Candidate = { item: TMDBItem; type: 'movie' | 'tv'; score: number };
+      // Fallback: intentar con el tipo alternativo
+      const altData  = await fetchTop(providerId, altType);
+      const altItems = (altData.results ?? []).filter(i => i.poster_path && i.backdrop_path);
+      if (altItems.length > 0) {
+        const idx = weekN % Math.min(altItems.length, 5);
+        return mapItem(altItems[idx], altGenres, platform, preferMovie ? 'series' : 'movie');
+      }
 
-  // Pool amplio: top 10 de cada tipo para tener variedad en la rotación
-  const topMovies: Candidate[] = mergeResults(movMX.results ?? [], movAR.results ?? [])
-    .slice(0, 10)
-    .map((i) => ({ item: i, type: 'movie' as const, score: i.popularity ?? 0 }));
-
-  const topSeries: Candidate[] = mergeResults(serMX.results ?? [], serAR.results ?? [])
-    .slice(0, 10)
-    .map((i) => ({ item: i, type: 'tv' as const, score: i.popularity ?? 0 }));
-
-  // ── Selección semanal rotativa ────────────────────────────────────────────────
-  // Rotar dentro del top-6 de cada tipo (los 6 más populares cada semana)
-  // para garantizar calidad y variedad al mismo tiempo.
-  let candidates: Candidate[] = [];
-
-  if (topMovies.length >= 2 && topSeries.length >= 2) {
-    const mPool = Math.min(topMovies.length, 6); // rota entre los mejores 6 películas
-    const sPool = Math.min(topSeries.length, 6); // rota entre las mejores 6 series
-
-    const mi  = weekN % mPool;           // película principal esta semana
-    const si  = weekN % sPool;           // serie principal esta semana
-    const mi2 = (weekN + 2) % mPool;    // película de refuerzo (offset distinto)
-    const si2 = (weekN + 2) % sPool;    // serie de refuerzo
-
-    // El 3er slot alterna entre película y serie semana a semana
-    const tercero: Candidate = weekN % 2 === 0
-      ? (topMovies[mi2]  ?? topSeries[si2])
-      : (topSeries[si2]  ?? topMovies[mi2]);
-
-    candidates = [topMovies[mi], topSeries[si], tercero].filter(Boolean);
-  } else {
-    // Fallback si hay poco contenido
-    const pool = [...topMovies, ...topSeries].sort((a, b) => b.score - a.score);
-    const offset = weekN % Math.max(pool.length - 2, 1);
-    candidates = pool.slice(offset, offset + 3);
-    if (candidates.length < 3) candidates = pool.slice(0, 3);
-  }
-
-  // Enriquecer con plataforma real — lookup rápido en UY/AR/MX
-  const enriched = await Promise.all(
-    candidates.map(async ({ item, type }) => {
-      const genres = type === 'movie' ? movieGenres : tvGenres;
-      const platform = await getUYProviders(item.id, type);
-      return mapItem(item, genres, platform, type === 'movie' ? 'movie' : 'series');
+      return null;
     })
   );
 
-  return enriched;
+  return results.filter(Boolean) as Movie[];
 }
 
 // ─── Search ───────────────────────────────────────────────────────────────────

@@ -25,37 +25,9 @@
       "wasm": [],
       "assets": [],
       "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
-      }
-    },
-    "/api/revalidate/route": {
-      "files": [
-        "server/middleware-build-manifest.js",
-        "server/middleware-react-loadable-manifest.js",
-        "server/next-font-manifest.js",
-        "server/interception-route-rewrite-manifest.js",
-        "prerender-manifest.js",
-        "server/edge-runtime-webpack.js",
-        "server/edge-chunks/516.js",
-        "server/edge-chunks/703.js",
-        "server/app/api/revalidate/route.js"
-      ],
-      "name": "app/api/revalidate/route",
-      "page": "/api/revalidate/route",
-      "matchers": [
-        {
-          "regexp": "^/api/revalidate$",
-          "originalSource": "/api/revalidate"
-        }
-      ],
-      "wasm": [],
-      "assets": [],
-      "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
       }
     },
     "/api/provider-logos/route": {
@@ -81,67 +53,9 @@
       "wasm": [],
       "assets": [],
       "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
-      }
-    },
-    "/api/search/route": {
-      "files": [
-        "server/middleware-build-manifest.js",
-        "server/middleware-react-loadable-manifest.js",
-        "server/next-font-manifest.js",
-        "server/interception-route-rewrite-manifest.js",
-        "prerender-manifest.js",
-        "server/edge-runtime-webpack.js",
-        "server/edge-chunks/516.js",
-        "server/edge-chunks/703.js",
-        "server/edge-chunks/216.js",
-        "server/app/api/search/route.js"
-      ],
-      "name": "app/api/search/route",
-      "page": "/api/search/route",
-      "matchers": [
-        {
-          "regexp": "^/api/search$",
-          "originalSource": "/api/search"
-        }
-      ],
-      "wasm": [],
-      "assets": [],
-      "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
-      }
-    },
-    "/api/watch-providers/route": {
-      "files": [
-        "server/middleware-build-manifest.js",
-        "server/middleware-react-loadable-manifest.js",
-        "server/next-font-manifest.js",
-        "server/interception-route-rewrite-manifest.js",
-        "prerender-manifest.js",
-        "server/edge-runtime-webpack.js",
-        "server/edge-chunks/516.js",
-        "server/edge-chunks/703.js",
-        "server/edge-chunks/216.js",
-        "server/app/api/watch-providers/route.js"
-      ],
-      "name": "app/api/watch-providers/route",
-      "page": "/api/watch-providers/route",
-      "matchers": [
-        {
-          "regexp": "^/api/watch\\-providers$",
-          "originalSource": "/api/watch-providers"
-        }
-      ],
-      "wasm": [],
-      "assets": [],
-      "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
       }
     },
     "/actor/[id]/page": {
@@ -187,65 +101,9 @@
         }
       ],
       "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
-      }
-    },
-    "/api/similar/route": {
-      "files": [
-        "server/middleware-build-manifest.js",
-        "server/middleware-react-loadable-manifest.js",
-        "server/next-font-manifest.js",
-        "server/interception-route-rewrite-manifest.js",
-        "prerender-manifest.js",
-        "server/edge-runtime-webpack.js",
-        "server/edge-chunks/516.js",
-        "server/edge-chunks/703.js",
-        "server/app/api/similar/route.js"
-      ],
-      "name": "app/api/similar/route",
-      "page": "/api/similar/route",
-      "matchers": [
-        {
-          "regexp": "^/api/similar$",
-          "originalSource": "/api/similar"
-        }
-      ],
-      "wasm": [],
-      "assets": [],
-      "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
-      }
-    },
-    "/api/movie-details/route": {
-      "files": [
-        "server/middleware-build-manifest.js",
-        "server/middleware-react-loadable-manifest.js",
-        "server/next-font-manifest.js",
-        "server/interception-route-rewrite-manifest.js",
-        "prerender-manifest.js",
-        "server/edge-runtime-webpack.js",
-        "server/edge-chunks/516.js",
-        "server/edge-chunks/703.js",
-        "server/app/api/movie-details/route.js"
-      ],
-      "name": "app/api/movie-details/route",
-      "page": "/api/movie-details/route",
-      "matchers": [
-        {
-          "regexp": "^/api/movie\\-details$",
-          "originalSource": "/api/movie-details"
-        }
-      ],
-      "wasm": [],
-      "assets": [],
-      "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
       }
     },
     "/api/trailer/route": {
@@ -271,9 +129,151 @@
       "wasm": [],
       "assets": [],
       "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
+      }
+    },
+    "/api/similar/route": {
+      "files": [
+        "server/middleware-build-manifest.js",
+        "server/middleware-react-loadable-manifest.js",
+        "server/next-font-manifest.js",
+        "server/interception-route-rewrite-manifest.js",
+        "prerender-manifest.js",
+        "server/edge-runtime-webpack.js",
+        "server/edge-chunks/516.js",
+        "server/edge-chunks/703.js",
+        "server/app/api/similar/route.js"
+      ],
+      "name": "app/api/similar/route",
+      "page": "/api/similar/route",
+      "matchers": [
+        {
+          "regexp": "^/api/similar$",
+          "originalSource": "/api/similar"
+        }
+      ],
+      "wasm": [],
+      "assets": [],
+      "environments": {
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
+      }
+    },
+    "/api/revalidate/route": {
+      "files": [
+        "server/middleware-build-manifest.js",
+        "server/middleware-react-loadable-manifest.js",
+        "server/next-font-manifest.js",
+        "server/interception-route-rewrite-manifest.js",
+        "prerender-manifest.js",
+        "server/edge-runtime-webpack.js",
+        "server/edge-chunks/516.js",
+        "server/edge-chunks/703.js",
+        "server/app/api/revalidate/route.js"
+      ],
+      "name": "app/api/revalidate/route",
+      "page": "/api/revalidate/route",
+      "matchers": [
+        {
+          "regexp": "^/api/revalidate$",
+          "originalSource": "/api/revalidate"
+        }
+      ],
+      "wasm": [],
+      "assets": [],
+      "environments": {
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
+      }
+    },
+    "/api/movie-details/route": {
+      "files": [
+        "server/middleware-build-manifest.js",
+        "server/middleware-react-loadable-manifest.js",
+        "server/next-font-manifest.js",
+        "server/interception-route-rewrite-manifest.js",
+        "prerender-manifest.js",
+        "server/edge-runtime-webpack.js",
+        "server/edge-chunks/516.js",
+        "server/edge-chunks/703.js",
+        "server/app/api/movie-details/route.js"
+      ],
+      "name": "app/api/movie-details/route",
+      "page": "/api/movie-details/route",
+      "matchers": [
+        {
+          "regexp": "^/api/movie\\-details$",
+          "originalSource": "/api/movie-details"
+        }
+      ],
+      "wasm": [],
+      "assets": [],
+      "environments": {
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
+      }
+    },
+    "/api/search/route": {
+      "files": [
+        "server/middleware-build-manifest.js",
+        "server/middleware-react-loadable-manifest.js",
+        "server/next-font-manifest.js",
+        "server/interception-route-rewrite-manifest.js",
+        "prerender-manifest.js",
+        "server/edge-runtime-webpack.js",
+        "server/edge-chunks/516.js",
+        "server/edge-chunks/703.js",
+        "server/edge-chunks/216.js",
+        "server/app/api/search/route.js"
+      ],
+      "name": "app/api/search/route",
+      "page": "/api/search/route",
+      "matchers": [
+        {
+          "regexp": "^/api/search$",
+          "originalSource": "/api/search"
+        }
+      ],
+      "wasm": [],
+      "assets": [],
+      "environments": {
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
+      }
+    },
+    "/api/watch-providers/route": {
+      "files": [
+        "server/middleware-build-manifest.js",
+        "server/middleware-react-loadable-manifest.js",
+        "server/next-font-manifest.js",
+        "server/interception-route-rewrite-manifest.js",
+        "prerender-manifest.js",
+        "server/edge-runtime-webpack.js",
+        "server/edge-chunks/516.js",
+        "server/edge-chunks/703.js",
+        "server/edge-chunks/216.js",
+        "server/app/api/watch-providers/route.js"
+      ],
+      "name": "app/api/watch-providers/route",
+      "page": "/api/watch-providers/route",
+      "matchers": [
+        {
+          "regexp": "^/api/watch\\-providers$",
+          "originalSource": "/api/watch-providers"
+        }
+      ],
+      "wasm": [],
+      "assets": [],
+      "environments": {
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
       }
     },
     "/donde-ver/[slug]/page": {
@@ -317,9 +317,9 @@
         }
       ],
       "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
       }
     },
     "/genero/[genero]/page": {
@@ -365,9 +365,9 @@
         }
       ],
       "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
       }
     },
     "/comparar/[slug]/page": {
@@ -413,56 +413,9 @@
         }
       ],
       "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
-      }
-    },
-    "/novedades/[platformId]/page": {
-      "files": [
-        "server/server-reference-manifest.js",
-        "server/app/novedades/[platformId]/page_client-reference-manifest.js",
-        "server/middleware-build-manifest.js",
-        "server/middleware-react-loadable-manifest.js",
-        "server/next-font-manifest.js",
-        "server/interception-route-rewrite-manifest.js",
-        "prerender-manifest.js",
-        "server/edge-runtime-webpack.js",
-        "server/edge-chunks/516.js",
-        "server/edge-chunks/441.js",
-        "server/edge-chunks/269.js",
-        "server/edge-chunks/216.js",
-        "server/edge-chunks/285.js",
-        "server/app/novedades/[platformId]/page.js"
-      ],
-      "name": "app/novedades/[platformId]/page",
-      "page": "/novedades/[platformId]/page",
-      "matchers": [
-        {
-          "regexp": "^/novedades/(?<platformId>[^/]+?)$",
-          "originalSource": "/novedades/[platformId]"
-        }
-      ],
-      "wasm": [
-        {
-          "name": "wasm_77d9faebf7af9e421806970ce10a58e9d83116d7",
-          "filePath": "server/edge-chunks/wasm_77d9faebf7af9e421806970ce10a58e9d83116d7.wasm"
-        },
-        {
-          "name": "wasm_ef4866ecae192fd87727067cf2c0c0cf9fb8b020",
-          "filePath": "server/edge-chunks/wasm_ef4866ecae192fd87727067cf2c0c0cf9fb8b020.wasm"
-        }
-      ],
-      "assets": [
-        {
-          "name": "noto-sans-v27-latin-regular.5dda3fca77107598.ttf",
-          "filePath": "server/edge-chunks/asset_noto-sans-v27-latin-regular.5dda3fca77107598.ttf"
-        }
-      ],
-      "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
       }
     },
     "/mejores/[genero]/[plataforma]/page": {
@@ -508,9 +461,56 @@
         }
       ],
       "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
+      }
+    },
+    "/novedades/[platformId]/page": {
+      "files": [
+        "server/server-reference-manifest.js",
+        "server/app/novedades/[platformId]/page_client-reference-manifest.js",
+        "server/middleware-build-manifest.js",
+        "server/middleware-react-loadable-manifest.js",
+        "server/next-font-manifest.js",
+        "server/interception-route-rewrite-manifest.js",
+        "prerender-manifest.js",
+        "server/edge-runtime-webpack.js",
+        "server/edge-chunks/516.js",
+        "server/edge-chunks/441.js",
+        "server/edge-chunks/269.js",
+        "server/edge-chunks/216.js",
+        "server/edge-chunks/285.js",
+        "server/app/novedades/[platformId]/page.js"
+      ],
+      "name": "app/novedades/[platformId]/page",
+      "page": "/novedades/[platformId]/page",
+      "matchers": [
+        {
+          "regexp": "^/novedades/(?<platformId>[^/]+?)$",
+          "originalSource": "/novedades/[platformId]"
+        }
+      ],
+      "wasm": [
+        {
+          "name": "wasm_77d9faebf7af9e421806970ce10a58e9d83116d7",
+          "filePath": "server/edge-chunks/wasm_77d9faebf7af9e421806970ce10a58e9d83116d7.wasm"
+        },
+        {
+          "name": "wasm_ef4866ecae192fd87727067cf2c0c0cf9fb8b020",
+          "filePath": "server/edge-chunks/wasm_ef4866ecae192fd87727067cf2c0c0cf9fb8b020.wasm"
+        }
+      ],
+      "assets": [
+        {
+          "name": "noto-sans-v27-latin-regular.5dda3fca77107598.ttf",
+          "filePath": "server/edge-chunks/asset_noto-sans-v27-latin-regular.5dda3fca77107598.ttf"
+        }
+      ],
+      "environments": {
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
       }
     },
     "/opengraph-image/route": {
@@ -550,9 +550,9 @@
         }
       ],
       "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
       }
     },
     "/pelicula/[type]/[tmdbId]/page": {
@@ -598,9 +598,9 @@
         }
       ],
       "environments": {
-        "previewModeId": "f0b1f8012190b827f5f0ba2cba042487",
-        "previewModeSigningKey": "41b97d927e3e1b141796c43b0d7ff32f028c79aa1a56d172569b92a6eaae62d8",
-        "previewModeEncryptionKey": "fac5e63dc126d851e205def3e8326a9dde572c55c036d82dbc9363351eab8278"
+        "previewModeId": "727fc0388efc8f5aebc492bf4ac60808",
+        "previewModeSigningKey": "c8b2141a8774f09ce1b8fec753c12b90004e35a22426da197d58b14490b9046e",
+        "previewModeEncryptionKey": "aad19270a48a5481f9729bad401e4723f63bf31e545af5989e1136b276d2da14"
       }
     }
   },
