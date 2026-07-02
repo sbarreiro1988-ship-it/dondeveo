@@ -47,13 +47,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  // Artículos de noticias
-  const newsPages: MetadataRoute.Sitemap = slugs.map((slug) => ({
-    url: `${BASE}/noticias/${slug}`,
-    lastModified: now,
-    changeFrequency: 'weekly' as const,
-    priority: 0.7,
-  }));
+  // Artículos de noticias excluidos del sitemap durante revisión de calidad
+  const newsPages: MetadataRoute.Sitemap = [];
 
   const GENEROS = ['accion','comedia','drama','terror','ciencia','thriller','animacion','documental','romance','aventura','fantasia','crimen'];
   const PLATAFORMAS = ['netflix','disneyplus','max','prime','paramountplus','appletv','crunchyroll','mubi','plutotv'];

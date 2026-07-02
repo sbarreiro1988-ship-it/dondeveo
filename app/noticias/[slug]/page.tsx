@@ -73,13 +73,8 @@ export async function generateMetadata(
     keywords:    [...(article.tags ?? []), 'streaming Uruguay', 'cine Uruguay', 'DondeVeo'],
     alternates:  { canonical: url },
     robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
+      index: false,
+      follow: false,
     },
     authors: [{ name: article.source, url: BASE }],
     openGraph: {

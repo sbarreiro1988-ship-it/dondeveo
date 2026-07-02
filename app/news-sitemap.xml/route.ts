@@ -41,52 +41,16 @@ async function fetchRecentArticles(): Promise<Array<{
 }
 
 export async function GET() {
-  const allArticles = await fetchRecentArticles();
-
-  // Google News solo acepta artículos de las últimas 48 horas
-  const cutoff = Date.now() - 48 * 60 * 60 * 1000;
-  const recent = allArticles
-    .filter(a => {
-      try { return new Date(a.publishedAt).getTime() > cutoff; } catch { return false; }
-    })
-    .slice(0, 1000); // Google News acepta máximo 1000 URLs por sitemap
-
-  function escapeXml(s: string): string {
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-  }
-
-  const items = recent.map(a => {
-    const title    = escapeXml(a.title);
-    const keywords = escapeXml((a.tags ?? []).slice(0, 10).join(', '));
-    let pubDate: string;
-    try { pubDate = new Date(a.publishedAt).toISOString(); }
-    catch { pubDate = new Date().toISOString(); }
-
-    return `  <url>
-    <loc>${BASE}/noticias/${a.slug}</loc>
-    <news:news>
-      <news:publication>
-        <news:name>DondeVeo Uruguay</news:name>
-        <news:language>es</news:language>
-      </news:publication>
-      <news:publication_date>${pubDate}</news:publication_date>
-      <news:title>${title}</news:title>
-      ${keywords ? `<news:keywords>${keywords}</news:keywords>` : ''}
-    </news:news>
-  </url>`;
-  }).join('\n');
-
+  // News sitemap deshabilitado — sección de noticias en revisión de calidad
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-${items}
 </urlset>`;
 
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=1800, stale-while-revalidate=300',
+      'Cache-Control': 'no-cache, no-store',
     },
   });
 }
