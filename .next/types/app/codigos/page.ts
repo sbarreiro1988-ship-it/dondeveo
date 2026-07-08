@@ -1,4 +1,4 @@
-// File: C:\Users\jupit\Desktop\donde2.2\app\codigos\page.tsx
+// File: /home/runner/work/dondeveo/dondeveo/app/codigos/page.tsx
 import * as entry from '../../../../app/codigos/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

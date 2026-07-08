@@ -1,4 +1,4 @@
-// File: C:\Users\jupit\Desktop\donde2.2\app\contacto\page.tsx
+// File: /home/runner/work/dondeveo/dondeveo/app/contacto/page.tsx
 import * as entry from '../../../../app/contacto/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

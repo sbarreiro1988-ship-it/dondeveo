@@ -1,4 +1,4 @@
-// File: C:\Users\jupit\Desktop\donde2.2\app\comparar\[slug]\page.tsx
+// File: /home/runner/work/dondeveo/dondeveo/app/comparar/[slug]/page.tsx
 import * as entry from '../../../../../app/comparar/[slug]/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

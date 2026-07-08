@@ -1,4 +1,4 @@
-// File: C:\Users\jupit\Desktop\donde2.2\app\guias\streaming-gratuito-uruguay\page.tsx
+// File: /home/runner/work/dondeveo/dondeveo/app/guias/streaming-gratuito-uruguay/page.tsx
 import * as entry from '../../../../../app/guias/streaming-gratuito-uruguay/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

@@ -1,4 +1,4 @@
-// File: C:\Users\jupit\Desktop\donde2.2\app\news-sitemap.xml\route.ts
+// File: /home/runner/work/dondeveo/dondeveo/app/news-sitemap.xml/route.ts
 import * as entry from '../../../../app/news-sitemap.xml/route.js'
 import type { NextRequest } from 'next/server.js'
 

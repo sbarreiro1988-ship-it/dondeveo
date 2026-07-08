@@ -1,4 +1,4 @@
-// File: C:\Users\jupit\Desktop\donde2.2\app\privacidad\page.tsx
+// File: /home/runner/work/dondeveo/dondeveo/app/privacidad/page.tsx
 import * as entry from '../../../../app/privacidad/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

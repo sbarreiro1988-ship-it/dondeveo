@@ -1,4 +1,4 @@
-// File: C:\Users\jupit\Desktop\donde2.2\app\api\provider-logos\route.ts
+// File: /home/runner/work/dondeveo/dondeveo/app/api/provider-logos/route.ts
 import * as entry from '../../../../../app/api/provider-logos/route.js'
 import type { NextRequest } from 'next/server.js'
 
