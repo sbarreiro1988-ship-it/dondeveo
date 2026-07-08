@@ -6,7 +6,7 @@ import { ArrowLeft, Film, Star } from 'lucide-react';
 import { fetchTitleDetail, fetchSimilar } from '../../../../lib/tmdb';
 import type { Movie } from '../../../../types';
 
-export const revalidate = 86400; // 24 horas
+export const dynamic = 'force-dynamic'; // datos en tiempo real desde el servidor
 
 const BASE = 'https://www.uru2.com';
 

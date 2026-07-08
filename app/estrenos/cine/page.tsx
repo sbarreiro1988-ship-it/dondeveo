@@ -5,7 +5,7 @@ import { ArrowLeft, Film, Star } from 'lucide-react';
 import { fetchNowPlaying, fetchUpcoming } from '../../../lib/tmdb';
 import type { Movie } from '../../../types';
 
-export const revalidate = 43200; // 12 horas — auto-actualiza sin rebuild
+export const dynamic = 'force-dynamic'; // siempre server-side con el .env.local del servidor
 
 const BASE = 'https://www.uru2.com';
 
