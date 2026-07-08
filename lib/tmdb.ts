@@ -983,3 +983,27 @@ export async function searchByTitle(query: string): Promise<Movie[]> {
       });
   } catch { return []; }
 }
+
+// ─── Similar / Recommendations ────────────────────────────────────────────────
+export async function fetchSimilar(
+  tmdbId: number,
+  type: 'movie' | 'tv',
+): Promise<Movie[]> {
+  const genres = await getGenres(type);
+  const mediaType = type === 'tv' ? 'series' : 'movie';
+  try {
+    const [recs, similar] = await Promise.all([
+      get<TMDBListResponse>(`/${type}/${tmdbId}/recommendations`).catch(() => ({ results: [] })),
+      get<TMDBListResponse>(`/${type}/${tmdbId}/similar`).catch(() => ({ results: [] })),
+    ]);
+    const seen = new Set<number>();
+    const combined: Movie[] = [];
+    for (const item of [...(recs.results ?? []), ...(similar.results ?? [])]) {
+      if (item.poster_path && !seen.has(item.id)) {
+        seen.add(item.id);
+        combined.push(mapItem(item, genres, null, mediaType));
+      }
+    }
+    return combined.slice(0, 24);
+  } catch { return []; }
+}

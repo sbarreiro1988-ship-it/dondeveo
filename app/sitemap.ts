@@ -29,6 +29,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/contacto`,   lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE}/privacidad`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE}/terminos`,   lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${BASE}/estrenos`,      lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
+    { url: `${BASE}/estrenos/cine`, lastModified: now, changeFrequency: 'daily',   priority: 0.85 },
     { url: `${BASE}/guias`,                                             lastModified: now, changeFrequency: 'weekly',  priority: 0.8 },
     { url: `${BASE}/guias/plataformas-streaming-uruguay`,             lastModified: now, changeFrequency: 'monthly', priority: 0.85 },
     { url: `${BASE}/guias/precio-streaming-uruguay`,                  lastModified: now, changeFrequency: 'monthly', priority: 0.85 },
