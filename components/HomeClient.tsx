@@ -357,6 +357,40 @@ export default function HomeClient({
                 </div>
               </div>
 
+              {/* ── Sector Estrenos + Similares ── */}
+              <div className="px-4 md:px-8 mb-6">
+                <h2 className="text-white text-xl font-black mb-4">🆕 Nuevas funciones</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <a href="/estrenos/cine"
+                    className="group flex flex-col gap-3 bg-gradient-to-br from-yellow-500/15 to-transparent border border-yellow-400/20 hover:border-yellow-400/40 rounded-2xl p-5 transition-all">
+                    <span className="text-3xl">🎬</span>
+                    <div>
+                      <p className="text-yellow-200 font-black text-base mb-1">Cine en Uruguay</p>
+                      <p className="text-white/50 text-xs leading-relaxed">Cartelera actual y próximos estrenos en los cines</p>
+                    </div>
+                    <span className="text-yellow-300 text-xs font-bold group-hover:translate-x-1 transition-transform">Ver cartelera →</span>
+                  </a>
+                  <a href="/estrenos"
+                    className="group flex flex-col gap-3 bg-gradient-to-br from-dv-accent/10 to-transparent border border-dv-accent/20 hover:border-dv-accent/40 rounded-2xl p-5 transition-all">
+                    <span className="text-3xl">📺</span>
+                    <div>
+                      <p className="text-white font-black text-base mb-1">Novedades streaming</p>
+                      <p className="text-white/50 text-xs leading-relaxed">Lo nuevo en Netflix, Disney+, Max, Prime y más</p>
+                    </div>
+                    <span className="text-dv-accent text-xs font-bold group-hover:translate-x-1 transition-transform">Ver por plataforma →</span>
+                  </a>
+                  <a href="/similar-a/movie/238"
+                    className="group flex flex-col gap-3 bg-gradient-to-br from-purple-500/15 to-transparent border border-purple-400/20 hover:border-purple-400/40 rounded-2xl p-5 transition-all">
+                    <span className="text-3xl">✨</span>
+                    <div>
+                      <p className="text-purple-200 font-black text-base mb-1">Si te gustó...</p>
+                      <p className="text-white/50 text-xs leading-relaxed">Recomendaciones personalizadas basadas en lo que ya viste</p>
+                    </div>
+                    <span className="text-purple-300 text-xs font-bold group-hover:translate-x-1 transition-transform">Descubrir similares →</span>
+                  </a>
+                </div>
+              </div>
+
               {/* 🍿 Top 3 Finde */}
               {finde.length > 0 && (
                 <FindeSection movies={finde} onMovieClick={handleMovieClick} />

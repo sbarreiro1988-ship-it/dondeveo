@@ -327,7 +327,15 @@ export default async function PeliculaPage({ params }: Props) {
         {/* Recomendaciones */}
         {recs.length > 0 && (
           <div className="mb-10">
-            <h2 className="text-white text-lg font-bold mb-4">🎬 También te puede gustar</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-white text-lg font-bold">🎬 También te puede gustar</h2>
+              <Link
+                href={`/similar-a/${type}/${params.tmdbId}`}
+                className="text-dv-accent text-xs font-bold hover:opacity-80 transition-opacity whitespace-nowrap"
+              >
+                Ver más similares →
+              </Link>
+            </div>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
               {recs.map((m) => (
                 <Link key={m.id} href={`/pelicula/${m.recType}/${m.id}`} className="group">
@@ -344,6 +352,14 @@ export default async function PeliculaPage({ params }: Props) {
                   <p className="text-white/70 text-xs line-clamp-2 group-hover:text-dv-accent transition-colors">{m.title}</p>
                 </Link>
               ))}
+            </div>
+            <div className="mt-4 text-center">
+              <Link
+                href={`/similar-a/${type}/${params.tmdbId}`}
+                className="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-dv-accent/30 text-white/70 hover:text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all"
+              >
+                Ver las {type === 'tv' ? 'series' : 'películas'} más similares →
+              </Link>
             </div>
           </div>
         )}
