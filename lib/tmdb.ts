@@ -321,20 +321,31 @@ export async function fetchNowPlaying(): Promise<Movie[]> {
 export async function fetchHeroContent(): Promise<Movie[]> {
   const genres = await getGenres('movie');
   try {
-    const [uyData, arData] = await Promise.all([
+    // Pool amplio: now_playing (cine) + trending semanal (streaming + cine)
+    const [uyData, arData, trending] = await Promise.all([
       get<TMDBListResponse>('/movie/now_playing', { region: 'UY' }).catch(() => ({ results: [] })),
       get<TMDBListResponse>('/movie/now_playing', { region: 'AR' }).catch(() => ({ results: [] })),
+      get<TMDBListResponse>('/trending/movie/week',  { region: 'AR' }).catch(() => ({ results: [] })),
     ]);
 
-    const combined: Movie[] = [];
     const seen = new Set<number>();
-    for (const item of [...uyData.results, ...arData.results]) {
-      if (item.backdrop_path && item.poster_path && !seen.has(item.id)) {
+    const pool: Movie[] = [];
+
+    // Prioridad: cartelera UY → AR → trending semanal
+    for (const item of [...uyData.results, ...arData.results, ...trending.results]) {
+      if (item.backdrop_path && item.poster_path && item.vote_count > 50 && !seen.has(item.id)) {
         seen.add(item.id);
-        combined.push(mapItem(item, genres, null, 'movie'));
+        pool.push(mapItem(item, genres, null, 'movie'));
       }
     }
-    return combined.slice(0, 5);
+
+    // Barajar para que cada revalidación muestre una combinación distinta
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+
+    return pool.slice(0, 6);
   } catch { return []; }
 }
 
