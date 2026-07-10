@@ -35,6 +35,11 @@ jobs:
         env:
           NODE_ENV: production
 
+      - name: Copy static assets into standalone (required by Next.js docs)
+        run: |
+          cp -r .next/static .next/standalone/.next/static
+          cp -r public .next/standalone/public
+
       - name: Commit built .next/ to branch
         run: |
           git config user.name "github-actions[bot]"
