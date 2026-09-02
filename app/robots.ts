@@ -11,7 +11,6 @@ export default function robots(): MetadataRoute.Robots {
     ],
     sitemap: [
       'https://www.uru2.com/sitemap.xml',
-      'https://www.uru2.com/news-sitemap.xml',
     ],
     host: 'https://www.uru2.com',
   };

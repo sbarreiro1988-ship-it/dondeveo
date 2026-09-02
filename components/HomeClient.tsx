@@ -8,8 +8,6 @@ import HeroSection from './HeroSection';
 import ContentCarousel from './ContentCarousel';
 import FeaturedSpotlight from './FeaturedSpotlight';
 import NewSeriesCards from './NewSeriesCards';
-import NoticiasSection from './NoticiasSection';
-import TrendingSection from './TrendingSection';
 import FindeSection from './FindeSection';
 import UltimaOportunidad from './UltimaOportunidad';
 import FilterBar from './FilterBar';
@@ -32,7 +30,6 @@ function enrichAndFilter(movies: Movie[], lookup: Map<number, Platform[]>): Movi
     .map((m) => { const f = lookup.get(m.id); return f?.length ? { ...m, platforms: f } : m; })
     .filter((m) => m.platforms.length > 0 || !hasNonLatinTitle(m.title));
 }
-import type { NewsItem } from '@/lib/newsApi';
 import type { StreamingRemoval } from '@/lib/streamingAvailability';
 
 interface Props {
@@ -53,7 +50,6 @@ interface Props {
   top10Accion: Movie[]; top10Comedia: Movie[]; top10Drama: Movie[];
   top10Terror: Movie[]; top10Scifi: Movie[];
   top10AccionSeries: Movie[]; top10DramaSeries: Movie[];
-  news: NewsItem[];
   finde: Movie[];
   leavingSoon: StreamingRemoval[];
 }
@@ -71,7 +67,7 @@ export default function HomeClient({
   universalplus, viki,
   top10Accion, top10Comedia, top10Drama, top10Terror, top10Scifi,
   top10AccionSeries, top10DramaSeries,
-  news, finde, leavingSoon,
+  finde, leavingSoon,
 }: Props) {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
@@ -344,7 +340,7 @@ export default function HomeClient({
                     {[
                       { icon: '🎬', label: 'Películas y series', desc: 'de todas las plataformas' },
                       { icon: '🔍', label: 'Búsqueda instantánea', desc: 'encuentra en segundos' },
-                      { icon: '📰', label: 'Noticias de cine', desc: 'actualizadas cada día' },
+                      { icon: '🔔', label: 'Novedades diarias', desc: 'lo nuevo en cada plataforma' },
                       { icon: '🆓', label: '100% gratis', desc: 'sin registro requerido' },
                     ].map((item) => (
                       <div key={item.label} className="text-center">
@@ -695,14 +691,6 @@ export default function HomeClient({
                   description="Películas y series que se estrenan próximamente en cines y plataformas."
                   onMovieClick={handleMovieClick} />
               )}
-
-              {/* ── ⚡ Lo que no te podés perder — Trending editorial para Google Discover ── */}
-              <TrendingSection news={news} />
-
-              {/* ── Noticias de streaming y cine ── */}
-              <div id="noticias">
-                <NoticiasSection news={news} />
-              </div>
 
             </>
           )}

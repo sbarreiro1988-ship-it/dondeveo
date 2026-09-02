@@ -7,11 +7,10 @@ import {
   fetchFindeRecommendations,
 } from '@/lib/tmdb';
 import { fetchCinemaUY } from '@/lib/cinemaUY';
-import { fetchInternalNews } from '@/lib/newsApi';
 import { fetchLeavingSoon } from '@/lib/streamingAvailability';
 import HomeClient from '@/components/HomeClient';
 
-export const revalidate = 1800; // 30min — noticias frescas
+export const revalidate = 1800;
 
 const BASE = 'https://www.uru2.com';
 
@@ -56,7 +55,7 @@ export default async function HomePage() {
     viki,
     top10Accion, top10Comedia, top10Drama, top10Terror, top10Scifi,
     top10AccionSeries, top10DramaSeries,
-    news, finde, leavingSoon,
+    finde, leavingSoon,
   ] = await Promise.all([
     fetchHeroContent(),
     fetchTrending(),
@@ -94,8 +93,6 @@ export default async function HomePage() {
     fetchTopByGenre(GENRE_IDS.scifi,   'movie', 10),
     fetchTopByGenre(GENRE_IDS.accion,  'tv',    10),
     fetchTopByGenre(GENRE_IDS.drama,   'tv',    10),
-    // Noticias: solo artículos internos generados por Groq (links a /noticias/[slug])
-    fetchInternalNews(),
     // Top 3 Finde — contenido trending en streaming UY últimos 20 días
     fetchFindeRecommendations().catch(() => []),
     // Última Oportunidad — sale pronto del catálogo (24h cache, no quema cuota RapidAPI)
@@ -124,7 +121,7 @@ export default async function HomePage() {
         top10Accion={top10Accion} top10Comedia={top10Comedia}
         top10Drama={top10Drama} top10Terror={top10Terror} top10Scifi={top10Scifi}
         top10AccionSeries={top10AccionSeries} top10DramaSeries={top10DramaSeries}
-        news={news} finde={finde}
+        finde={finde}
         leavingSoon={leavingSoon}
       />
     </Suspense>
