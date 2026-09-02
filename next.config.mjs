@@ -22,21 +22,27 @@ const nextConfig = {
   async headers() {
     return [
       {
-        // Headers de seguridad y SEO en todas las rutas
+        // Headers de seguridad en todas las rutas
         source: '/(.*)',
         headers: [
-          // Evita clickjacking — permite iframes solo del mismo origen
           { key: 'X-Frame-Options',           value: 'SAMEORIGIN' },
-          // Impide sniffing de content-type
           { key: 'X-Content-Type-Options',    value: 'nosniff' },
-          // Controla info de referencia enviada a otros sitios
           { key: 'Referrer-Policy',           value: 'strict-origin-when-cross-origin' },
-          // HSTS — fuerza HTTPS por 1 año
           { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
-          // Permisos de APIs del navegador
-          { key: 'Permissions-Policy',        value: 'camera=(), microphone=(), geolocation=()' },
-          // DNS prefetch para acelerar cargas externas
+          { key: 'Permissions-Policy',        value: 'camera=(), microphone=(), geolocation=(), payment=()' },
           { key: 'X-DNS-Prefetch-Control',    value: 'on' },
+          // Bloquea plugins (Flash, etc.) y limita base-uri — no rompe Next.js
+          { key: 'Content-Security-Policy',   value: "object-src 'none'; base-uri 'self';" },
+        ],
+      },
+      {
+        // CORS restringido a origen propio en todas las rutas /api/
+        source: '/api/(.*)',
+        headers: [
+          { key: 'Access-Control-Allow-Origin',  value: 'https://www.uru2.com' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
+          { key: 'X-Robots-Tag',                value: 'noindex, nofollow' },
         ],
       },
       {
@@ -72,16 +78,25 @@ const nextConfig = {
         destination: '/pelicula/movie/:id',
         permanent: true,
       },
-      // Redirige sección Gran Hermano eliminada → Noticias
-      // Google tenía ~300 URLs indexadas de /gran-hermano/
+      // Redirige sección Gran Hermano y Noticias eliminadas → home
       {
         source: '/gran-hermano',
-        destination: '/noticias',
+        destination: '/',
         permanent: true,
       },
       {
         source: '/gran-hermano/:slug*',
-        destination: '/noticias',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/noticias',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/noticias/:slug*',
+        destination: '/',
         permanent: true,
       },
     ];

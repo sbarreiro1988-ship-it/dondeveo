@@ -1,7 +1,14 @@
 # --- BLOQUEO DE BOTS AGRESIVOS ---
 <IfModule mod_rewrite.c>
 RewriteEngine On
-RewriteCond %{HTTP_USER_AGENT} (Baiduspider|YisouSpider|360Spider|Sogou|SemrushBot|AhrefsBot|MJ12bot|DotBot|PetalBot|Bytespider|GPTBot|ClaudeBot|anthropic-ai|CCBot|DataForSeoBot|MegaIndex|SeznamBot|BLEXBot|serpstatbot) [NC]
+# Crawlers que saturan EP y no aportan tráfico legítimo
+RewriteCond %{HTTP_USER_AGENT} (Baiduspider|YisouSpider|360Spider|Sogou|SemrushBot|AhrefsBot|MJ12bot|DotBot|PetalBot|Bytespider|GPTBot|ClaudeBot|anthropic-ai|CCBot|DataForSeoBot|MegaIndex|SeznamBot|BLEXBot|serpstatbot|YandexBot|YandexImages|YandexMetrika|MauiBot|GingerCrawler|Barkrowler|SplitSignalBot|Scrapy|python-requests|libwww-perl|curl\/|wget\/|Go-http-client|Java\/|okhttp|axios\/|node-fetch|got\/) [NC]
+RewriteRule .* - [F,L]
+# Bloquear requests sin User-Agent (bots primitivos)
+RewriteCond %{HTTP_USER_AGENT} ^-?$
+RewriteRule .* - [F,L]
+# Bloquear acceso directo a archivos sensibles
+RewriteCond %{REQUEST_URI} \.(env|log|bak|sql|sh|bash|git)$ [NC]
 RewriteRule .* - [F,L]
 </IfModule>
 # --- FIN BLOQUEO BOTS ---

@@ -11,10 +11,13 @@ export async function GET(req: NextRequest) {
   const type = searchParams.get('type') ?? 'movie';
 
   if (!id) return NextResponse.json({});
+  const safeType = type === 'tv' ? 'tv' : 'movie';
+  const safeId   = /^\d+$/.test(id) ? id : null;
+  if (!safeId) return NextResponse.json({});
 
   try {
     const res = await fetch(
-      `${TMDB_BASE}/${type}/${id}?language=es-419&append_to_response=credits,keywords`,
+      `${TMDB_BASE}/${safeType}/${safeId}?language=es-419&append_to_response=credits,keywords`,
       {
         headers: { Authorization: `Bearer ${TMDB_TOKEN}` },
         next: { revalidate: 86400 },
