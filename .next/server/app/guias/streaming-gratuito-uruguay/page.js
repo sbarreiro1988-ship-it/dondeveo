@@ -23,4 +23,4 @@
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
- */let s=(0,t(7162).Z)("Check",[["path",{d:"M20 6 9 17l-5-5",key:"1gmf2c"}]])}};var a=require("../../../webpack-runtime.js");a.C(e);var t=e=>a(a.s=e),s=a.X(0,[948,449,935],()=>t(3609));module.exports=s})();
+ */let s=(0,t(7162).Z)("Check",[["path",{d:"M20 6 9 17l-5-5",key:"1gmf2c"}]])}};var a=require("../../../webpack-runtime.js");a.C(e);var t=e=>a(a.s=e),s=a.X(0,[948,593,539],()=>t(3609));module.exports=s})();

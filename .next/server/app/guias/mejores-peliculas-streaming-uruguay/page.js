@@ -23,4 +23,4 @@
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
- */let i=(0,r(7162).Z)("Star",[["polygon",{points:"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2",key:"8f66p6"}]])}};var a=require("../../../webpack-runtime.js");a.C(e);var r=e=>a(a.s=e),i=a.X(0,[948,449,935],()=>r(7416));module.exports=i})();
+ */let i=(0,r(7162).Z)("Star",[["polygon",{points:"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2",key:"8f66p6"}]])}};var a=require("../../../webpack-runtime.js");a.C(e);var r=e=>a(a.s=e),i=a.X(0,[948,593,539],()=>r(7416));module.exports=i})();

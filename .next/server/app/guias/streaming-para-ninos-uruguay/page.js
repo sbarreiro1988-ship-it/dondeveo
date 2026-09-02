@@ -33,4 +33,4 @@
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
- */let i=(0,s(7162).Z)("X",[["path",{d:"M18 6 6 18",key:"1bl5f8"}],["path",{d:"m6 6 12 12",key:"d8bk6v"}]])}};var a=require("../../../webpack-runtime.js");a.C(e);var s=e=>a(a.s=e),i=a.X(0,[948,449,935],()=>s(5722));module.exports=i})();
+ */let i=(0,s(7162).Z)("X",[["path",{d:"M18 6 6 18",key:"1bl5f8"}],["path",{d:"m6 6 12 12",key:"d8bk6v"}]])}};var a=require("../../../webpack-runtime.js");a.C(e);var s=e=>a(a.s=e),i=a.X(0,[948,593,539],()=>s(5722));module.exports=i})();
