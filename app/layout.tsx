@@ -96,6 +96,8 @@ const websiteJsonLd = {
       },
       sameAs: [
         'https://www.uru2.com',
+        'https://twitter.com/dondeveouy',
+        'https://x.com/dondeveouy',
       ],
       publishingPrinciples: `${BASE}/acerca`,
       diversityPolicy: `${BASE}/acerca`,
@@ -109,14 +111,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es-UY">
       <head>
-        {/* Google Analytics */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-4CS9M4DMP0" />
-        <script dangerouslySetInnerHTML={{ __html: `
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-4CS9M4DMP0');
-        `}} />
         {/* JSON-LD global */}
         <script
           type="application/ld+json"
@@ -128,6 +122,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Navbar />
         </Suspense>
         {children}
+        {/* Google Analytics — afterInteractive para no bloquear LCP */}
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-4CS9M4DMP0" strategy="afterInteractive" />
+        <Script id="ga4-init" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-4CS9M4DMP0');
+        `}</Script>
         <footer className="mt-4 border-t border-white/8 py-10 px-4 md:px-8">
           <div className="max-w-5xl mx-auto">
             {/* Top row */}

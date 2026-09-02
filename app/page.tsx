@@ -103,6 +103,8 @@ export default async function HomePage() {
   ]);
 
   return (
+    <>
+    <h1 className="sr-only">DondeVeo Uruguay — Dónde ver películas y series en streaming</h1>
     <Suspense fallback={null}>
       <HomeClient
         heroMovies={heroMovies} trending={trending}
@@ -126,5 +128,6 @@ export default async function HomePage() {
         leavingSoon={leavingSoon}
       />
     </Suspense>
+    </>
   );
 }

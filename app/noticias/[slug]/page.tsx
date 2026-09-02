@@ -73,8 +73,8 @@ export async function generateMetadata(
     keywords:    [...(article.tags ?? []), 'streaming Uruguay', 'cine Uruguay', 'DondeVeo'],
     alternates:  { canonical: url },
     robots: {
-      index: false,
-      follow: false,
+      index: true,
+      follow: true,
     },
     authors: [{ name: article.source, url: BASE }],
     openGraph: {
@@ -86,6 +86,7 @@ export async function generateMetadata(
       siteName:      'DondeVeo Uruguay',
       images:        [{ url: image, width: 1200, height: 630, alt: article.title }],
       publishedTime: article.publishedAt,
+      modifiedTime:  article.publishedAt,
       authors:       ['DondeVeo Uruguay'],
       tags:          article.tags ?? [],
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

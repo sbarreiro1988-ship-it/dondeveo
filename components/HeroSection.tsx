@@ -67,9 +67,9 @@ export default function HeroSection({ movies, onMovieClick }: Props) {
             </span>
           </div>
 
-          <h1 className="text-white text-4xl md:text-6xl font-black leading-tight mb-3 drop-shadow-lg">
+          <h2 className="text-white text-4xl md:text-6xl font-black leading-tight mb-3 drop-shadow-lg">
             {movie.title}
-          </h1>
+          </h2>
 
           <div className="flex items-center gap-3 mb-4 flex-wrap">
             {movie.voteAverage > 0 && (
