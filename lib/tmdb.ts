@@ -468,7 +468,7 @@ export async function fetchTopByGenre(
 
   try {
     const fetchPage = (region: string, page: number) =>
-      getFresh<TMDBListResponse>(`/discover/${type}`, {
+      get<TMDBListResponse>(`/discover/${type}`, {
         with_genres:      String(genreId),
         sort_by:          'popularity.desc',
         watch_region:     region,
@@ -674,7 +674,7 @@ export async function fetchFindeRecommendations(): Promise<Movie[]> {
 
   // ── Fetch top contenido por plataforma, tipo alterna por slot ────────────────
   const fetchTop = async (providerId: number, type: 'movie' | 'tv') =>
-    getFresh<TMDBListResponse>(`/discover/${type}`, {
+    get<TMDBListResponse>(`/discover/${type}`, {
       watch_region:         'AR',
       with_watch_providers: String(providerId),
       sort_by:              'popularity.desc',
